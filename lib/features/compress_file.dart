@@ -12,7 +12,7 @@ class CompressFile {
         includeAudio: true,
       );
 
-      if (mediaInfo == null)  throw ("File is empty ");
+      if (mediaInfo == null) throw ("File is empty ");
       return mediaInfo.file;
     } catch (e) {
       print("Error while compressing video : $e");
@@ -20,4 +20,8 @@ class CompressFile {
     }
   }
 
+  static Future<File?> getThumbnailfromVideo({required String filePath}) async {
+    File? file = await VideoCompress.getFileThumbnail(filePath, quality: 50);
+    return file;
+  }
 }

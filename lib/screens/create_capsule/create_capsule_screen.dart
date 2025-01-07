@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
@@ -18,6 +17,8 @@ import 'package:intl/intl.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:video_player/video_player.dart';
 
+
+
 class CreateCapsuleScreen extends StatefulWidget {
   const CreateCapsuleScreen({super.key});
 
@@ -33,6 +34,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
   TextEditingController descriptionController = TextEditingController();
 
   Uint8List? _fileBytes;
+  File? thumbnailFile;
 
   late int hour12;
   late int hour24;
@@ -99,7 +101,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
 
       if (pickedTime != null) {
         // Step 4: Combine selected date and time
-        
+
         DateTime selectedDateTime = DateTime(
           pickedDate.year,
           pickedDate.month,
@@ -404,7 +406,6 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
                       GestureDetector(
                         onTap: () {
                           setState(() {
-                         
                             isTimeToggled = !isTimeToggled;
                           });
                         },
@@ -446,11 +447,10 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
                           isImageFile: isImageFile,
                           isVideoFile: isVideoFile,
                           dateTime: DateTime.now(),
-                          file: _fileBytes ,
+                          file: _fileBytes,
                         ),
                       ),
-                      withNavBar:
-                          false, 
+                      withNavBar: false,
                     );
                   },
                   radius: 24,
@@ -483,14 +483,14 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
     final XFile? file = await _files.selectVideo();
     if (file == null) return;
     Navigator.of(context).pop();
-    showDialog(
-        barrierDismissible: true,
-        context: context,
-        builder: (c) => const ProgressDialogWidget());
+    // showDialog(
+    //   barrierDismissible: true,
+    //   context: context,
+    //   builder: (c) => const ProgressDialogWidget(),
+    // );
 
-    // File? testFile = await CompressFile.compressVideo(filePath: file.path);
-    Navigator.of(context).pop();
-    // uploadImage(testFile!);
+    thumbnailFile = await CompressFile.getThumbnailfromVideo(filePath: file.path);
+
     setState(() {
       isMediaLoading = true;
     });

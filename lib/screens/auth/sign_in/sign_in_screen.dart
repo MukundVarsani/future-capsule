@@ -1,7 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/config/firebase_service.dart';
+import 'package:future_capsule/core/constants/colors.dart';
+import 'package:future_capsule/core/widgets/app_button.dart';
+import 'package:future_capsule/core/widgets/snack_bar.dart';
 import 'package:future_capsule/screens/auth/sign_up/sign_up_screen.dart';
-
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -20,17 +23,53 @@ class _SignInScreenState extends State<SignInScreen> {
   final FirebaseService _firebaseService = FirebaseService();
 
   void signInUser() async {
-    await _firebaseService.login(
-      userEmail: _emailController.text,
-      userPassword: _passwordController.text,
-    );
+    try {
+      await _firebaseService.login(
+        userEmail: _emailController.text,
+        userPassword: _passwordController.text,
+      );
+    } on FirebaseAuthException catch (e) {
+      String? error = e.message ?? "Error";
 
-    // Navigator.pushReplacement(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (_) => const BottomBar(),
-    //   ),
-    // );
+      if ((e.code) == '402') {
+        appSnackBar(
+            context: context,
+            text: error,
+            color: AppColors.kErrorSnackBarTextColor,
+            textColor: AppColors.kWhiteColor);
+      } else {
+        appSnackBar(
+            context: context,
+            text: error,
+            color: AppColors.kErrorSnackBarTextColor,
+            textColor: AppColors.kWhiteColor);
+      }
+      rethrow;
+    }
+  }
+
+  void forgetPassword() {
+    if (_emailController.text.isEmpty) {
+      appSnackBar(
+          context: context,
+          text: "Enter registered email to reset password",
+          color: AppColors.kErrorSnackBarTextColor,
+          textColor: AppColors.kWhiteColor);
+      return;
+    } else {
+      _firebaseService.forgetPassword(email: _emailController.text);
+
+      appSnackBar(
+          context: context,
+          text: "Reset password link sent to registerd email");
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -43,13 +82,13 @@ class _SignInScreenState extends State<SignInScreen> {
             Container(
               width: double.infinity,
               height: 250,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFF4A90E2), Color(0xFF50E3C2)],
+                  colors: [AppColors.kWarmCoralColor, AppColors.kAmberColor],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(50),
                   bottomRight: Radius.circular(50),
                 ),
@@ -128,22 +167,18 @@ class _SignInScreenState extends State<SignInScreen> {
                     const SizedBox(height: 20),
 
                     // Sign-Up Button
-                    ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          signInUser();
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    SizedBox(
+                      height: 50,
+                      child: AppButton(
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            signInUser();
+                          }
+                        },
+                        child: const Text(
+                          "Sign Up",
+                          style: TextStyle(fontSize: 18, color: Colors.white),
                         ),
-                        backgroundColor: const Color(0xFF4A90E2),
-                      ),
-                      child: const Text(
-                        "Sign Up",
-                        style: TextStyle(fontSize: 18, color: Colors.white),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -152,7 +187,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text("Don't have account?"),
+                        const Text("Don't have account? "),
                         GestureDetector(
                           onTap: () {
                             Navigator.pushReplacement(
@@ -162,14 +197,23 @@ class _SignInScreenState extends State<SignInScreen> {
                               ),
                             );
                           },
-                          child: const Text(
+                          child: Text(
                             "Sign up",
                             style: TextStyle(
-                              color: Color(0xFF4A90E2),
+                              color: AppColors.kWarmCoralColor,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
+                        const Spacer(),
+                        GestureDetector(
+                            onTap: forgetPassword,
+                            child: Text(
+                              "Forget password?",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.kBlackColor),
+                            )),
                       ],
                     ),
                   ],

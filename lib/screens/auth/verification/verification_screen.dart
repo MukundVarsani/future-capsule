@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:future_capsule/config/firebase_service.dart';
+import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
+import 'package:future_capsule/screens/auth/sign_in/sign_in_screen.dart';
+import 'package:future_capsule/screens/bottom_navigation_bar.dart';
 import 'package:future_capsule/screens/home/home_screen.dart';
 
 class VerificationScreen extends StatefulWidget {
@@ -76,13 +78,33 @@ class _VerificationScreenState extends State<VerificationScreen> {
   // Screen use method
 
   void _resendVerificationLink() async {
-    await  _auth.currentUser?.sendEmailVerification();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Verification email sent to the registerd email"),
-        backgroundColor: Colors.green,
-      ),
-    );
+    try {
+      await _auth.currentUser?.sendEmailVerification();
+
+      appSnackBar(
+        context: context,
+        text: "Verification email sent to the registerd email",
+      );
+    } on FirebaseAuthException catch (e) {
+      if ((e.code == "user-not-found")) {
+        appSnackBar(
+          context: context,
+          text: "user not found",
+          color: AppColors.kErrorSnackBarTextColor,
+          textColor: AppColors.kWhiteColor,
+        );
+      } else {
+        appSnackBar(
+          context: context,
+          text: "Internal Error, Try Again",
+          color: AppColors.kErrorSnackBarTextColor,
+          textColor: AppColors.kWhiteColor,
+        );
+      }
+
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (_) => const SignInScreen()));
+    }
   }
 
   void _startUserReloadTimer() {
@@ -109,7 +131,12 @@ class _VerificationScreenState extends State<VerificationScreen> {
       // Stop the timer after 2 minutes if email is not verified
       if (elapsed >= totalDuration) {
         timer.cancel();
-        appSnackBar(context: context, text: "Time out for verification mail");
+        appSnackBar(
+            context: context,
+            text: "Time out for verification mail",
+            color: AppColors.kErrorSnackBarTextColor,
+            textColor: AppColors.kWhiteColor,
+            duration: const Duration(minutes: 1));
       }
     });
   }
@@ -119,7 +146,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => const HomeScreen(),
+          builder: (_) => const  BottomBar(),
         ),
       );
     });

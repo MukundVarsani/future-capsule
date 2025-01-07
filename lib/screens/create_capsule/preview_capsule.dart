@@ -46,6 +46,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
   late String month;
   late String weekDay;
 
+
   @override
   void initState() {
     DateTime selectedDateTime = widget.dateTime;
@@ -339,6 +340,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
                       ))
                 ],
               ),
+
             ),
             const SizedBox(
               height: 24,
@@ -350,6 +352,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
   }
 
   Widget _buildMediaPreview() {
+
     if (widget.isImageFile && _fileBytes != null) {
       return Center(
         child: ClipRRect(
@@ -363,10 +366,14 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
       );
     }
 
-    if (widget.isVideoFile &&
+    if(widget.isVideoFile &&
         _controller != null &&
-        _controller!.value.isInitialized) {
+        _controller!.value.isInitialized
+      ) {
+
+
       bool isPlaying = _controller!.value.isPlaying;
+
 
       return Stack(
         alignment: AlignmentDirectional.center,

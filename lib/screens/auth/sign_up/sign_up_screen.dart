@@ -1,10 +1,14 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/config/firebase_service.dart';
+import 'package:future_capsule/core/constants/colors.dart';
+import 'package:future_capsule/core/widgets/app_button.dart';
+import 'package:future_capsule/core/widgets/snack_bar.dart';
 import 'package:future_capsule/screens/auth/sign_in/sign_in_screen.dart';
 import 'package:future_capsule/screens/auth/verification/verification_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
-  SignUpScreen({super.key});
+  const SignUpScreen({super.key});
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
@@ -22,28 +26,58 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   final FirebaseService _firebaseService = FirebaseService();
 
-  // late Timer _timer;
-
-  // void _startUserReloadTimer() {
-  //   _timer = Timer.periodic(const Duration(seconds: 5), (_) async {
-  //     final User? user = FirebaseAuth.instance.currentUser;
-  //     if (user != null) {
-  //       debugPrint("Test");
-  //       await user.reload(); // Reload user data
-  //       if (user.emailVerified) {
-  //         _timer.cancel();
-  //         if(mounted) setState(() {});
-
-  //         debugPrint("Email verified!");
-  //       }
-  //     }
-  //   });
-  // }
-
   @override
   void dispose() {
-    // _timer.cancel();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  void signUp() async {
+    try {
+      User? registeredUser = await _firebaseService.createNewUser(
+        userEmail: _emailController.text.toLowerCase(),
+        userPassword: _passwordController.text,
+      );
+      if (registeredUser == null) {
+        appSnackBar(
+          context: context,
+          text: "Register User",
+        );
+        return;
+      }
+      _firebaseService.sendEmailVerification(registeredUser);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const VerificationScreen(),
+        ),
+      );
+
+      appSnackBar(
+        context: context,
+        text: "Verification email sent to the registerd email",
+      );
+    } on FirebaseAuthException catch (e) {
+      String? error = e.message ?? "Error";
+
+      if ((e.code) == '401') {
+        appSnackBar(
+            context: context,
+            text: error,
+            color: AppColors.kErrorSnackBarTextColor,
+            textColor: AppColors.kWhiteColor);
+      } else {
+        appSnackBar(
+            context: context,
+            text: error,
+            color: AppColors.kErrorSnackBarTextColor,
+            textColor: AppColors.kWhiteColor);
+      }
+      rethrow;
+    }
   }
 
   @override
@@ -53,17 +87,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header with Gradient Background
             Container(
               width: double.infinity,
               height: 250,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFF4A90E2), Color(0xFF50E3C2)],
+                  colors: [AppColors.kWarmCoralColor, AppColors.kAmberColor],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(50),
                   bottomRight: Radius.circular(50),
                 ),
@@ -164,41 +197,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     const SizedBox(height: 30),
 
                     // Sign-Up Button
-                    ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          // Handle sign-up logic here
-                          _firebaseService.createNewUser(
-                            userEmail: _emailController.text.toLowerCase(),
-                            userPassword: _passwordController.text,
-                          );
-
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const VerificationScreen(),
-                            ),
-                          );
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                "Verification email sent to the registerd email",
-                              ),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    SizedBox(
+                      height: 50,
+                      child: AppButton(
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            signUp();
+                          }
+                        },
+                        child: const Text(
+                          "Sign Up",
+                          style: TextStyle(fontSize: 18, color: Colors.white),
                         ),
-                        backgroundColor: const Color(0xFF4A90E2),
-                      ),
-                      child: const Text(
-                        "Sign Up",
-                        style: TextStyle(fontSize: 18, color: Colors.white),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -217,10 +227,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               ),
                             );
                           },
-                          child: const Text(
+                          child: Text(
                             "Login",
                             style: TextStyle(
-                              color: Color(0xFF4A90E2),
+                              color: AppColors.kWarmCoralColor,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -231,55 +241,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
               ),
             ),
-
-            // StreamBuilder<User?>(
-            //   stream: FirebaseAuth.instance.authStateChanges(),
-            //   builder: (context, snapshot) {
-            //     if (snapshot.connectionState == ConnectionState.active) {
-            //       final User? user = snapshot.data;
-            //       debugPrint("================$user");
-            //       if (user != null) {
-            //         return Column(
-            //           mainAxisAlignment: MainAxisAlignment.center,
-            //           children: [
-            //             Text(
-            //               user.emailVerified
-            //                   ? "Your email is verified!"
-            //                   : "Please verify your email.",
-            //               style: const TextStyle(fontSize: 18),
-            //             ),
-            //             const SizedBox(height: 20),
-            //             if (!user.emailVerified)
-            //               ElevatedButton(
-            //                 onPressed: () async {
-            //                   try {
-            //                     await user.sendEmailVerification();
-            //                     ScaffoldMessenger.of(context).showSnackBar(
-            //                       const SnackBar(
-            //                         content: Text("Verification email sent."),
-            //                       ),
-            //                     );
-            //                   } catch (e) {
-            //                     debugPrint(
-            //                         'Error sending email verification: $e');
-            //                   }
-            //                 },
-            //                 child: const Text("Resend Verification Email"),
-            //               ),
-            //           ],
-            //         );
-            //       } else {
-            //         return const Text("User not logged in.");
-            //       }
-            //     }
-
-            //     if (snapshot.hasError) {
-            //       return const Text("An error occurred.");
-            //     }
-
-            //     return const Center(child: CircularProgressIndicator());
-            //   },
-            // )
           ],
         ),
       ),

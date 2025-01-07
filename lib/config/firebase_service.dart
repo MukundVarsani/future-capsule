@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 
 class FirebaseService {
   late FirebaseAuth _firebaseAuth;
@@ -8,7 +7,7 @@ class FirebaseService {
     _firebaseAuth = FirebaseAuth.instance;
   }
 
-  void createNewUser({
+  Future<User?> createNewUser({
     required String userEmail,
     required String userPassword,
   }) async {
@@ -20,20 +19,22 @@ class FirebaseService {
       );
 
       final User? user = credentials.user;
-      if (user == null) return;
-      await _sendEmailVerification(user);
-      // setcurrentUser = credentials.user!;
+      if (user == null) return null;
+      return user;
     } on FirebaseAuthException catch (e) {
-      // Handle Firebase-specific exceptions here.
-      debugPrint('FirebaseAuthException: ${e.message}');
-      rethrow;
-    } catch (e) {
-      debugPrint('Unexpected error during user creation: $e');
-      rethrow;
+      String error = e.code;
+
+      if (error == "email-already-in-use") {
+        throw FirebaseAuthException(
+            code: "401", message: "Email already registered");
+      } else {
+        throw FirebaseAuthException(
+            code: "404", message: "Internal Server Error");
+      }
     }
   }
 
-  Future<void> _sendEmailVerification(User user) async {
+  Future<void> sendEmailVerification(User user) async {
     try {
       await user.sendEmailVerification();
     } catch (e) {
@@ -51,12 +52,23 @@ class FirebaseService {
 
       final User? user = credential.user;
       if (user == null) return;
-      // setcurrentUser = user;
-      // _printCurrentUser("Login");
+    } on FirebaseAuthException catch (e) {
+      String error = e.code;
+      if (error == "invalid-credential") {
+        throw FirebaseAuthException(
+            code: "402", message: "Invalid Credintials");
+      } else {
+        throw FirebaseAuthException(
+            code: "404", message: "Internal Server Error");
+      }
+    }
+  }
 
+  Future<void> forgetPassword({required String email}) async {
+    try {
+      await _firebaseAuth.sendPasswordResetEmail(email: email);
     } catch (e) {
-      debugPrint('Unexpected error during user creation: $e');
-      throw ("Error while logging with user");
+      throw Exception("Email is not registered");
     }
   }
 
@@ -67,5 +79,4 @@ class FirebaseService {
       throw ("Error while siging out user");
     }
   }
-  
 }
