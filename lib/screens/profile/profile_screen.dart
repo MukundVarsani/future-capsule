@@ -82,6 +82,7 @@ class ProfileScreen extends StatelessWidget {
               ),
               Container(
                   height: 350,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
                   width: MediaQuery.sizeOf(context).width,
                   decoration: BoxDecoration(
                     color: AppColors.kWhiteColor,
@@ -115,12 +116,20 @@ class ProfileScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Text(
-                        "Ahmedabad, IND",
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.kLightGreyColor),
+                      
+                      SizedBox(
+                        width: 300,
+                        child: Text(
+                          "😁😁😁😁😁😁😁😁😁\nI love creating surprise capsules!\n😁😁😁😁😁😁😁😁😁",
+                          textAlign: TextAlign.center,
+                          maxLines: 3,
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.kLightGreyColor,
+                                overflow: TextOverflow.fade
+                              ),
+                        ),
                       ),
                     ],
                   )),

@@ -13,6 +13,7 @@ class SelectFiles {
     try {
       return await _imagePicker.pickImage(
         source: imageSource,
+        imageQuality: 75
       );
     } catch (e) {
       debugPrint("Error while getting Image File : $e");

@@ -1,23 +1,21 @@
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
-import 'package:future_capsule/data/services/firebase_storage.dart';
 import 'package:future_capsule/features/compress_file.dart';
 import 'package:future_capsule/features/select_files.dart';
 import 'package:future_capsule/screens/create_capsule/custom_picker.dart';
 import 'package:future_capsule/screens/create_capsule/preview_capsule.dart';
-import 'package:future_capsule/screens/create_capsule/progress_dialog_widget.dart';
 import 'package:future_capsule/screens/create_capsule/toggle.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:video_compress/video_compress.dart';
 import 'package:video_player/video_player.dart';
-
-
 
 class CreateCapsuleScreen extends StatefulWidget {
   const CreateCapsuleScreen({super.key});
@@ -45,7 +43,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
   late String period;
   late String month;
   late String weekDay;
-  late DateTime dataAndTime;
+  late DateTime dateAndTime;
 
   bool isCapsuleToggled = true;
   bool isTimeToggled = true;
@@ -112,7 +110,6 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
 
         // Step 5: Check if the selected DateTime is in the future
         if (selectedDateTime.isAfter(now)) {
-          dataAndTime = selectedDateTime;
           setState(() {
             period = DateFormat('a').format(selectedDateTime);
             month = DateFormat('MMMM').format(selectedDateTime);
@@ -123,6 +120,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
             hour12 = hour24 % 12 == 0 ? 12 : hour24 % 12;
             date = selectedDateTime.day;
           });
+          dateAndTime = selectedDateTime;
         } else {
           // Step 6: Show error if the selected time is in the past
           appSnackBar(
@@ -194,7 +192,17 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
     date = currentTime.day;
     min = currentTime.minute.toString().padLeft(2, "0");
     year = currentTime.year.toString();
+
+    dateAndTime = currentTime;
+    
     super.initState();
+  }
+
+  String _formatBytes(int bytes, [int decimalPlaces = 2]) {
+    if (bytes <= 0) return "0 Bytes";
+    const List<String> units = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    int i = (log(bytes) / log(1024)).floor();
+    return '${(bytes / pow(1024, i)).toStringAsFixed(decimalPlaces)} ${units[i]}';
   }
 
   @override
@@ -216,11 +224,10 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
           shrinkWrap: true,
           children: [
             const SizedBox(
-              height: 20,
+              height: 10,
             ),
             const Text(
               " Name",
-              // textAlign: TextAlign.start,
               style: TextStyle(fontSize: 18),
             ),
             TextFormField(
@@ -279,7 +286,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
               style: TextStyle(fontSize: 18),
             ),
             TextFormField(
-              maxLines: 3,
+              maxLines: 2,
               controller: descriptionController,
               decoration: InputDecoration(
                 hintText: "Decribe capsule",
@@ -294,7 +301,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
             SizedBox(
               height: 180,
               child: Row(
@@ -428,13 +435,17 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
               height: 50,
               child: AppButton(
                   onPressed: () {
-                    // if (nameController.text.isEmpty ||
-                    //     descriptionController.text.isEmpty) {
-                    //   appSnackBar(
-                    //       context: context,
-                    //       text: "Please fill in all details!");
-                    //   return;
-                    // }
+                    if (nameController.text.isEmpty) {
+                      appSnackBar(
+                          context: context, text: "Capsule name is required");
+                      return;
+                    }
+
+                    if (_fileBytes == null) {
+                      appSnackBar(
+                          context: context, text: "Capsule file is required");
+                      return;
+                    }
 
                     PersistentNavBarNavigator.pushDynamicScreen(
                       context,
@@ -446,7 +457,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
                           isTimePrivate: isTimeToggled,
                           isImageFile: isImageFile,
                           isVideoFile: isVideoFile,
-                          dateTime: DateTime.now(),
+                          dateTime: dateAndTime,
                           file: _fileBytes,
                         ),
                       ),
@@ -462,9 +473,6 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
                       fontWeight: FontWeight.w500,
                     ),
                   )),
-            ),
-            const SizedBox(
-              height: 24,
             ),
           ],
         ),
@@ -483,27 +491,41 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
     final XFile? file = await _files.selectVideo();
     if (file == null) return;
     Navigator.of(context).pop();
-    // showDialog(
-    //   barrierDismissible: true,
-    //   context: context,
-    //   builder: (c) => const ProgressDialogWidget(),
-    // );
-
-    thumbnailFile = await CompressFile.getThumbnailfromVideo(filePath: file.path);
-
     setState(() {
       isMediaLoading = true;
     });
+    compressVideo(file.path);
+
+    thumbnailFile =
+        await CompressFile.getThumbnailfromVideo(filePath: file.path);
+
+    _fileBytes = await thumbnailFile?.readAsBytes();
+
     isImageFile = false;
     isVideoFile = true;
     isOtherFile = false;
-    _controller?.dispose(); // Dispose previous controller if any
+    _controller?.dispose();
     _controller = VideoPlayerController.file(File(file.path))
       ..initialize().then((_) {
         setState(() {
           isMediaLoading = false;
         });
       });
+  }
+
+  Future<void> compressVideo(String path) async {
+    final MediaInfo? compressedVideo = await VideoCompress.compressVideo(
+      path,
+      quality: VideoQuality.MediumQuality,
+      deleteOrigin: false, // Keep the original file
+    );
+    if (compressedVideo != null) {
+      // Retrieve the size of the compressed video
+      final int sizeInBytes = compressedVideo.filesize!;
+      final String formattedSize = _formatBytes(sizeInBytes);
+
+      print("Compressed Video Size: $formattedSize");
+    }
   }
 
   Future<void> _selectImage(BuildContext context) async {
@@ -539,6 +561,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
           child: Image.memory(
             _fileBytes!,
             height: 200,
+            filterQuality: FilterQuality.high,
             fit: BoxFit.fill,
           ),
         ),
@@ -598,34 +621,4 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
       ),
     );
   }
-
-//   Widget _selectIcon({
-//     required VoidCallback func,
-//     required String pickerName,
-//   }) {
-//     return Column(
-//       crossAxisAlignment: CrossAxisAlignment.center,
-//       children: [
-//         GestureDetector(
-//           onTap: func,
-//           child: Container(
-//             padding: const EdgeInsets.all(8),
-//             margin: const EdgeInsets.only(bottom: 6),
-//             decoration: BoxDecoration(
-//                 color: AppColors.kWarmCoralColor,
-//                 borderRadius: BorderRadius.circular(18)),
-//             child: Icon(
-//               Icons.image,
-//               color: AppColors.kWhiteColor,
-//               size: 40,
-//             ),
-//           ),
-//         ),
-//         Text(
-//           pickerName,
-//           style: TextStyle(color: AppColors.kBlackColor),
-//         ),
-//       ],
-//     );
-//   }
 }

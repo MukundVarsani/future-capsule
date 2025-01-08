@@ -23,7 +23,7 @@ class _BottomBarState extends State<BottomBar> {
     return PersistentTabView(
       context,
       controller: _controller,
-      // popBehaviorOnSelectedNavBarItemPress: ,r
+    
       screens: _buildScreens(),
       items: _navBarsItems(),
       handleAndroidBackButtonPress: false, // Default is true.
@@ -31,14 +31,13 @@ class _BottomBarState extends State<BottomBar> {
           true, // This needs to be true if you want to move up the screen on a non-scrollable screen when keyboard appears. Default is true.
       stateManagement: true, // Default is true.
       hideNavigationBarWhenKeyboardAppears: true,
-   
-      padding: const EdgeInsets.only(top: 12,bottom: 12),
+      padding: const EdgeInsets.only(top: 12,bottom: 8),
       backgroundColor: Colors.red,
       isVisible: true,
       animationSettings: const NavBarAnimationSettings(
         navBarItemAnimation: ItemAnimationSettings(
           // Navigation Bar's items animation properties.
-          duration: Duration(milliseconds: 400),
+          duration: Duration(milliseconds: 200),
           curve: Curves.ease,
         ),
         screenTransitionAnimation: ScreenTransitionAnimationSettings(
@@ -50,7 +49,7 @@ class _BottomBarState extends State<BottomBar> {
       ),
       confineToSafeArea: true,
       navBarStyle: NavBarStyle.style15,
-      navBarHeight: 68,
+      navBarHeight: MediaQuery.sizeOf(context).height * 0.07,
     );
   }
 

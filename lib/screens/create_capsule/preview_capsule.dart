@@ -1,11 +1,10 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
-import 'package:future_capsule/core/images/images.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
 import 'package:future_capsule/screens/create_capsule/toggle.dart';
 import 'package:intl/intl.dart';
-import 'package:video_player/video_player.dart';
+
 
 class PreviewCapsule extends StatefulWidget {
   const PreviewCapsule({
@@ -16,7 +15,8 @@ class PreviewCapsule extends StatefulWidget {
     required this.isTimePrivate,
     required this.isImageFile,
     required this.isVideoFile,
-    required this.dateTime, required this.file,
+    required this.dateTime,
+    required this.file,
   });
 
   final String capsuleName;
@@ -33,8 +33,6 @@ class PreviewCapsule extends StatefulWidget {
 }
 
 class _PreviewCapsuleState extends State<PreviewCapsule> {
-  VideoPlayerController? _controller;
-  Uint8List? _fileBytes;
 
   late int hour12;
   late int hour24;
@@ -46,9 +44,9 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
   late String month;
   late String weekDay;
 
-
   @override
   void initState() {
+   
     DateTime selectedDateTime = widget.dateTime;
     period = DateFormat('a').format(selectedDateTime);
     month = DateFormat('MMMM').format(selectedDateTime);
@@ -60,6 +58,12 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
     hour12 = hour24 % 12 == 0 ? 12 : hour24 % 12;
     date = selectedDateTime.day;
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    print("=================================dispose");// TODO: implement dispose
+    super.dispose();
   }
 
   @override
@@ -124,7 +128,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
                       Border.all(color: AppColors.kWarmCoralColor, width: 2),
                 ),
                 child: Stack(alignment: AlignmentDirectional.center, children: [
-                  if(widget.file != null) Image.memory(widget.file!),
+                  if (widget.file != null) Image.memory(widget.file!),
                   if (widget.isCapsulePrivate)
                     SizedBox(
                       child: Container(
@@ -151,8 +155,10 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
               style: TextStyle(fontSize: 18),
             ),
             TextFormField(
-              maxLines: 3,
+              maxLines: 5,
+              minLines: 1,
               readOnly: true,
+              keyboardType: TextInputType.multiline,
               initialValue: widget.capsuleDescription,
               decoration: InputDecoration(
                 hintText: "Decribe capsule",
@@ -318,9 +324,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
                           ),
                         ),
                       )),
-                  const SizedBox(
-                    width: 30,
-                  ),
+                  const Spacer(),
                   AppButton(
                       onPressed: () {},
                       radius: 24,
@@ -340,7 +344,6 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
                       ))
                 ],
               ),
-
             ),
             const SizedBox(
               height: 24,
@@ -351,76 +354,5 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
     );
   }
 
-  Widget _buildMediaPreview() {
-
-    if (widget.isImageFile && _fileBytes != null) {
-      return Center(
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Image.memory(
-            _fileBytes!,
-            height: 200,
-            fit: BoxFit.fill,
-          ),
-        ),
-      );
-    }
-
-    if(widget.isVideoFile &&
-        _controller != null &&
-        _controller!.value.isInitialized
-      ) {
-
-
-      bool isPlaying = _controller!.value.isPlaying;
-
-
-      return Stack(
-        alignment: AlignmentDirectional.center,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: AspectRatio(
-              aspectRatio: _controller!.value.aspectRatio,
-              child: VideoPlayer(_controller!),
-            ),
-          ),
-          Center(
-            child: IconButton(
-              onPressed: () {
-                if (_controller == null) return;
-                setState(() {
-                  if (isPlaying) {
-                    _controller!.pause();
-                  } else {
-                    _controller!.play();
-                  }
-                });
-              },
-              icon: Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                    color: AppColors.kWarmCoralColor.withOpacity(0.8),
-                    borderRadius: BorderRadius.circular(50)),
-                child: Icon(
-                  isPlaying ? Icons.pause : Icons.play_arrow,
-                  size: 40,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
-    return Center(
-      child: SizedBox(
-        height: 200,
-        child: Image.asset(
-          AppImages.openCapsule,
-        ),
-      ),
-    );
-  }
+  
 }

@@ -26,8 +26,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  void dispose() {
+    user?.delete();
+    super.dispose();
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: SizedBox(
         width: double.infinity,
@@ -50,8 +55,5 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _signOut() async {
     await _service.signOut();
-    setState(() {
-      user = null; 
-    });
   }
 }

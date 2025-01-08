@@ -6,7 +6,7 @@ import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
 import 'package:future_capsule/screens/auth/sign_in/sign_in_screen.dart';
 import 'package:future_capsule/screens/bottom_navigation_bar.dart';
-import 'package:future_capsule/screens/home/home_screen.dart';
+
 
 class VerificationScreen extends StatefulWidget {
   const VerificationScreen({super.key});
