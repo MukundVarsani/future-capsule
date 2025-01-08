@@ -1,9 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
+import 'package:future_capsule/screens/profile/info_field.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  String name = "Miky Dowells";
+  String bio = "I love to create surprise";
+
+  void _updateName(String newName) {
+    setState(() {
+      name = newName;
+    });
+  }
+  void _updateBio(String newBio) {
+    setState(() {
+      bio = newBio;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +34,7 @@ class ProfileScreen extends StatelessWidget {
           Stack(
             children: [
               Container(
-                height: 430,
+                height: 480,
                 padding: const EdgeInsets.only(bottom: 18),
                 decoration: const BoxDecoration(
                   color: Color.fromRGBO(255, 111, 97, 1),
@@ -81,26 +101,27 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               Container(
-                  height: 350,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  width: MediaQuery.sizeOf(context).width,
-                  decoration: BoxDecoration(
-                    color: AppColors.kWhiteColor,
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(36),
-                      bottomRight: Radius.circular(36),
-                    ),
+                height: 400,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                width: MediaQuery.sizeOf(context).width,
+                decoration: BoxDecoration(
+                  color: AppColors.kWhiteColor,
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(36),
+                    bottomRight: Radius.circular(36),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const SizedBox(
-                        height: 100,
-                      ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                      height: 60,
+                    ),
+                    Stack(children: [
                       Container(
                         margin: const EdgeInsets.only(bottom: 20),
-                        height: 100,
-                        width: 100,
+                        height: 130,
+                        width: 130,
                         child: ClipRRect(
                             borderRadius: BorderRadius.circular(500),
                             child: Image.asset(
@@ -108,31 +129,45 @@ class ProfileScreen extends StatelessWidget {
                               fit: BoxFit.cover,
                             )),
                       ),
-                      Text(
-                        "Miky Dowells",
-                        style: TextStyle(
-                          fontSize: 28,
-                          color: AppColors.kPrimaryTextColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      Positioned(
+                          bottom: 4,
+                          right: 0,
+                          child: Container(
+                              height: 50,
+                              width: 50,
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                  color: AppColors.kWarmCoralColor,
+                                  borderRadius: BorderRadius.circular(100)),
+                              child: Icon(
+                                Icons.camera_alt_outlined,
+                                color: AppColors.kWhiteColor,
+                              ))),
+                    ]),
+                    InfoField(
+                      fieldName: "Name",
+                      fieldValue: name,
+                      isEditable: true,
+                      leadingIcon: Icons.person_outline,
+                      onFieldValueChanged: _updateName,
+                    ),
+                    InfoField(
+                      fieldName: "Bio",
+                      fieldValue: bio,
+                      isEditable: true,
+                      leadingIcon: Icons.error_outline,
+                      onFieldValueChanged: _updateBio,
+                    ),
+                   const InfoField(
+                      fieldName: "Email",
+                      fieldValue: "user@gmail.com",
+                      isEditable: false,
+                      leadingIcon: Icons.email_outlined,
                       
-                      SizedBox(
-                        width: 300,
-                        child: Text(
-                          "😁😁😁😁😁😁😁😁😁\nI love creating surprise capsules!\n😁😁😁😁😁😁😁😁😁",
-                          textAlign: TextAlign.center,
-                          maxLines: 3,
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.kLightGreyColor,
-                                overflow: TextOverflow.fade
-                              ),
-                        ),
-                      ),
-                    ],
-                  )),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
           Container(

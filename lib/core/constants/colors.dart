@@ -16,4 +16,5 @@ class AppColors {
   static Color kScreenBackgroundColor = const Color.fromRGBO(245, 245, 245, 1);
   static Color kWhiteColor = const Color.fromRGBO(255, 255, 255, 1);
   static Color kBlackColor = const Color.fromRGBO(0, 0, 0, 1);
+  static Color kLightBlackColor = const Color.fromARGB(204, 79, 75, 75);
 }

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:future_capsule/screens/create_capsule/create_capsule_screen.dart';
 import 'package:future_capsule/screens/home/home_screen.dart';
 import 'package:future_capsule/screens/profile/profile_screen.dart';
-import 'package:future_capsule/screens/test.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
 class BottomBar extends StatefulWidget {
@@ -101,8 +100,8 @@ class _BottomBarState extends State<BottomBar> {
 
 
       PersistentBottomNavBarItem(
-        icon: Icon(CupertinoIcons.macwindow),
-        title: ("Settings"),
+        icon: const Icon(CupertinoIcons.macwindow),
+        title: ("My capusles"),
         activeColorPrimary: Colors.white,
         inactiveColorPrimary: Colors.white70,
         scrollController: _scrollController,
@@ -110,7 +109,7 @@ class _BottomBarState extends State<BottomBar> {
        
       ),
       PersistentBottomNavBarItem(
-        icon: Icon(CupertinoIcons.person),
+        icon: const Icon(CupertinoIcons.person),
         title: ("Settings"),
       activeColorPrimary: Colors.white,
         inactiveColorPrimary: Colors.white70,
