@@ -14,8 +14,7 @@ class UserService {
 
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
 
-
-  void createNewUser(Map <String, dynamic> newUser) async {
+  void createNewUser(Map<String, dynamic> newUser) async {
     User? user = FirebaseAuthService.getCurrentUser();
     if (user == null) return;
 
@@ -82,13 +81,14 @@ class UserService {
           .doc(user.uid)
           .get();
       if (doc.exists) {
+       
         return UserModel.fromJson(doc.data() as Map<String, dynamic>);
       } else {
         Vx.log("User not found with document ID");
         return null;
       }
     } catch (e) {
-      Vx.log("Error while getting user data");
+      Vx.log("Error while getting user data $e");
       return null;
     }
   }

@@ -20,50 +20,56 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String name = "Miky Dowells";
-  String bio = "I love to create surprise";
-  late File file;
-
-  Uint8List? _fileBytes;
-
+  UserModel? userData;
+  File? _selectedFile;
   late final FirebaseStore _firebaseStore;
   late final SelectFiles _selectFiles;
   late final UserService _userService;
 
-  void selectProfileImage() async {
+  void _selectProfileImage() async {
     XFile? xFile =
         await _selectFiles.selectImage(imageSource: ImageSource.gallery);
     if (xFile == null) return;
-    file = File(xFile.path);
-    _editField(file);
+    _selectedFile = File(xFile.path);
+    _showEditImageDialog();
   }
 
-  void _updateName(String newName) {
-    setState(() {
-      name = newName;
-    });
-
-    Map<String, dynamic> updatedData = {"name" : name};
-
+  Future<void> _updateUserData(Map<String, dynamic> updatedData) async {
     _userService.updateUserData(updatedData);
+    _fetchUserData();
   }
 
-  void _updateBio(String newBio) {
-    setState(() {
-      bio = newBio;
-    });
+  void _updateProfileImage(BuildContext context) async {
+    try {
+      if (_selectedFile == null) return;
 
-    
-    Map<String, dynamic> updatedData = {"bio" : bio};
+      String? downloadUrl = await _firebaseStore.uploadImageToCloud(
+          file: _selectedFile!, fileName: "UserProfileImage");
 
-    _userService.updateUserData(updatedData);
+      if (downloadUrl != null) {
+        await _updateUserData({"profilePicture": downloadUrl});
+        appSnackBar(context: context, text: "Profile image updated");
+      } else {
+        throw Exception("Error uploading image");
+      }
+    } catch (e) {
+      Vx.log("Error while updating profile image : ================== $e");
+    } finally {
+      Navigator.of(context).pop();
+    }
+  }
+
+  void _fetchUserData() async {
+    userData = await _userService.getUserData();
+    setState(() {});
   }
 
   @override
   void initState() {
-    _selectFiles = SelectFiles();
-    _firebaseStore = FirebaseStore();
     _userService = UserService();
+    _fetchUserData();
+    _firebaseStore = FirebaseStore();
+    _selectFiles = SelectFiles();
     super.initState();
   }
 
@@ -159,59 +165,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(
                       height: 60,
                     ),
-                    Stack(children: [
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 20),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(100),
-                            border: Border.all(
-                                color: AppColors.kWarmCoralColor, width: 2)),
-                        height: 130,
-                        width: 130,
-                        child: ClipRRect(
-                            borderRadius: BorderRadius.circular(500),
-                            child: (_fileBytes == null)
-                                ? Image.asset(
-                                    AppImages.profile,
-                                    fit: BoxFit.cover,
-                                  )
-                                : Image.memory(_fileBytes!)),
-                      ),
-                      Positioned(
-                          bottom: 4,
-                          right: 0,
-                          child: GestureDetector(
-                            onTap: selectProfileImage,
-                            child: Container(
-                                height: 50,
-                                width: 50,
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                    color: AppColors.kWarmCoralColor,
-                                    borderRadius: BorderRadius.circular(100)),
-                                child: Icon(
-                                  Icons.camera_alt_outlined,
-                                  color: AppColors.kWhiteColor,
-                                )),
-                          )),
-                    ]),
+                    _buildProfileImage(),
                     InfoField(
                       fieldName: "Name",
-                      fieldValue: name,
+                      fieldValue: userData?.name ?? "User",
                       isEditable: true,
                       leadingIcon: Icons.person_outline,
-                      onFieldValueChanged: _updateName,
+                      onFieldValueChanged: (newName) =>
+                          _updateUserData({"name": newName}),
                     ),
                     InfoField(
                       fieldName: "Bio",
-                      fieldValue: bio,
+                      fieldValue: userData?.bio ?? "write your bio",
                       isEditable: true,
                       leadingIcon: Icons.error_outline,
-                      onFieldValueChanged: _updateBio,
+                      onFieldValueChanged: (newBio) =>
+                          _updateUserData({"bio": newBio}),
                     ),
-                    const InfoField(
+                    InfoField(
                       fieldName: "Email",
-                      fieldValue: "user@gmail.com",
+                      fieldValue: userData?.email ?? "yourmail@gmail.com",
                       isEditable: false,
                       leadingIcon: Icons.email_outlined,
                     ),
@@ -359,8 +332,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  _editField(File file) async {
-    Uint8List fbytes = await file.readAsBytes();
+  _showEditImageDialog() async {
+    Uint8List fbytes = await _selectedFile!.readAsBytes();
     return showDialog(
         context: context,
         builder: (context) {
@@ -382,7 +355,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     width: 100,
                     child: ClipRRect(
                         borderRadius: BorderRadius.circular(500),
-                        child: Image.memory(fbytes)),
+                        child: Image.memory(fbytes, fit: BoxFit.cover)),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -412,30 +385,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
         });
   }
 
-  _updateProfileImage(BuildContext context) async {
-    try {
-      String? downloadUrl = await _firebaseStore.uploadImageToCloud(
-          file: file, fileName: "UserProfileImage");
-
-      if (downloadUrl == null) {
-        Vx.log("error while updating profile pic");
-        return;
-      }
-
-      Map<String, dynamic> updatedProfile = {
-        "profilePicture": downloadUrl,
-      };
-
-      _userService.updateUserData(updatedProfile);
-
-      _fileBytes = await file.readAsBytes();
-      Navigator.of(context).pop();
-      if (mounted) setState(() {});
-      appSnackBar(context: context, text: "Profile image Updated");
-    } catch (e) {
-      print(
-          "Error while updating profile image : ================================= $e");
-      return;
-    }
+  Widget _buildProfileImage() {
+    return Stack(
+      children: [
+        Container(
+          margin: const EdgeInsets.only(bottom: 20),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(100),
+              border: Border.all(color: AppColors.kWarmCoralColor, width: 2)),
+          height: 130,
+          width: 130,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(100),
+            child: userData?.profilePicture?.isNotEmpty == true
+                ? Image.network(
+                    userData!.profilePicture!,
+                    height: 130,
+                    width: 130,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                  (loadingProgress.expectedTotalBytes ?? 1)
+                              : null,
+                        ),
+                      );
+                    },
+                    errorBuilder: (_, __, ___) => Image.asset(AppImages.profile,
+                        height: 130, width: 130, fit: BoxFit.cover),
+                  )
+                : Image.asset(AppImages.profile,
+                    height: 130, width: 130, fit: BoxFit.cover),
+          ),
+        ),
+        Positioned(
+          bottom: 4,
+          right: 0,
+          child: GestureDetector(
+            onTap: _selectProfileImage,
+            child: CircleAvatar(
+              backgroundColor: AppColors.kWarmCoralColor,
+              radius: 25,
+              child: const Icon(Icons.camera_alt_outlined, color: Colors.white),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
