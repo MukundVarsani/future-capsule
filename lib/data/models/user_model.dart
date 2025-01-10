@@ -4,10 +4,11 @@ class UserModel {
   final String userId;
   final String name;
   final String email;
-  final String profilePicture;
-  final String bio;
+  final String? profilePicture;
+  final String? bio;
   final DateTime createdAt;
-  final Settings settings;
+  final DateTime updatedAt;
+  final SettingsModel settings;
 
   UserModel({
     required this.userId,
@@ -16,6 +17,7 @@ class UserModel {
     required this.profilePicture,
     required this.bio,
     required this.createdAt,
+    required this.updatedAt,
     required this.settings,
   });
 
@@ -28,7 +30,8 @@ class UserModel {
       profilePicture: json['profilePicture'] as String,
       bio: json['bio'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
-      settings: Settings.fromJson(json['settings'] as Map<String, dynamic>),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      settings: SettingsModel.fromJson(json['settings'] as Map<String, dynamic>),
     );
   }
 
@@ -41,6 +44,7 @@ class UserModel {
       'profilePicture': profilePicture,
       'bio': bio,
       'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
       'settings': settings.toJson(),
     };
   }

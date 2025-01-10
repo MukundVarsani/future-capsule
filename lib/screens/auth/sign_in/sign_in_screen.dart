@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:future_capsule/config/firebase_service.dart';
+import 'package:future_capsule/config/firebase_auth_service.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
@@ -20,11 +20,11 @@ class _SignInScreenState extends State<SignInScreen> {
 
   final TextEditingController _passwordController = TextEditingController();
 
-  final FirebaseService _firebaseService = FirebaseService();
+  final FirebaseAuthService _firebaseAuthService = FirebaseAuthService();
 
   void signInUser() async {
     try {
-      await _firebaseService.login(
+      await _firebaseAuthService.login(
         userEmail: _emailController.text,
         userPassword: _passwordController.text,
       );
@@ -57,7 +57,7 @@ class _SignInScreenState extends State<SignInScreen> {
           textColor: AppColors.kWhiteColor);
       return;
     } else {
-      _firebaseService.forgetPassword(email: _emailController.text);
+      _firebaseAuthService.forgetPassword(email: _emailController.text);
 
       appSnackBar(
           context: context,

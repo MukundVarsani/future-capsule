@@ -1,10 +1,23 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
-class FirebaseService {
-  late FirebaseAuth _firebaseAuth;
 
-  FirebaseService() {
-    _firebaseAuth = FirebaseAuth.instance;
+class FirebaseAuthService {
+  static final FirebaseAuthService _instance = FirebaseAuthService._internal();
+  static final  FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+
+  FirebaseAuthService._internal();
+
+  factory FirebaseAuthService() {
+    return _instance;
+  }
+
+ static User? getCurrentUser() {
+    try {
+      return _firebaseAuth.currentUser;
+    } catch (e) {
+      print("Error while getting current User=============== $e");
+      return null;
+    }
   }
 
   Future<User?> createNewUser({

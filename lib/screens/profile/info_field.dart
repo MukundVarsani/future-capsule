@@ -55,11 +55,14 @@ class _InfoFieldState extends State<InfoField> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text(
-                        "Cancel",
-                        style: TextStyle(
-                            color: AppColors.kWarmCoralColor,
-                            fontWeight: FontWeight.w500),
+                      GestureDetector(
+                        onTap: ()=> Navigator.pop(context),
+                        child: Text(
+                          "Cancel",
+                          style: TextStyle(
+                              color: AppColors.kWarmCoralColor,
+                              fontWeight: FontWeight.w500),
+                        ),
                       ),
                       const SizedBox(
                         width: 30,

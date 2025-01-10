@@ -1,9 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:future_capsule/config/firebase_service.dart';
+import 'package:future_capsule/config/firebase_auth_service.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
+import 'package:future_capsule/data/models/user_model.dart';
+import 'package:future_capsule/data/services/user_service.dart';
 import 'package:future_capsule/screens/auth/sign_in/sign_in_screen.dart';
 import 'package:future_capsule/screens/auth/verification/verification_screen.dart';
 
@@ -17,6 +19,8 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  final TextEditingController _nameController = TextEditingController();
+
   final TextEditingController _emailController = TextEditingController();
 
   final TextEditingController _passwordController = TextEditingController();
@@ -24,7 +28,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
 
-  final FirebaseService _firebaseService = FirebaseService();
+  late final FirebaseAuthService _firebaseAuthService;
+  late final UserService _userService;
 
   @override
   void dispose() {
@@ -36,18 +41,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   void signUp() async {
     try {
-      User? registeredUser = await _firebaseService.createNewUser(
+      User? registeredUser = await _firebaseAuthService.createNewUser(
         userEmail: _emailController.text.toLowerCase(),
         userPassword: _passwordController.text,
       );
       if (registeredUser == null) {
         appSnackBar(
           context: context,
-          text: "Register User",
+          text: "Registeration Fail Try again",
         );
         return;
       }
-      _firebaseService.sendEmailVerification(registeredUser);
+
+      // await
+      Map<String, dynamic> user = {"name": _nameController.text};
+
+      _userService.createNewUser(user);
+      await _firebaseAuthService.sendEmailVerification(registeredUser);
 
       Navigator.pushReplacement(
         context,
@@ -78,6 +88,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
       }
       rethrow;
     }
+  }
+
+  @override
+  void initState() {
+    _firebaseAuthService = FirebaseAuthService();
+    _userService = UserService();
+    super.initState();
   }
 
   @override
@@ -131,7 +148,25 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Email Field
+                    // UserName Field
+                    TextFormField(
+                      controller: _nameController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        labelText: "Name",
+                        prefixIcon: const Icon(Icons.person),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Please enter your Name";
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,

@@ -7,8 +7,9 @@ class SelectFiles {
   SelectFiles() {
     _imagePicker = ImagePicker();
   }
+  
 
-  Future<XFile?> selectImage(
+   Future<XFile?> selectImage(
       {ImageSource imageSource = ImageSource.gallery}) async {
     try {
       return await _imagePicker.pickImage(
@@ -34,6 +35,8 @@ class SelectFiles {
     }
   }
 
+
+
   Future<XFile?> selectOtherMedia(
       {ImageSource imageSource = ImageSource.gallery}) async {
     try {
@@ -43,4 +46,6 @@ class SelectFiles {
       return null;
     }
   }
+
+  
 }

@@ -1,11 +1,20 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
+import 'package:future_capsule/core/widgets/app_button.dart';
+import 'package:future_capsule/core/widgets/snack_bar.dart';
+import 'package:future_capsule/data/models/user_model.dart';
+import 'package:future_capsule/data/services/firebase_storage.dart';
+import 'package:future_capsule/data/services/user_service.dart';
+import 'package:future_capsule/features/select_files.dart';
 import 'package:future_capsule/screens/profile/info_field.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:velocity_x/velocity_x.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
-
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
@@ -13,16 +22,49 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   String name = "Miky Dowells";
   String bio = "I love to create surprise";
+  late File file;
+
+  Uint8List? _fileBytes;
+
+  late final FirebaseStore _firebaseStore;
+  late final SelectFiles _selectFiles;
+  late final UserService _userService;
+
+  void selectProfileImage() async {
+    XFile? xFile =
+        await _selectFiles.selectImage(imageSource: ImageSource.gallery);
+    if (xFile == null) return;
+    file = File(xFile.path);
+    _editField(file);
+  }
 
   void _updateName(String newName) {
     setState(() {
       name = newName;
     });
+
+    Map<String, dynamic> updatedData = {"name" : name};
+
+    _userService.updateUserData(updatedData);
   }
+
   void _updateBio(String newBio) {
     setState(() {
       bio = newBio;
     });
+
+    
+    Map<String, dynamic> updatedData = {"bio" : bio};
+
+    _userService.updateUserData(updatedData);
+  }
+
+  @override
+  void initState() {
+    _selectFiles = SelectFiles();
+    _firebaseStore = FirebaseStore();
+    _userService = UserService();
+    super.initState();
   }
 
   @override
@@ -120,29 +162,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Stack(children: [
                       Container(
                         margin: const EdgeInsets.only(bottom: 20),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(
+                                color: AppColors.kWarmCoralColor, width: 2)),
                         height: 130,
                         width: 130,
                         child: ClipRRect(
                             borderRadius: BorderRadius.circular(500),
-                            child: Image.asset(
-                              AppImages.profile,
-                              fit: BoxFit.cover,
-                            )),
+                            child: (_fileBytes == null)
+                                ? Image.asset(
+                                    AppImages.profile,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Image.memory(_fileBytes!)),
                       ),
                       Positioned(
                           bottom: 4,
                           right: 0,
-                          child: Container(
-                              height: 50,
-                              width: 50,
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                  color: AppColors.kWarmCoralColor,
-                                  borderRadius: BorderRadius.circular(100)),
-                              child: Icon(
-                                Icons.camera_alt_outlined,
-                                color: AppColors.kWhiteColor,
-                              ))),
+                          child: GestureDetector(
+                            onTap: selectProfileImage,
+                            child: Container(
+                                height: 50,
+                                width: 50,
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                    color: AppColors.kWarmCoralColor,
+                                    borderRadius: BorderRadius.circular(100)),
+                                child: Icon(
+                                  Icons.camera_alt_outlined,
+                                  color: AppColors.kWhiteColor,
+                                )),
+                          )),
                     ]),
                     InfoField(
                       fieldName: "Name",
@@ -158,12 +209,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       leadingIcon: Icons.error_outline,
                       onFieldValueChanged: _updateBio,
                     ),
-                   const InfoField(
+                    const InfoField(
                       fieldName: "Email",
                       fieldValue: "user@gmail.com",
                       isEditable: false,
                       leadingIcon: Icons.email_outlined,
-                      
                     ),
                   ],
                 ),
@@ -307,5 +357,85 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
     );
+  }
+
+  _editField(File file) async {
+    Uint8List fbytes = await file.readAsBytes();
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return Dialog(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              height: 200,
+              width: 300,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 20),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(100),
+                        border: Border.all(
+                            color: AppColors.kWarmCoralColor, width: 2)),
+                    height: 100,
+                    width: 100,
+                    child: ClipRRect(
+                        borderRadius: BorderRadius.circular(500),
+                        child: Image.memory(fbytes)),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      AppButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text(
+                          "Cancel",
+                          style: TextStyle(color: AppColors.kWhiteColor),
+                        ),
+                      ),
+                      AppButton(
+                        onPressed: () => _updateProfileImage(context),
+                        child: Text(
+                          "Save",
+                          style: TextStyle(color: AppColors.kWhiteColor),
+                        ),
+                      )
+                    ],
+                  )
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
+  _updateProfileImage(BuildContext context) async {
+    try {
+      String? downloadUrl = await _firebaseStore.uploadImageToCloud(
+          file: file, fileName: "UserProfileImage");
+
+      if (downloadUrl == null) {
+        Vx.log("error while updating profile pic");
+        return;
+      }
+
+      Map<String, dynamic> updatedProfile = {
+        "profilePicture": downloadUrl,
+      };
+
+      _userService.updateUserData(updatedProfile);
+
+      _fileBytes = await file.readAsBytes();
+      Navigator.of(context).pop();
+      if (mounted) setState(() {});
+      appSnackBar(context: context, text: "Profile image Updated");
+    } catch (e) {
+      print(
+          "Error while updating profile image : ================================= $e");
+      return;
+    }
   }
 }
