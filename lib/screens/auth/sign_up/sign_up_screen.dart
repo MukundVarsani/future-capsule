@@ -62,7 +62,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => const VerificationScreen(),
+          builder: (_) => VerificationScreen(verificationEmail: _emailController.text,),
         ),
       );
 

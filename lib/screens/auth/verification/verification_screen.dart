@@ -7,9 +7,9 @@ import 'package:future_capsule/core/widgets/snack_bar.dart';
 import 'package:future_capsule/screens/auth/sign_in/sign_in_screen.dart';
 import 'package:future_capsule/screens/bottom_navigation_bar.dart';
 
-
 class VerificationScreen extends StatefulWidget {
-  const VerificationScreen({super.key});
+  const VerificationScreen({super.key, required this.verificationEmail});
+  final String verificationEmail;
 
   @override
   State<VerificationScreen> createState() => _VerificationScreenState();
@@ -47,9 +47,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
           width: double.infinity,
           height: 50,
         ),
-        const Text(
-          "Verification email has been sent ",
-          style: TextStyle(
+         Text(
+          "Verification email has been sent to:\n ${widget.verificationEmail}",
+          style: const TextStyle(
               fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black),
         ),
         Text(
@@ -146,7 +146,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => const  BottomBar(),
+          builder: (_) => const BottomBar(),
         ),
       );
     });

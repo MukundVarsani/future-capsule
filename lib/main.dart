@@ -48,7 +48,7 @@ Widget _getLandingPage(FirebaseAuth auth) {
         if (snapshot.data?.providerData.length == 1) {
           return snapshot.data!.emailVerified
               ? const BottomBar()
-              : const VerificationScreen();
+              :  VerificationScreen(verificationEmail:  snapshot.data!.email!);
         } else {
           
           return const BottomBar();
