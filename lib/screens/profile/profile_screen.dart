@@ -13,6 +13,9 @@ import 'package:future_capsule/screens/profile/info_field.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:velocity_x/velocity_x.dart';
 
+
+
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
   @override
@@ -63,6 +66,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     userData = await _userService.getUserData();
     setState(() {});
   }
+
+
 
   @override
   void initState() {
@@ -436,4 +441,5 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ],
     );
   }
-}
+
+ }

@@ -14,6 +14,7 @@ import 'package:future_capsule/screens/create_capsule/toggle.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:velocity_x/velocity_x.dart';
 import 'package:video_compress/video_compress.dart';
 import 'package:video_player/video_player.dart';
 
@@ -28,29 +29,168 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
   final SelectFiles _files = SelectFiles();
 
   VideoPlayerController? _controller;
-  TextEditingController nameController = TextEditingController();
+  TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
 
   Uint8List? _fileBytes;
   File? thumbnailFile;
 
-  late int hour12;
-  late int hour24;
-  late int date;
-
-  late String year;
-  late String min;
-  late String period;
-  late String month;
-  late String weekDay;
   late DateTime dateAndTime;
 
   bool isCapsuleToggled = true;
   bool isTimeToggled = true;
+  bool isMediaLoading = false;
+
   bool isImageFile = false;
   bool isVideoFile = false;
   bool isOtherFile = false;
-  bool isMediaLoading = false;
+
+  Map<String, String> _formatDateTime(DateTime dateTime) {
+    return {
+      'period': DateFormat('a').format(dateTime),
+      'month': DateFormat('MMMM').format(dateTime),
+      'weekDay': DateFormat('EEEE').format(dateTime),
+      'year': dateTime.year.toString(),
+      'min': dateTime.minute.toString().padLeft(2, "0"),
+      'hour12': (dateTime.hour % 12 == 0 ? 12 : dateTime.hour % 12).toString(),
+      'date': dateTime.day.toString(),
+    };
+  }
+
+  Future<void> _selectVideo(BuildContext context) async {
+    final XFile? file = await _files.selectVideo();
+    if (file == null) return;
+    Navigator.of(context).pop();
+    setState(() {
+      isMediaLoading = true;
+    });
+    compressVideo(file.path);
+
+    thumbnailFile =
+        await CompressFile.getThumbnailfromVideo(filePath: file.path);
+
+    _fileBytes = await thumbnailFile?.readAsBytes();
+
+    isImageFile = false;
+    isVideoFile = true;
+    isOtherFile = false;
+    _controller?.dispose();
+    _controller = VideoPlayerController.file(File(file.path))
+      ..initialize().then((_) {});
+    setState(() {
+      isMediaLoading = false;
+    });
+  }
+
+  Future<void> compressVideo(String path) async {
+    final MediaInfo? compressedVideo = await VideoCompress.compressVideo(
+      path,
+      quality: VideoQuality.MediumQuality,
+      deleteOrigin: false, // Keep the original file
+    );
+    if (compressedVideo != null) {
+      // Retrieve the size of the compressed video
+      final int sizeInBytes = compressedVideo.filesize!;
+      final String formattedSize = _formatBytes(sizeInBytes);
+
+      Vx.log("Compressed Video Size: $formattedSize");
+    }
+  }
+
+  Future<void> _selectImage(BuildContext context) async {
+    final XFile? file = await _files.selectImage();
+    if (file == null) return;
+    Navigator.of(context).pop();
+    setState(() {
+      isMediaLoading = true;
+    });
+    _fileBytes = await file.readAsBytes();
+    // uploadImage(file);
+    setState(() {
+      isImageFile = true;
+      isVideoFile = false;
+      isOtherFile = false;
+      isMediaLoading = false;
+    });
+  }
+
+  String _formatBytes(int bytes, [int decimalPlaces = 2]) {
+    if (bytes <= 0) return "0 Bytes";
+    const List<String> units = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    int i = (log(bytes) / log(1024)).floor();
+    return '${(bytes / pow(1024, i)).toStringAsFixed(decimalPlaces)} ${units[i]}';
+  }
+
+  @override
+  void initState() {
+    DateTime currentTime = DateTime.now();
+    _formatDateTime(currentTime);
+    dateAndTime = currentTime;
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final formattedDate = _formatDateTime(dateAndTime);
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: AppColors.kWarmCoralColor,
+        title: Text(
+          "Craft a Future Capsule",
+          style: TextStyle(
+              color: AppColors.kWhiteColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 24),
+        ),
+      ),
+      body: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            const SizedBox(height: 10),
+            _buildTextField(),
+            const SizedBox(height: 10),
+            GestureDetector(
+              onTap: _showSelectFileDialodBox,
+              child: Container(
+                constraints: const BoxConstraints(minHeight: 200),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  border:
+                      Border.all(color: AppColors.kWarmCoralColor, width: 2),
+                ),
+                child: Stack(alignment: AlignmentDirectional.center, children: [
+                  _buildMediaPreview(),
+                  if (isMediaLoading)
+                    Center(
+                        child: CircularProgressIndicator.adaptive(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.kWarmCoralColor),
+                    )),
+                  if (!isImageFile && !isVideoFile && !isOtherFile)
+                    Positioned(
+                      bottom: 20,
+                      left: MediaQuery.sizeOf(context).width / 2 - 20,
+                      child: const Icon(
+                        Icons.upload_outlined,
+                        size: 40,
+                      ),
+                    ),
+                ]),
+              ),
+            ),
+            const SizedBox(height: 10),
+            _buildDescriptionField(),
+            const SizedBox(height: 20),
+            _futureAspectBuild(formattedDate),
+            const SizedBox(height: 20),
+            _previewButton()
+          ],
+        ),
+      ),
+    );
+  }
 
   Future<void> _selectDateTime(BuildContext context) async {
     // Step 1: Get the current date and time
@@ -111,14 +251,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
         // Step 5: Check if the selected DateTime is in the future
         if (selectedDateTime.isAfter(now)) {
           setState(() {
-            period = DateFormat('a').format(selectedDateTime);
-            month = DateFormat('MMMM').format(selectedDateTime);
-            weekDay = DateFormat('EEEE').format(selectedDateTime);
-            period = DateFormat('a').format(selectedDateTime);
-            min = selectedDateTime.minute.toString().padLeft(2, "0");
-            hour24 = selectedDateTime.hour;
-            hour12 = hour24 % 12 == 0 ? 12 : hour24 % 12;
-            date = selectedDateTime.day;
+            _formatDateTime(selectedDateTime);
           });
           dateAndTime = selectedDateTime;
         } else {
@@ -130,7 +263,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
     }
   }
 
-  _showDialodBox() {
+  Future<void> _showSelectFileDialodBox() {
     return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -181,368 +314,136 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
     );
   }
 
-  @override
-  void initState() {
-    DateTime currentTime = DateTime.now();
-    period = DateFormat('a').format(currentTime);
-    month = DateFormat('MMMM').format(currentTime);
-    weekDay = DateFormat('EEEE').format(currentTime);
-    hour24 = currentTime.hour;
-    hour12 = hour24 % 12 == 0 ? 12 : hour24 % 12;
-    date = currentTime.day;
-    min = currentTime.minute.toString().padLeft(2, "0");
-    year = currentTime.year.toString();
-
-    dateAndTime = currentTime;
-    
-    super.initState();
-  }
-
-  String _formatBytes(int bytes, [int decimalPlaces = 2]) {
-    if (bytes <= 0) return "0 Bytes";
-    const List<String> units = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-    int i = (log(bytes) / log(1024)).floor();
-    return '${(bytes / pow(1024, i)).toStringAsFixed(decimalPlaces)} ${units[i]}';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.kWarmCoralColor,
-        title: Text(
-          "Craft a Future Capsule",
-          style: TextStyle(
-              color: AppColors.kWhiteColor,
-              fontWeight: FontWeight.bold,
-              fontSize: 24),
-        ),
+  Widget _futureAspectBuild(Map<String, dynamic> formattedDate) {
+    return SizedBox(
+      height: 180,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _dateAndTimeBuilder(formattedDate),
+          _privacyBuilder(),
+        ],
       ),
-      body: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: ListView(
-          shrinkWrap: true,
-          children: [
-            const SizedBox(
-              height: 10,
-            ),
-            const Text(
-              " Name",
-              style: TextStyle(fontSize: 18),
-            ),
-            TextFormField(
-              maxLength: 20,
-              controller: nameController,
-              decoration: InputDecoration(
-                hintText: "Write Capsule Name",
-                hintStyle: TextStyle(color: AppColors.kLightGreyColor),
-                border: const OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(12)),
+    );
+  }
+
+  Widget _dateAndTimeBuilder(Map<String, dynamic> formattedDate) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Text(
+          "Set Future date",
+          style: TextStyle(
+              fontWeight: FontWeight.w500, color: AppColors.kPrimaryTextColor),
+        ),
+        const Spacer(),
+        InkWell(
+          onTap: () => _selectDateTime(context),
+          child: Container(
+            height: 150,
+            width: 150,
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+            decoration: const BoxDecoration(
+                shape: BoxShape.circle, color: Colors.red // Darker shade
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide:
-                      BorderSide(color: AppColors.kWarmCoralColor, width: 2.0),
-                  borderRadius: const BorderRadius.all(Radius.circular(12)),
-                ),
-              ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            GestureDetector(
-              onTap: _showDialodBox,
-              child: Container(
-                constraints: const BoxConstraints(minHeight: 200),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
-                  border:
-                      Border.all(color: AppColors.kWarmCoralColor, width: 2),
-                ),
-                child: Stack(alignment: AlignmentDirectional.center, children: [
-                  _buildMediaPreview(),
-                  if (isMediaLoading)
-                    Center(
-                        child: CircularProgressIndicator.adaptive(
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                          AppColors.kWarmCoralColor),
-                    )),
-                  if (!isImageFile && !isVideoFile && !isOtherFile)
-                    Positioned(
-                      bottom: 20,
-                      left: MediaQuery.sizeOf(context).width / 2 - 20,
-                      child: const Icon(
-                        Icons.upload_outlined,
-                        size: 40,
-                      ),
-                    ),
-                ]),
-              ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            const Text(
-              " Description",
-              style: TextStyle(fontSize: 18),
-            ),
-            TextFormField(
-              maxLines: 2,
-              controller: descriptionController,
-              decoration: InputDecoration(
-                hintText: "Decribe capsule",
-                hintStyle: TextStyle(color: AppColors.kLightGreyColor),
-                border: const OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(12)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide:
-                      BorderSide(color: AppColors.kWarmCoralColor, width: 2.0),
-                  borderRadius: const BorderRadius.all(Radius.circular(12)),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              height: 180,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Set Future date",
-                        style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.kPrimaryTextColor),
-                      ),
-                      const Spacer(),
-                      InkWell(
-                        onTap: () => _selectDateTime(context),
-                        child: Container(
-                          height: 150,
-                          width: 150,
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 12, horizontal: 4),
-                          decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.red // Darker shade
-                              ),
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Text.rich(
-                                  TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: '$hour12:$min', // Main time
-                                        style: TextStyle(
-                                          fontSize: 28,
-                                          fontWeight: FontWeight.bold,
-                                          color: AppColors.kWhiteColor,
-                                        ),
-                                      ),
-                                      TextSpan(
-                                        text: ' $period', // Small AM/PM
-                                        style: TextStyle(
-                                          fontSize: 14, // Smaller font size
-                                          fontWeight: FontWeight.bold,
-                                          color: AppColors.kWhiteColor,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  '$date $month $year, \n $weekDay',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: AppColors.kWhiteColor,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text:
+                              '${formattedDate['hour12']}:${formattedDate['min']}', // Main time
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.kWhiteColor,
                           ),
                         ),
-                      )
-                    ],
+                        TextSpan(
+                          text: ' ${formattedDate['period']}', // Small AM/PM
+                          style: TextStyle(
+                            fontSize: 14, // Smaller font size
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.kWhiteColor,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Is Capsule private?",
-                        style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.kPrimaryTextColor),
-                      ),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            isCapsuleToggled = !isCapsuleToggled;
-                          });
-                        },
-                        child: AnimatedToggle(
-                          isToggled: isCapsuleToggled,
-                          onIcon: Icons.lock,
-                          offIcon: Icons.lock_open,
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        "Want Time private?",
-                        style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.kPrimaryTextColor),
-                      ),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            isTimeToggled = !isTimeToggled;
-                          });
-                        },
-                        child: AnimatedToggle(
-                          isToggled: isTimeToggled,
-                          onIcon: Icons.check,
-                          offIcon: Icons.close,
-                        ),
-                      ),
-                    ],
+                  const SizedBox(height: 8),
+                  Text(
+                    '${formattedDate['date']} ${formattedDate['month']} ${formattedDate['year']}, \n ${formattedDate['weekDay']}',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.kWhiteColor,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(
-              height: 20,
-            ),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: AppButton(
-                  onPressed: () {
-                    if (nameController.text.isEmpty) {
-                      appSnackBar(
-                          context: context, text: "Capsule name is required");
-                      return;
-                    }
+          ),
+        )
+      ],
+    );
+  }
 
-                    if (_fileBytes == null) {
-                      appSnackBar(
-                          context: context, text: "Capsule file is required");
-                      return;
-                    }
-
-                    PersistentNavBarNavigator.pushDynamicScreen(
-                      context,
-                      screen: MaterialPageRoute(
-                        builder: (context) => PreviewCapsule(
-                          capsuleName: nameController.text,
-                          capsuleDescription: descriptionController.text,
-                          isCapsulePrivate: isCapsuleToggled,
-                          isTimePrivate: isTimeToggled,
-                          isImageFile: isImageFile,
-                          isVideoFile: isVideoFile,
-                          dateTime: dateAndTime,
-                          file: _fileBytes,
-                        ),
-                      ),
-                      withNavBar: false,
-                    );
-                  },
-                  radius: 24,
-                  child: Text(
-                    "Preview Capsule",
-                    style: TextStyle(
-                      color: AppColors.kWhiteColor,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  )),
-            ),
-          ],
+  Widget _privacyBuilder() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Is Capsule private?",
+          style: TextStyle(
+              fontWeight: FontWeight.w500, color: AppColors.kPrimaryTextColor),
         ),
-      ),
+        const SizedBox(
+          height: 5,
+        ),
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              isCapsuleToggled = !isCapsuleToggled;
+            });
+          },
+          child: AnimatedToggle(
+            isToggled: isCapsuleToggled,
+            onIcon: Icons.lock,
+            offIcon: Icons.lock_open,
+          ),
+        ),
+        const Spacer(),
+        Text(
+          "Want Time private?",
+          style: TextStyle(
+              fontWeight: FontWeight.w500, color: AppColors.kPrimaryTextColor),
+        ),
+        const SizedBox(
+          height: 5,
+        ),
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              isTimeToggled = !isTimeToggled;
+            });
+          },
+          child: AnimatedToggle(
+            isToggled: isTimeToggled,
+            onIcon: Icons.check,
+            offIcon: Icons.close,
+          ),
+        ),
+      ],
     );
-  }
-
-  // void uploadImage(File file) async {
-  //   FirebaseStore store = FirebaseStore();
-  //   File uploadFile = File(file.path);
-  //   print("Working");
-  //   await store.uploadImageToCloud(name: "test", file: uploadFile);
-  // }
-
-  Future<void> _selectVideo(BuildContext context) async {
-    final XFile? file = await _files.selectVideo();
-    if (file == null) return;
-    Navigator.of(context).pop();
-    setState(() {
-      isMediaLoading = true;
-    });
-    compressVideo(file.path);
-
-    thumbnailFile =
-        await CompressFile.getThumbnailfromVideo(filePath: file.path);
-
-    _fileBytes = await thumbnailFile?.readAsBytes();
-
-    isImageFile = false;
-    isVideoFile = true;
-    isOtherFile = false;
-    _controller?.dispose();
-    _controller = VideoPlayerController.file(File(file.path))
-      ..initialize().then((_) {
-        setState(() {
-          isMediaLoading = false;
-        });
-      });
-  }
-
-  Future<void> compressVideo(String path) async {
-    final MediaInfo? compressedVideo = await VideoCompress.compressVideo(
-      path,
-      quality: VideoQuality.MediumQuality,
-      deleteOrigin: false, // Keep the original file
-    );
-    if (compressedVideo != null) {
-      // Retrieve the size of the compressed video
-      final int sizeInBytes = compressedVideo.filesize!;
-      final String formattedSize = _formatBytes(sizeInBytes);
-
-      print("Compressed Video Size: $formattedSize");
-    }
-  }
-
-  Future<void> _selectImage(BuildContext context) async {
-    final XFile? file = await _files.selectImage();
-    if (file == null) return;
-    // uploadImage(file);
-    Navigator.of(context).pop();
-    setState(() {
-      isMediaLoading = true;
-    });
-    _fileBytes = await file.readAsBytes();
-    setState(() {
-      isImageFile = true;
-      isVideoFile = false;
-      isOtherFile = false;
-      isMediaLoading = false;
-    });
   }
 
   Widget _buildMediaPreview() {
@@ -619,6 +520,107 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
           AppImages.openCapsule,
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          " Title",
+          style: TextStyle(fontSize: 18),
+        ),
+        TextFormField(
+          maxLength: 20,
+          controller: titleController,
+          decoration: InputDecoration(
+            hintText: "Capsule title",
+            hintStyle: TextStyle(color: AppColors.kLightGreyColor),
+            border: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(12)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide:
+                  BorderSide(color: AppColors.kWarmCoralColor, width: 2.0),
+              borderRadius: const BorderRadius.all(Radius.circular(12)),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDescriptionField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          " Description",
+          style: TextStyle(fontSize: 18),
+        ),
+        TextFormField(
+          maxLines: 2,
+          controller: descriptionController,
+          decoration: InputDecoration(
+            hintText: "Decribe capsule",
+            hintStyle: TextStyle(color: AppColors.kLightGreyColor),
+            border: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(12)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide:
+                  BorderSide(color: AppColors.kWarmCoralColor, width: 2.0),
+              borderRadius: const BorderRadius.all(Radius.circular(12)),
+            ),
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget _previewButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: AppButton(
+          onPressed: () {
+            if (titleController.text.isEmpty) {
+              appSnackBar(context: context, text: "Capsule title is required");
+              return;
+            }
+
+            if (_fileBytes == null) {
+              appSnackBar(context: context, text: "Capsule file is required");
+              return;
+            }
+
+            PersistentNavBarNavigator.pushDynamicScreen(
+              context,
+              screen: MaterialPageRoute(
+                builder: (context) => PreviewCapsule(
+                  capsuleName: titleController.text,
+                  capsuleDescription: descriptionController.text,
+                  isCapsulePrivate: isCapsuleToggled,
+                  isTimePrivate: isTimeToggled,
+                  isImageFile: isImageFile,
+                  isVideoFile: isVideoFile,
+                  dateTime: dateAndTime,
+                  file: _fileBytes,
+                ),
+              ),
+              withNavBar: false,
+            );
+          },
+          radius: 24,
+          child: Text(
+            "Preview Capsule",
+            style: TextStyle(
+              color: AppColors.kWhiteColor,
+              fontSize: 22,
+              fontWeight: FontWeight.w500,
+            ),
+          )),
     );
   }
 }
