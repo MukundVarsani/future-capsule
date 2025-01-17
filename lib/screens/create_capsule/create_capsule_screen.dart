@@ -12,15 +12,14 @@ import 'package:future_capsule/screens/create_capsule/custom_picker.dart';
 import 'package:future_capsule/screens/create_capsule/preview_capsule.dart';
 import 'package:future_capsule/screens/create_capsule/toggle.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:velocity_x/velocity_x.dart';
 import 'package:video_compress/video_compress.dart';
 import 'package:video_player/video_player.dart';
+import 'package:slide_countdown/slide_countdown.dart';
 
 class CreateCapsuleScreen extends StatefulWidget {
   const CreateCapsuleScreen({super.key});
-
   @override
   State<CreateCapsuleScreen> createState() => _CreateCapsuleScreenState();
 }
@@ -35,7 +34,8 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
   Uint8List? _fileBytes;
   File? thumbnailFile;
 
-  late DateTime dateAndTime;
+  late Duration openDate;
+  DateTime _selectedDate = DateTime.now();
 
   bool isCapsuleToggled = true;
   bool isTimeToggled = true;
@@ -44,18 +44,6 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
   bool isImageFile = false;
   bool isVideoFile = false;
   bool isOtherFile = false;
-
-  Map<String, String> _formatDateTime(DateTime dateTime) {
-    return {
-      'period': DateFormat('a').format(dateTime),
-      'month': DateFormat('MMMM').format(dateTime),
-      'weekDay': DateFormat('EEEE').format(dateTime),
-      'year': dateTime.year.toString(),
-      'min': dateTime.minute.toString().padLeft(2, "0"),
-      'hour12': (dateTime.hour % 12 == 0 ? 12 : dateTime.hour % 12).toString(),
-      'date': dateTime.day.toString(),
-    };
-  }
 
   Future<void> _selectVideo(BuildContext context) async {
     final XFile? file = await _files.selectVideo();
@@ -123,15 +111,12 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
 
   @override
   void initState() {
-    DateTime currentTime = DateTime.now();
-    _formatDateTime(currentTime);
-    dateAndTime = currentTime;
+    openDate = const Duration(hours: 1);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final formattedDate = _formatDateTime(dateAndTime);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.kWarmCoralColor,
@@ -183,7 +168,9 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
             const SizedBox(height: 10),
             _buildDescriptionField(),
             const SizedBox(height: 20),
-            _futureAspectBuild(formattedDate),
+            _dateAndTimeBuilder(),
+            const SizedBox(height: 20),
+            _privacyBuilder(),
             const SizedBox(height: 20),
             _previewButton()
           ],
@@ -240,7 +227,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
       if (pickedTime != null) {
         // Step 4: Combine selected date and time
 
-        DateTime selectedDateTime = DateTime(
+        _selectedDate = DateTime(
           pickedDate.year,
           pickedDate.month,
           pickedDate.day,
@@ -249,11 +236,10 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
         );
 
         // Step 5: Check if the selected DateTime is in the future
-        if (selectedDateTime.isAfter(now)) {
-          setState(() {
-            _formatDateTime(selectedDateTime);
-          });
-          dateAndTime = selectedDateTime;
+        if (_selectedDate.isAfter(now)) {
+          openDate = _selectedDate.difference(now);
+
+          setState(() {});
         } else {
           // Step 6: Show error if the selected time is in the past
           appSnackBar(
@@ -314,134 +300,58 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
     );
   }
 
-  Widget _futureAspectBuild(Map<String, dynamic> formattedDate) {
-    return SizedBox(
-      height: 180,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _dateAndTimeBuilder(formattedDate),
-          _privacyBuilder(),
-        ],
-      ),
-    );
-  }
-
-  Widget _dateAndTimeBuilder(Map<String, dynamic> formattedDate) {
+  Widget _buildTextField() {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "Set Future date",
-          style: TextStyle(
-              fontWeight: FontWeight.w500, color: AppColors.kPrimaryTextColor),
+        const Text(
+          " Title",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        const Spacer(),
-        InkWell(
-          onTap: () => _selectDateTime(context),
-          child: Container(
-            height: 150,
-            width: 150,
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
-            decoration: const BoxDecoration(
-                shape: BoxShape.circle, color: Colors.red // Darker shade
-                ),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                          text:
-                              '${formattedDate['hour12']}:${formattedDate['min']}', // Main time
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.kWhiteColor,
-                          ),
-                        ),
-                        TextSpan(
-                          text: ' ${formattedDate['period']}', // Small AM/PM
-                          style: TextStyle(
-                            fontSize: 14, // Smaller font size
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.kWhiteColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${formattedDate['date']} ${formattedDate['month']} ${formattedDate['year']}, \n ${formattedDate['weekDay']}',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.kWhiteColor,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
+        TextFormField(
+          maxLength: 20,
+          controller: titleController,
+          decoration: InputDecoration(
+            hintText: "Capsule title",
+            hintStyle: TextStyle(color: AppColors.kLightGreyColor),
+            border: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(12)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide:
+                  BorderSide(color: AppColors.kWarmCoralColor, width: 2.0),
+              borderRadius: const BorderRadius.all(Radius.circular(12)),
             ),
           ),
-        )
+        ),
       ],
     );
   }
 
-  Widget _privacyBuilder() {
+  Widget _buildDescriptionField() {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "Is Capsule private?",
-          style: TextStyle(
-              fontWeight: FontWeight.w500, color: AppColors.kPrimaryTextColor),
+        const Text(
+          " Description",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(
-          height: 5,
-        ),
-        GestureDetector(
-          onTap: () {
-            setState(() {
-              isCapsuleToggled = !isCapsuleToggled;
-            });
-          },
-          child: AnimatedToggle(
-            isToggled: isCapsuleToggled,
-            onIcon: Icons.lock,
-            offIcon: Icons.lock_open,
+        TextFormField(
+          maxLines: 2,
+          controller: descriptionController,
+          decoration: InputDecoration(
+            hintText: "Decribe capsule",
+            hintStyle: TextStyle(color: AppColors.kLightGreyColor),
+            border: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(12)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide:
+                  BorderSide(color: AppColors.kWarmCoralColor, width: 2.0),
+              borderRadius: const BorderRadius.all(Radius.circular(12)),
+            ),
           ),
-        ),
-        const Spacer(),
-        Text(
-          "Want Time private?",
-          style: TextStyle(
-              fontWeight: FontWeight.w500, color: AppColors.kPrimaryTextColor),
-        ),
-        const SizedBox(
-          height: 5,
-        ),
-        GestureDetector(
-          onTap: () {
-            setState(() {
-              isTimeToggled = !isTimeToggled;
-            });
-          },
-          child: AnimatedToggle(
-            isToggled: isTimeToggled,
-            onIcon: Icons.check,
-            offIcon: Icons.close,
-          ),
-        ),
+        )
       ],
     );
   }
@@ -499,7 +409,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
               icon: Container(
                 padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
-                    color: AppColors.kWarmCoralColor.withOpacity(0.8),
+                    color: AppColors.kWarmCoralColor06,
                     borderRadius: BorderRadius.circular(50)),
                 child: Icon(
                   isPlaying ? Icons.pause : Icons.play_arrow,
@@ -523,58 +433,124 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
     );
   }
 
-  Widget _buildTextField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _dateAndTimeBuilder() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        const Text(
-          " Title",
-          style: TextStyle(fontSize: 18),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Text(
+              "Revealing Your Capsule In",
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.kPrimaryTextColor),
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+            SlideCountdownSeparated(
+              duration: openDate,
+              slideDirection: SlideDirection.down,
+              separatorStyle:
+                  TextStyle(color: AppColors.kWarmCoralColor, fontSize: 20),
+              separatorType: SeparatorType.symbol,
+              separator: ':',
+              decoration: BoxDecoration(
+                color: AppColors.kWarmCoralColor,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              style: TextStyle(
+                color: AppColors.kWhiteColor,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+              showZeroValue: true,
+              slideAnimationCurve: Curves.bounceInOut,
+              onChanged: (w) {
+                // Vx.log(w);
+              },
+              onDone: () {
+                Vx.log("Completed");
+              },
+            ),
+          ],
         ),
-        TextFormField(
-          maxLength: 20,
-          controller: titleController,
-          decoration: InputDecoration(
-            hintText: "Capsule title",
-            hintStyle: TextStyle(color: AppColors.kLightGreyColor),
-            border: const OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
+        const Spacer(),
+        ConstrainedBox(
+          constraints: const BoxConstraints(
+              maxHeight: 55, minHeight: 45, minWidth: 80, maxWidth: 80),
+          child: AppButton(
+            child: Text(
+              "Set",
+              style: TextStyle(color: AppColors.kWhiteColor),
             ),
-            focusedBorder: OutlineInputBorder(
-              borderSide:
-                  BorderSide(color: AppColors.kWarmCoralColor, width: 2.0),
-              borderRadius: const BorderRadius.all(Radius.circular(12)),
-            ),
+            onPressed: () => _selectDateTime(context),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildDescriptionField() {
-    return Column(
+  Widget _privacyBuilder() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          " Description",
-          style: TextStyle(fontSize: 18),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              "Is Capsule private?",
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.kPrimaryTextColor),
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  isCapsuleToggled = !isCapsuleToggled;
+                });
+              },
+              child: AnimatedToggle(
+                isToggled: isCapsuleToggled,
+                onIcon: Icons.lock,
+                offIcon: Icons.lock_open,
+              ),
+            ),
+          ],
         ),
-        TextFormField(
-          maxLines: 2,
-          controller: descriptionController,
-          decoration: InputDecoration(
-            hintText: "Decribe capsule",
-            hintStyle: TextStyle(color: AppColors.kLightGreyColor),
-            border: const OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
+        const Spacer(),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Want Time private?",
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.kPrimaryTextColor),
             ),
-            focusedBorder: OutlineInputBorder(
-              borderSide:
-                  BorderSide(color: AppColors.kWarmCoralColor, width: 2.0),
-              borderRadius: const BorderRadius.all(Radius.circular(12)),
+            const SizedBox(
+              height: 8,
             ),
-          ),
-        )
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  isTimeToggled = !isTimeToggled;
+                });
+              },
+              child: AnimatedToggle(
+                isToggled: isTimeToggled,
+                onIcon: Icons.check,
+                offIcon: Icons.close,
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -605,7 +581,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
                   isTimePrivate: isTimeToggled,
                   isImageFile: isImageFile,
                   isVideoFile: isVideoFile,
-                  dateTime: dateAndTime,
+                  openDateTime: _selectedDate,
                   file: _fileBytes,
                 ),
               ),

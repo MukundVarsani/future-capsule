@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
 import 'package:future_capsule/screens/create_capsule/toggle.dart';
-import 'package:intl/intl.dart';
+import 'package:slide_countdown/slide_countdown.dart';
+import 'package:velocity_x/velocity_x.dart';
 
-class PreviewCapsule extends StatelessWidget {
- const PreviewCapsule({
+class PreviewCapsule extends StatefulWidget {
+  const PreviewCapsule({
     super.key,
     required this.capsuleName,
     required this.capsuleDescription,
@@ -14,7 +15,7 @@ class PreviewCapsule extends StatelessWidget {
     required this.isTimePrivate,
     required this.isImageFile,
     required this.isVideoFile,
-    required this.dateTime,
+    required this.openDateTime,
     required this.file,
   });
 
@@ -24,24 +25,25 @@ class PreviewCapsule extends StatelessWidget {
   final bool isTimePrivate;
   final bool isImageFile;
   final bool isVideoFile;
-  final DateTime dateTime;
+  final DateTime openDateTime;
   final Uint8List? file;
 
-  Map<String, String> _formatDateTime(DateTime dateTime) {
-    return {
-      'period': DateFormat('a').format(dateTime),
-      'month': DateFormat('MMMM').format(dateTime),
-      'weekDay': DateFormat('EEEE').format(dateTime),
-      'year': dateTime.year.toString(),
-      'min': dateTime.minute.toString().padLeft(2, "0"),
-      'hour12': (dateTime.hour % 12 == 0 ? 12 : dateTime.hour % 12).toString(),
-      'date': dateTime.day.toString(),
-    };
+  @override
+  State<PreviewCapsule> createState() => _PreviewCapsuleState();
+}
+
+class _PreviewCapsuleState extends State<PreviewCapsule> {
+  late Duration openDate;
+
+  @override
+  void initState() {
+    openDate = widget.openDateTime.difference(DateTime.now());
+    Vx.log(openDate);
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final formattedDate = _formatDateTime(dateTime);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -67,26 +69,15 @@ class PreviewCapsule extends StatelessWidget {
         child: ListView(
           children: [
             const SizedBox(height: 20),
-            _buildTitleField(capsuleName),
+            _buildTitleField(widget.capsuleName),
             const SizedBox(height: 10),
-            _buildFilePreview(file, isCapsulePrivate),
+            _buildFilePreview(widget.file, widget.isCapsulePrivate),
             const SizedBox(height: 10),
-            _buildDescriptionField(capsuleDescription),
+            _buildDescriptionField(widget.capsuleDescription),
             const SizedBox(height: 30),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: _buildDateTimePreview(formattedDate, isTimePrivate),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  flex: 2,
-                  child: _buildPrivacyToggles(),
-                ),
-              ],
-            ),
+            _buildDateTimePreview(),
+            const SizedBox(height: 24),
+            _privacyBuilder(),
             const SizedBox(height: 24),
             _buildActionButtons(context),
           ],
@@ -183,123 +174,90 @@ class PreviewCapsule extends StatelessWidget {
     );
   }
 
-  Widget _buildDateTimePreview(
-      Map<String, String> dateData, bool isTimePrivate) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
+  Widget _buildDateTimePreview() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        Text(
-          "Future Date",
-          style: TextStyle(
-              fontWeight: FontWeight.w500, color: AppColors.kPrimaryTextColor),
-        ),
-        const SizedBox(height: 5),
-        Stack(
+        Column(
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Container(
-              height: 150,
-              width: 150,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.red,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                          text: '${dateData['hour12']}:${dateData['min']}',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.kWhiteColor,
-                          ),
-                        ),
-                        TextSpan(
-                          text: ' ${dateData['period']}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.kWhiteColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${dateData['date']} ${dateData['month']} ${dateData['year']}, \n ${dateData['weekDay']}',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.kWhiteColor,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
+            Text(
+              "Revealing Your Capsule In",
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.kPrimaryTextColor),
             ),
-            if (isTimePrivate)
-              Container(
-                height: 150,
-                width: 150,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.kWarmCoralColor06,
-                ),
-                child: Icon(
-                  Icons.lock,
-                  size: 38,
-                  color: AppColors.kWhiteColor,
-                ),
+            const SizedBox(
+              height: 8,
+            ),
+            SlideCountdownSeparated(
+              duration: openDate,
+              slideDirection: SlideDirection.down,
+              separatorStyle:
+                  TextStyle(color: AppColors.kWarmCoralColor, fontSize: 20),
+              separatorType: SeparatorType.symbol,
+              separator: ':',
+              decoration: BoxDecoration(
+                color: AppColors.kWarmCoralColor,
+                borderRadius: BorderRadius.circular(8),
               ),
+              style: TextStyle(
+                color: AppColors.kWhiteColor,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+              showZeroValue: true,
+              slideAnimationCurve: Curves.bounceInOut,
+              onChanged: (w) {
+                // Vx.log(w);
+              },
+            ),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildPrivacyToggles() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
+  Widget _privacyBuilder() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              "Is Capsule Private?",
+              "Is Capsule private?",
               style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color: AppColors.kPrimaryTextColor,
-              ),
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.kPrimaryTextColor),
             ),
-            const SizedBox(height: 5),
+            const SizedBox(
+              height: 8,
+            ),
             AnimatedToggle(
-              isToggled: isCapsulePrivate,
+              isToggled: widget.isCapsulePrivate,
               onIcon: Icons.lock,
               offIcon: Icons.lock_open,
             ),
           ],
         ),
-        const SizedBox(
-          height: 24,
-        ),
+        const Spacer(),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Want Time Private?",
+              "Want Time private?",
               style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color: AppColors.kPrimaryTextColor,
-              ),
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.kPrimaryTextColor),
             ),
-            const SizedBox(height: 5),
+            const SizedBox(
+              height: 8,
+            ),
             AnimatedToggle(
-              isToggled: isTimePrivate,
+              isToggled: widget.isTimePrivate,
               onIcon: Icons.check,
               offIcon: Icons.close,
             ),
