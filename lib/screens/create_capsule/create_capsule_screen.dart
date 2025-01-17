@@ -32,7 +32,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
   TextEditingController descriptionController = TextEditingController();
 
   Uint8List? _fileBytes;
-  File? thumbnailFile;
+  XFile? file;
 
   late Duration openDate;
   DateTime _selectedDate = DateTime.now();
@@ -46,16 +46,16 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
   bool isOtherFile = false;
 
   Future<void> _selectVideo(BuildContext context) async {
-    final XFile? file = await _files.selectVideo();
+     file = await _files.selectVideo();
     if (file == null) return;
     Navigator.of(context).pop();
     setState(() {
       isMediaLoading = true;
     });
-    compressVideo(file.path);
+    compressVideo(file!.path);
 
-    thumbnailFile =
-        await CompressFile.getThumbnailfromVideo(filePath: file.path);
+    File? thumbnailFile =
+        await CompressFile.getThumbnailfromVideo(filePath: file!.path);
 
     _fileBytes = await thumbnailFile?.readAsBytes();
 
@@ -63,7 +63,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
     isVideoFile = true;
     isOtherFile = false;
     _controller?.dispose();
-    _controller = VideoPlayerController.file(File(file.path))
+    _controller = VideoPlayerController.file(File(file!.path))
       ..initialize().then((_) {});
     setState(() {
       isMediaLoading = false;
@@ -86,13 +86,13 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
   }
 
   Future<void> _selectImage(BuildContext context) async {
-    final XFile? file = await _files.selectImage();
+     file = await _files.selectImage();
     if (file == null) return;
     Navigator.of(context).pop();
     setState(() {
       isMediaLoading = true;
     });
-    _fileBytes = await file.readAsBytes();
+    _fileBytes = await file!.readAsBytes();
     // uploadImage(file);
     setState(() {
       isImageFile = true;
@@ -566,7 +566,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
               return;
             }
 
-            if (_fileBytes == null) {
+            if (_fileBytes == null && file == null) {
               appSnackBar(context: context, text: "Capsule file is required");
               return;
             }
@@ -582,7 +582,8 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
                   isImageFile: isImageFile,
                   isVideoFile: isVideoFile,
                   openDateTime: _selectedDate,
-                  file: _fileBytes,
+                  fileBytes: _fileBytes,
+                  xFile: file!,
                 ),
               ),
               withNavBar: false,

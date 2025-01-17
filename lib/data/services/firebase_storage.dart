@@ -9,9 +9,10 @@ class FirebaseStore {
   static final FirebaseStore _instance = FirebaseStore._internal();
   final FirebaseStorage _firebaseStorage = FirebaseStorage.instance;
   
-User? user = FirebaseAuthService.getCurrentUser();
+  
+  User? user = FirebaseAuthService.getCurrentUser();
 
-// Private constructor to prevent direct initialization
+  // Private constructor to prevent direct initialization
   FirebaseStore._internal();
 
   // Public getter for accessing the shared instance
@@ -39,12 +40,5 @@ User? user = FirebaseAuthService.getCurrentUser();
     }
   }
 
-  // Future getCloudImage() async {
-  //   try {
-  //     Reference ref = _firebaseStorage.ref("AllUsers");
-  //     ref.getDownloadURL();
-  //   } catch (e) {
-  //     return;
-  //   }
-  // }
+
 }

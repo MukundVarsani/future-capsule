@@ -1,8 +1,12 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
+import 'package:future_capsule/data/services/capsule_service.dart';
+import 'package:future_capsule/data/services/firebase_storage.dart';
 import 'package:future_capsule/screens/create_capsule/toggle.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:slide_countdown/slide_countdown.dart';
 import 'package:velocity_x/velocity_x.dart';
 
@@ -16,7 +20,8 @@ class PreviewCapsule extends StatefulWidget {
     required this.isImageFile,
     required this.isVideoFile,
     required this.openDateTime,
-    required this.file,
+    required this.fileBytes,
+    required this.xFile,
   });
 
   final String capsuleName;
@@ -26,7 +31,8 @@ class PreviewCapsule extends StatefulWidget {
   final bool isImageFile;
   final bool isVideoFile;
   final DateTime openDateTime;
-  final Uint8List? file;
+  final Uint8List? fileBytes;
+  final XFile xFile;
 
   @override
   State<PreviewCapsule> createState() => _PreviewCapsuleState();
@@ -34,12 +40,63 @@ class PreviewCapsule extends StatefulWidget {
 
 class _PreviewCapsuleState extends State<PreviewCapsule> {
   late Duration openDate;
+  late CapsuleService _capsuleService;
+  late FirebaseStore _firebaseStore;
 
   @override
   void initState() {
+    _capsuleService = CapsuleService();
+    _firebaseStore = FirebaseStore();
     openDate = widget.openDateTime.difference(DateTime.now());
-    Vx.log(openDate);
+
     super.initState();
+  }
+
+  Future<String?> uploadCapsuleFile() async {
+    File file = File(widget.xFile.path);
+    return await _firebaseStore.uploadImageToCloud(
+        fileName: "capsule_media", file: file);
+  }
+
+  String getExtensionType() {
+    String extension = widget.xFile.path.split('.').last.toLowerCase();
+
+    const Map<String, String> mimeTypes = {
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png',
+      'gif': 'image/gif',
+      'bmp': 'image/bmp',
+      'webp': 'image/webp',
+      'pdf': 'application/pdf',
+      'txt': 'text/plain',
+      'html': 'text/html',
+      'json': 'application/json',
+      'mp3': 'audio/mpeg',
+      'wav': 'audio/wav',
+      'mp4': 'video/mp4',
+      'avi': 'video/x-msvideo',
+      'mov': 'video/quicktime',
+      'zip': 'application/zip',
+      'rar': 'application/x-rar-compressed',
+    };
+    return mimeTypes[extension] ?? 'application/octet-stream';
+  }
+
+  void saveCapsule() async {
+    String? mediaURL = await uploadCapsuleFile();
+    String type = getExtensionType();
+
+    _capsuleService.createCapsule({
+      "title": widget.capsuleName,
+      "type": type,
+      "description": widget.capsuleDescription,
+      "mediaURL": mediaURL,
+      "openingDate": widget.openDateTime,
+      "isTimePrivate": widget.isTimePrivate,
+      "isCapsulePrivate": widget.isCapsulePrivate,
+    });
+ 
   }
 
   @override
@@ -71,7 +128,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
             const SizedBox(height: 20),
             _buildTitleField(widget.capsuleName),
             const SizedBox(height: 10),
-            _buildFilePreview(widget.file, widget.isCapsulePrivate),
+            _buildFilePreview(widget.fileBytes, widget.isCapsulePrivate),
             const SizedBox(height: 10),
             _buildDescriptionField(widget.capsuleDescription),
             const SizedBox(height: 30),
@@ -111,7 +168,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
     );
   }
 
-  Widget _buildFilePreview(Uint8List? file, bool isCapsulePrivate) {
+  Widget _buildFilePreview(Uint8List? fileBytes, bool isCapsulePrivate) {
     return Container(
       constraints: const BoxConstraints(maxHeight: 200),
       decoration: BoxDecoration(
@@ -121,9 +178,9 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
       child: Stack(
         alignment: AlignmentDirectional.center,
         children: [
-          if (file != null)
+          if (fileBytes != null)
             Image.memory(
-              file,
+              fileBytes,
               height: 200,
               filterQuality: FilterQuality.high,
               fit: BoxFit.fill,
@@ -250,8 +307,9 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
             Text(
               "Want Time private?",
               style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.kPrimaryTextColor),
+                fontWeight: FontWeight.bold,
+                color: AppColors.kPrimaryTextColor,
+              ),
             ),
             const SizedBox(
               height: 8,
@@ -293,7 +351,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
           constraints: const BoxConstraints(
               maxWidth: 150, minWidth: 70, maxHeight: 55, minHeight: 50),
           child: AppButton(
-            onPressed: () {},
+            onPressed: saveCapsule,
             radius: 24,
             child: Center(
               child: Text(
