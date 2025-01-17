@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:future_capsule/config/firebase_auth_service.dart';
@@ -8,11 +10,29 @@ import 'package:velocity_x/velocity_x.dart';
 class UserService {
   static final UserService _instance = UserService._internal();
 
+
   UserService._internal();
 
   factory UserService() => _instance;
 
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
+
+  String? _currentUserId;
+
+ // Getter for the current user ID
+  String? get userId {
+    if (_currentUserId != null) {
+      return _currentUserId;
+    }
+    User? user = FirebaseAuthService.getCurrentUser();
+    _currentUserId = user?.uid;
+    return _currentUserId;
+  }
+
+  // Setter for the current user ID
+  set userId(String? id) => _currentUserId = id;
+  
+
 
   void createNewUser(Map<String, dynamic> newUser) async {
     User? user = FirebaseAuthService.getCurrentUser();
@@ -71,6 +91,24 @@ class UserService {
     }
   }
 
+  Stream<UserModel?> getUserStream(String userId) {
+    return _firebaseFirestore
+        .collection("AllUsers")
+        .doc(userId)
+        .snapshots()
+        .map((snapshot) {
+      if (snapshot.exists) {
+        if (snapshot.data() != null) {
+          return UserModel.fromJson(
+              snapshot.data()!); // Return the user data as a map
+        }
+      } else {
+        return null; // Return null if the document doesn't exist
+      }
+      return null;
+    });
+  }
+
   Future<UserModel?> getUserData() async {
     try {
       User? user = FirebaseAuthService.getCurrentUser();
@@ -81,7 +119,6 @@ class UserService {
           .doc(user.uid)
           .get();
       if (doc.exists) {
-       
         return UserModel.fromJson(doc.data() as Map<String, dynamic>);
       } else {
         Vx.log("User not found with document ID");
@@ -92,4 +129,5 @@ class UserService {
       return null;
     }
   }
+
 }
