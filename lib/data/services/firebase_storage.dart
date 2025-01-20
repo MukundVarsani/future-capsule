@@ -25,7 +25,7 @@ class FirebaseStore {
     try {
       if (user == null) return null;
 
-      Reference ref = _firebaseStorage.ref().child(fileName).child(user!.uid);
+      Reference ref = _firebaseStorage.ref("Future_capsule").child(fileName).child(user!.uid);
 
       // Upload the file data
       final TaskSnapshot snapshot = await ref.putFile(file);

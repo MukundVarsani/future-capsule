@@ -27,6 +27,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late final SelectFiles _selectFiles;
   late final UserService _userService;
   
+  
   void _selectProfileImage() async {
     XFile? xFile =
         await _selectFiles.selectImage(imageSource: ImageSource.gallery);
@@ -77,12 +78,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print(_currentUserId);
     return Scaffold(
         backgroundColor: AppColors.kScreenBackgroundColor,
         body: (_currentUserId != null)
             ? StreamBuilder<UserModel?>(
                 stream:
-                    _userService.getUserStream('Rar6aTn0MXciVViKcURIfwn0utu1'),
+                    _userService.getUserStream(_currentUserId),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());

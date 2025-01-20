@@ -3,12 +3,12 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
+import 'package:future_capsule/core/widgets/snack_bar.dart';
 import 'package:future_capsule/data/services/capsule_service.dart';
 import 'package:future_capsule/data/services/firebase_storage.dart';
 import 'package:future_capsule/screens/create_capsule/toggle.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:slide_countdown/slide_countdown.dart';
-import 'package:velocity_x/velocity_x.dart';
 
 class PreviewCapsule extends StatefulWidget {
   const PreviewCapsule({
@@ -42,6 +42,8 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
   late Duration openDate;
   late CapsuleService _capsuleService;
   late FirebaseStore _firebaseStore;
+
+  bool isCapsuleLoading = false;
 
   @override
   void initState() {
@@ -84,6 +86,10 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
   }
 
   void saveCapsule() async {
+    setState(() {
+      isCapsuleLoading = true;
+    });
+
     String? mediaURL = await uploadCapsuleFile();
     String type = getExtensionType();
 
@@ -96,7 +102,14 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
       "isTimePrivate": widget.isTimePrivate,
       "isCapsulePrivate": widget.isCapsulePrivate,
     });
- 
+
+    appSnackBar(context: context, text: "Future Capsule has been created");
+
+    setState(() {
+      isCapsuleLoading = false;
+    });
+
+    Navigator.of(context).pop();
   }
 
   @override
@@ -354,14 +367,18 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
             onPressed: saveCapsule,
             radius: 24,
             child: Center(
-              child: Text(
-                "Save",
-                style: TextStyle(
-                  color: AppColors.kWhiteColor,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              child: isCapsuleLoading
+                  ? CircularProgressIndicator.adaptive(
+                      valueColor: AlwaysStoppedAnimation(AppColors.kWhiteColor),
+                    )
+                  : Text(
+                      "Save",
+                      style: TextStyle(
+                        color: AppColors.kWhiteColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
             ),
           ),
         ),

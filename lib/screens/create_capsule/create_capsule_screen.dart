@@ -46,28 +46,31 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
   bool isOtherFile = false;
 
   Future<void> _selectVideo(BuildContext context) async {
-     file = await _files.selectVideo();
+    file = await _files.selectVideo();
     if (file == null) return;
     Navigator.of(context).pop();
-    setState(() {
-      isMediaLoading = true;
-    });
-    compressVideo(file!.path);
 
     File? thumbnailFile =
         await CompressFile.getThumbnailfromVideo(filePath: file!.path);
 
     _fileBytes = await thumbnailFile?.readAsBytes();
+    setState(() {
+      isMediaLoading = true;
+    });
 
     isImageFile = false;
     isVideoFile = true;
     isOtherFile = false;
+
     _controller?.dispose();
     _controller = VideoPlayerController.file(File(file!.path))
       ..initialize().then((_) {});
+    
+    await compressVideo(file!.path);
     setState(() {
       isMediaLoading = false;
     });
+    
   }
 
   Future<void> compressVideo(String path) async {
@@ -78,6 +81,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
     );
     if (compressedVideo != null) {
       // Retrieve the size of the compressed video
+      file = XFile(compressedVideo.file!.path);
       final int sizeInBytes = compressedVideo.filesize!;
       final String formattedSize = _formatBytes(sizeInBytes);
 
@@ -86,7 +90,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
   }
 
   Future<void> _selectImage(BuildContext context) async {
-     file = await _files.selectImage();
+    file = await _files.selectImage();
     if (file == null) return;
     Navigator.of(context).pop();
     setState(() {
@@ -378,7 +382,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
         ),
       );
     }
-
+  
     if (isVideoFile &&
         _controller != null &&
         _controller!.value.isInitialized) {
@@ -566,7 +570,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
               return;
             }
 
-            if (_fileBytes == null && file == null) {
+            if (_fileBytes == null && file == null ) {
               appSnackBar(context: context, text: "Capsule file is required");
               return;
             }

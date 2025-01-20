@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:velocity_x/velocity_x.dart';
 
 
 class FirebaseAuthService {
@@ -41,6 +42,7 @@ class FirebaseAuthService {
         throw FirebaseAuthException(
             code: "401", message: "Email already registered");
       } else {
+          Vx.log(e);
         throw FirebaseAuthException(
             code: "404", message: "Internal Server Error");
       }

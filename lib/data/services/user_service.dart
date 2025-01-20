@@ -21,9 +21,7 @@ class UserService {
 
  // Getter for the current user ID
   String? get userId {
-    if (_currentUserId != null) {
-      return _currentUserId;
-    }
+  
     User? user = FirebaseAuthService.getCurrentUser();
     _currentUserId = user?.uid;
     return _currentUserId;
@@ -57,7 +55,7 @@ class UserService {
 
     try {
       await _firebaseFirestore
-          .collection("AllUsers")
+          .collection("Future_Capsule_Users")
           .doc(user.uid)
           .set(userData.toJson());
     } catch (e) {
@@ -74,7 +72,7 @@ class UserService {
 
     try {
       await _firebaseFirestore
-          .collection("AllUsers")
+          .collection("Future_Capsule_Users")
           .doc(user.uid)
           .update(updatedData)
           .then((value) => Vx.log("User data updated successfully."));
@@ -93,7 +91,7 @@ class UserService {
 
   Stream<UserModel?> getUserStream(String userId) {
     return _firebaseFirestore
-        .collection("AllUsers")
+        .collection("Future_Capsule_Users")
         .doc(userId)
         .snapshots()
         .map((snapshot) {
@@ -115,7 +113,7 @@ class UserService {
       if (user == null) return null;
 
       DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection('AllUsers')
+          .collection('Future_Capsule_Users')
           .doc(user.uid)
           .get();
       if (doc.exists) {
