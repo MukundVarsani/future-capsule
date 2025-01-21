@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/screens/create_capsule/create_capsule_screen.dart';
 import 'package:future_capsule/screens/home/home_screen.dart';
+import 'package:future_capsule/screens/my_capsules/my_capusles_screen.dart';
 import 'package:future_capsule/screens/profile/profile_screen.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
@@ -55,9 +56,9 @@ class _BottomBarState extends State<BottomBar> {
   List<Widget> _buildScreens() {
     return const [
       HomeScreen(),
-        Text("My Capsule"),
-      CreateCapsuleScreen(),
       Text("My Capsule"),
+      CreateCapsuleScreen(),
+      MyCapuslesScreen(),
       ProfileScreen(),
 
     ];

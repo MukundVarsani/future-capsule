@@ -35,12 +35,7 @@ class CapsuleService {
         ),
       ],
       openingDate: capsuleData['openingDate'],
-      recipients: [
-        Recipient(
-          recipientId: "1234",
-          status: "pending",
-        )
-      ],
+      recipients: [],
       privacy: Privacy(
         isTimePrivate: capsuleData['isTimePrivate'],
         isCapsulePrivate: capsuleData['isCapsulePrivate'],
@@ -58,6 +53,26 @@ class CapsuleService {
           .set(capsuleModel.toJson());
     } catch (e) {
       Vx.log("Error while creating capsule: $e");
+    }
+  }
+
+  Future<List<CapsuleModel>> getUserCreateCapsule(String userId) async {
+    try {
+      CollectionReference reference =
+          _firebaseFirestore.collection("Users_Capsules");
+
+      final querySnapshot =
+          await reference.where('creatorId', isEqualTo: userId).get();
+
+      List<CapsuleModel> usersCapsules = querySnapshot.docs.map((doc) {
+        return CapsuleModel.fromJson(doc.data() as Map<String, dynamic>);
+      }).toList();
+
+      return usersCapsules;
+
+    } catch (e) {
+      Vx.log("Error while getting User Created capsule: $e");
+      throw "Error while getting User Created capsule: $e ";
     }
   }
 }

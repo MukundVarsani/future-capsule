@@ -12,6 +12,7 @@ class CapsuleModel {
   final DateTime createdAt;
   final DateTime updatedAt;
   final String status;
+  final int likes;
 
   CapsuleModel({
     required this.capsuleId,
@@ -25,6 +26,7 @@ class CapsuleModel {
     required this.createdAt,
     required this.updatedAt,
     required this.status,
+    this.likes = 0
   });
 
   factory CapsuleModel.fromJson(Map<String, dynamic> json) {
@@ -44,6 +46,7 @@ class CapsuleModel {
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
       status: json['status'],
+      likes : json['likes'],
     );
   }
 
@@ -60,6 +63,7 @@ class CapsuleModel {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': createdAt.toIso8601String(),
       'status': status,
+      "likes" :likes,
     };
   }
 }

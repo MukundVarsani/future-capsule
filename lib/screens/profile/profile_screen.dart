@@ -26,8 +26,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late final FirebaseStore _firebaseStore;
   late final SelectFiles _selectFiles;
   late final UserService _userService;
-  
-  
+
+
   void _selectProfileImage() async {
     XFile? xFile =
         await _selectFiles.selectImage(imageSource: ImageSource.gallery);
@@ -43,8 +43,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _updateProfileImage(BuildContext context) async {
     try {
       if (_selectedFile == null) return;
-      
-      
+
+
       _showImageUploadingDialog();
 
       String? downloadUrl = await _firebaseStore.uploadImageToCloud(
@@ -52,7 +52,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if (downloadUrl != null) {
         await _updateUserData({"profilePicture": downloadUrl});
-       
+
         appSnackBar(context: context, text: "Profile image updated");
       } else {
         throw Exception("Error uploading image");
@@ -60,10 +60,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } catch (e) {
       Vx.log("Error while updating profile image : ================== $e");
     } finally {
-     if (Navigator.canPop(context)) {
-      Navigator.of(context).pop();
-      Navigator.of(context).pop();
-    }
+      if (Navigator.canPop(context)) {
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+      }
     }
   }
 
@@ -78,13 +78,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(_currentUserId);
+    
     return Scaffold(
         backgroundColor: AppColors.kScreenBackgroundColor,
         body: (_currentUserId != null)
             ? StreamBuilder<UserModel?>(
-                stream:
-                    _userService.getUserStream(_currentUserId),
+                stream: 
+                _userService.getUserStream(_currentUserId),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());

@@ -5,4 +5,5 @@ class AppImages {
   static const profile = 'assets/images/profile.png';
   static const yas = 'assets/images/yas.jpeg';
   static const openCapsule = 'assets/images/open_capsule.png';
+  static const capsules = 'assets/images/capsule.png';
 }
