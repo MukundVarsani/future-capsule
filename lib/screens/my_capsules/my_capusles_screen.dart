@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
 import 'package:future_capsule/data/models/capsule_model.dart';
-import 'package:future_capsule/data/models/user_model.dart';
 import 'package:future_capsule/data/services/capsule_service.dart';
 import 'package:future_capsule/data/services/user_service.dart';
 
@@ -20,6 +19,7 @@ class MyCapuslesScreen extends StatefulWidget {
 class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
   late CapsuleService _capsuleService;
   late UserService _userService;
+  late final String userId;
   List<CapsuleModel> _userCapsules = [];
   List<CapsuleModel> _filterCapsules = [];
 
@@ -27,14 +27,15 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
   void initState() {
     _userService = UserService();
     _capsuleService = CapsuleService();
-    getUserCapsules(_userService.userId ?? '');
+    userId = _userService.userId ?? "NA";
+    getUserCapsules(userId);
     super.initState();
   }
 
   void getUserCapsules(String userId) async {
     _userCapsules = await _capsuleService.getUserCreateCapsule(userId);
-    setState(() {});
     _filterCapsules = _userCapsules;
+    if (mounted) setState(() {});
   }
 
   void showFilterDialog() {
@@ -67,7 +68,6 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     Text(
                       "Sort by : ",
@@ -78,7 +78,7 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
                       ),
                     ),
                     const SizedBox(
-                      height: 20,
+                      height: 16,
                     ),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -199,23 +199,27 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
             ),
           ],
         ),
-        body: ListView.builder(
-            itemCount: _filterCapsules.length,
-            itemBuilder: (context, index) {
-              CapsuleModel capsule = _filterCapsules[index];
-              DateTime createdtime = capsule.createdAt;
-              DateTime openTime = capsule.openingDate;
-              String formattedDate =
-                  DateFormat('dd-MMM-yy HH:mm:ss').format(openTime);
+        body: RefreshIndicator.adaptive(
+          color: AppColors.kWarmCoralColor,
+          onRefresh: () async => getUserCapsules(userId),
+          child: ListView.builder(
+              itemCount: _filterCapsules.length,
+              itemBuilder: (context, index) {
+                CapsuleModel capsule = _filterCapsules[index];
+                DateTime createdtime = capsule.createdAt;
+                DateTime openTime = capsule.openingDate;
+                String formattedDate =
+                    DateFormat('dd-MMM-yy, HH:mm:ss').format(openTime);
 
-              return CapsuleTile(
-                capsuleTitle: capsule.title,
-                imgURL: "de",
-                createDate: createdtime.timeAgo(),
-                isCapsulePrivate: capsule.privacy.isCapsulePrivate,
-                isTimePrivate: capsule.privacy.isTimePrivate,
-                openDate: formattedDate,
-              );
-            }));
+                return CapsuleTile(
+                  capsuleTitle: capsule.title,
+                  imgURL: (capsule.media[0].type.contains('image'))?  capsule.media[0].url : '',
+                  createDate: createdtime.timeAgo(),
+                  isCapsulePrivate: capsule.privacy.isCapsulePrivate,
+                  isTimePrivate: capsule.privacy.isTimePrivate,
+                  openDate: formattedDate,
+                );
+              }),
+        ));
   }
 }

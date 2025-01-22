@@ -4,12 +4,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/config/firebase_auth_service.dart';
+import 'package:uuid/uuid.dart';
 
 class FirebaseStore {
   static final FirebaseStore _instance = FirebaseStore._internal();
   final FirebaseStorage _firebaseStorage = FirebaseStorage.instance;
-  
-  
+  final Uuid uuid = const Uuid();
   User? user = FirebaseAuthService.getCurrentUser();
 
   // Private constructor to prevent direct initialization
@@ -21,11 +21,21 @@ class FirebaseStore {
   }
 
   Future<String?> uploadImageToCloud(
-      {required String fileName, required File file}) async {
+      {required String fileName,
+      required File file,
+      bool isProfile = true}) async {
     try {
       if (user == null) return null;
 
-      Reference ref = _firebaseStorage.ref("Future_capsule").child(fileName).child(user!.uid);
+      Reference ref = _firebaseStorage
+          .ref("Future_capsule")
+          .child(fileName)
+          .child(user!.uid);
+
+      if (!isProfile) {
+        String uid = uuid.v4();
+        ref = ref.child(uid);
+      }
 
       // Upload the file data
       final TaskSnapshot snapshot = await ref.putFile(file);
@@ -39,6 +49,4 @@ class FirebaseStore {
       return null;
     }
   }
-
-
 }

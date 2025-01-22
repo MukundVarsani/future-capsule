@@ -57,7 +57,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
   Future<String?> uploadCapsuleFile() async {
     File file = File(widget.xFile.path);
     return await _firebaseStore.uploadImageToCloud(
-        fileName: "capsule_media", file: file);
+        fileName: "capsule_media", file: file,isProfile: false);
   }
 
   String getExtensionType() {
@@ -109,7 +109,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
       isCapsuleLoading = false;
     });
 
-    Navigator.of(context).pop();
+    Navigator.of(context).pop("result");
   }
 
   @override

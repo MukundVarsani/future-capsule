@@ -65,19 +65,20 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
     _controller?.dispose();
     _controller = VideoPlayerController.file(File(file!.path))
       ..initialize().then((_) {});
-    
+
     await compressVideo(file!.path);
     setState(() {
       isMediaLoading = false;
     });
-    
+     FocusManager.instance.primaryFocus?.unfocus();
   }
 
   Future<void> compressVideo(String path) async {
     final MediaInfo? compressedVideo = await VideoCompress.compressVideo(
       path,
       quality: VideoQuality.MediumQuality,
-      deleteOrigin: false, // Keep the original file
+      deleteOrigin: false,
+      // Keep the original file
     );
     if (compressedVideo != null) {
       // Retrieve the size of the compressed video
@@ -104,6 +105,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
       isOtherFile = false;
       isMediaLoading = false;
     });
+    FocusManager.instance.primaryFocus?.unfocus();
   }
 
   String _formatBytes(int bytes, [int decimalPlaces = 2]) {
@@ -176,11 +178,28 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
             const SizedBox(height: 20),
             _privacyBuilder(),
             const SizedBox(height: 20),
-            _previewButton()
+            _previewButton(),
+            const SizedBox(height: 10),
           ],
         ),
       ),
     );
+  }
+
+  void _resetData() {
+    titleController.clear();
+    descriptionController.clear();
+    _fileBytes = null;
+    _controller?.dispose();
+    _controller = null;
+    isCapsuleToggled = true;
+    isTimeToggled = true;
+    isMediaLoading = false;
+    isImageFile = false;
+    isVideoFile = false;
+    isOtherFile = false;
+    openDate = const Duration(hours: 1);
+    _selectedDate = DateTime.now();
   }
 
   Future<void> _selectDateTime(BuildContext context) async {
@@ -220,6 +239,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
           // Allow selecting up to one year ahead
         });
 
+FocusManager.instance.primaryFocus?.unfocus();
     if (pickedDate != null) {
       // Step 3: Show time picker after selecting the date
       final TimeOfDay? pickedTime = await showTimePicker(
@@ -227,7 +247,6 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
         initialTime: TimeOfDay(
             hour: now.hour, minute: now.minute), // Set current time as default
       );
-
       if (pickedTime != null) {
         // Step 4: Combine selected date and time
 
@@ -382,7 +401,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
         ),
       );
     }
-  
+
     if (isVideoFile &&
         _controller != null &&
         _controller!.value.isInitialized) {
@@ -564,18 +583,18 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
       width: double.infinity,
       height: 50,
       child: AppButton(
-          onPressed: () {
+          onPressed: () async {
             if (titleController.text.isEmpty) {
               appSnackBar(context: context, text: "Capsule title is required");
               return;
             }
 
-            if (_fileBytes == null && file == null ) {
+            if (_fileBytes == null && file == null) {
               appSnackBar(context: context, text: "Capsule file is required");
               return;
             }
 
-            PersistentNavBarNavigator.pushDynamicScreen(
+            var result = await PersistentNavBarNavigator.pushDynamicScreen(
               context,
               screen: MaterialPageRoute(
                 builder: (context) => PreviewCapsule(
@@ -592,6 +611,12 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
               ),
               withNavBar: false,
             );
+
+            if (result != null) {
+              _resetData();
+            }
+             FocusManager.instance.primaryFocus?.unfocus();
+            if (mounted) setState(() {});
           },
           radius: 24,
           child: Text(

@@ -9,7 +9,8 @@ class CapsuleTile extends StatelessWidget {
       required this.openDate,
       required this.isCapsulePrivate,
       required this.isTimePrivate,
-      required this.createDate, required this.imgURL});
+      required this.createDate,
+      required this.imgURL});
 
   final String capsuleTitle;
   final String openDate;
@@ -39,10 +40,16 @@ class CapsuleTile extends StatelessWidget {
                 )),
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Image.asset(
-                AppImages.profile,
-                height: 80,
-              )
+              (imgURL.isEmpty)
+                  ? Image.asset(
+                      AppImages.profile,
+                      height: 80,
+                    )
+                  : Image.network(
+                      imgURL,
+                      height: 80,
+                      width: 80,
+                    ),
             ]),
           ),
           Expanded(
@@ -52,10 +59,10 @@ class CapsuleTile extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                     Text(
+                    Text(
                       capsuleTitle,
-                      style:
-                          const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.w600),
                     ),
                     Text.rich(TextSpan(
                         text: "Open on: ",
@@ -64,7 +71,7 @@ class CapsuleTile extends StatelessWidget {
                         children: [
                           TextSpan(
                               text: openDate,
-                              style:const TextStyle(
+                              style: const TextStyle(
                                   fontWeight: FontWeight.w400, fontSize: 14))
                         ])),
                     Row(
@@ -93,7 +100,7 @@ class CapsuleTile extends StatelessWidget {
                         ),
                       ],
                     ),
-                     Row(
+                    Row(
                       mainAxisAlignment:
                           MainAxisAlignment.end, // Align to the right
                       children: [
