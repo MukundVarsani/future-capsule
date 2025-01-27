@@ -1,147 +1,69 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:future_capsule/config/firebase_auth_service.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
-import 'package:future_capsule/core/widgets/snack_bar.dart';
-import 'package:future_capsule/data/services/capsule_service.dart';
-import 'package:future_capsule/data/services/firebase_storage.dart';
 import 'package:future_capsule/screens/create_capsule/toggle.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:slide_countdown/slide_countdown.dart';
-import 'package:uuid/uuid.dart';
-import 'package:velocity_x/velocity_x.dart';
+import 'package:video_player/video_player.dart';
 
+class MyCapsulesPreview extends StatefulWidget {
+  const MyCapsulesPreview(
+      {super.key,
+      required this.capsuleTitle,
+      required this.capsuleDescription,
+      required this.openDateTime,
+      required this.isTimePrivate,
+      required this.isCapsulePrivate,
+      required this.mediaURL, required this.isVideoFile
+      });
 
-class PreviewCapsule extends StatefulWidget {
-  const PreviewCapsule({
-    super.key,
-    required this.capsuleName,
-    required this.capsuleDescription,
-    required this.isCapsulePrivate,
-    required this.isTimePrivate,
-    required this.isImageFile,
-    required this.isVideoFile,
-    required this.openDateTime,
-    required this.file,
-    required this.xFile,
-  });
-
-  final String capsuleName;
+  final String capsuleTitle;
   final String capsuleDescription;
-  final bool isCapsulePrivate;
-  final bool isTimePrivate;
-  final bool isImageFile;
-  final bool isVideoFile;
+  final String mediaURL;
   final DateTime openDateTime;
-  final File? file;
-  final XFile xFile;
+  final bool isTimePrivate;
+  final bool isCapsulePrivate;
+  final bool isVideoFile;
 
   @override
-  State<PreviewCapsule> createState() => _PreviewCapsuleState();
+  State<MyCapsulesPreview> createState() => _MyCapsulesPreviewState();
 }
 
-class _PreviewCapsuleState extends State<PreviewCapsule> {
+class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
   late Duration openDate;
-  late CapsuleService _capsuleService;
-  late FirebaseStore _firebaseStore;
-  String uid = const Uuid().v4();
+  VideoPlayerController? _controller;
   bool isCapsuleLoading = false;
 
   @override
   void initState() {
-    _capsuleService = CapsuleService();
-    _firebaseStore = FirebaseStore();
     openDate = widget.openDateTime.difference(DateTime.now());
-
+    if(widget.isVideoFile) _videoInitialize();
     super.initState();
   }
 
-  Future<String?> uploadCapsuleFile() async {
-    File mediaFile = File(widget.xFile.path);
-
-    return await _firebaseStore.uploadImageToCloud(
-      filePath: "capsule_media",
-      file: mediaFile,
-      mediaId: uid,
-      isProfile: false,
-      fileName: "$uid-data",
-    );
-  }
-
-  Future<String?> uploadThumbNailImage() async {
-    if (widget.file == null) return null;
-    return await _firebaseStore.uploadImageToCloud(
-        filePath: "capsule_media",
-        file: widget.file!,
-        isProfile: false,
-        mediaId: uid,
-        fileName: "thumbnail");
-  }
-
-  String getExtensionType() {
-    String extension = widget.xFile.path.split('.').last.toLowerCase();
-
-    const Map<String, String> mimeTypes = {
-      'jpg': 'image/jpeg',
-      'jpeg': 'image/jpeg',
-      'png': 'image/png',
-      'gif': 'image/gif',
-      'bmp': 'image/bmp',
-      'webp': 'image/webp',
-      'pdf': 'application/pdf',
-      'txt': 'text/plain',
-      'html': 'text/html',
-      'json': 'application/json',
-      'mp3': 'audio/mpeg',
-      'wav': 'audio/wav',
-      'mp4': 'video/mp4',
-      'avi': 'video/x-msvideo',
-      'mov': 'video/quicktime',
-      'zip': 'application/zip',
-      'rar': 'application/x-rar-compressed',
-    };
-    return mimeTypes[extension] ?? 'application/octet-stream';
-  }
-
-  void saveCapsule() async {
-    setState(() {
-      isCapsuleLoading = true;
-    });
-    String? mediaURL;
-    String? thumbnailUrl;
-
-    if (widget.isVideoFile) {
-      thumbnailUrl = await uploadThumbNailImage();
-      mediaURL = await uploadCapsuleFile();
-    } else {
-      mediaURL = await uploadCapsuleFile();
+  void _videoInitialize() {
+    if (_controller != null) {
+      _controller!.dispose(); // Dispose of the old controller if any
     }
-    String type = getExtensionType();
 
-    _capsuleService.createCapsule({
-      "title": widget.capsuleName,
-      "type": type,
-      "description": widget.capsuleDescription,
-      "mediaURL": mediaURL,
-      "thumbnail": thumbnailUrl,
-      "openingDate": widget.openDateTime,
-      "isTimePrivate": widget.isTimePrivate,
-      "isCapsulePrivate": widget.isCapsulePrivate,
-    });
-
-    appSnackBar(context: context, text: "Future Capsule has been created");
-
-    setState(() {
-      isCapsuleLoading = false;
-    });
-
-    Navigator.of(context).pop("result");
+    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.mediaURL))
+      ..initialize().then((_) {
+        setState(() {});
+      })
+      .catchError((error) {
+        debugPrint("Error initializing video: $error");
+      });
   }
 
   @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  void deleteCapsule() async {}
+
+  @override
   Widget build(BuildContext context) {
-   
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -167,9 +89,9 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
         child: ListView(
           children: [
             const SizedBox(height: 20),
-            _buildTitleField(widget.capsuleName),
+            _buildTitleField(widget.capsuleTitle),
             const SizedBox(height: 10),
-            _buildFilePreview(widget.file, widget.isCapsulePrivate),
+            _buildFilePreview(widget.mediaURL, widget.isCapsulePrivate),
             const SizedBox(height: 10),
             _buildDescriptionField(widget.capsuleDescription),
             const SizedBox(height: 30),
@@ -209,7 +131,51 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
     );
   }
 
-  Widget _buildFilePreview(File? fileBytes, bool isCapsulePrivate) {
+  Widget _buildFilePreview(String capsuleURL, bool isCapsulePrivate) {
+    if (widget.isVideoFile && _controller != null && _controller!.value.isInitialized) {
+      bool isPlaying = _controller!.value.isPlaying;
+
+      return Stack(
+        alignment: AlignmentDirectional.center,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: AspectRatio(
+              aspectRatio: _controller!.value.aspectRatio,
+              child: VideoPlayer(_controller!),
+            ),
+          ),
+          Center(
+            child: IconButton(
+              onPressed: () {
+                if (_controller == null) return;
+                setState(() {
+                  if (isPlaying) {
+                    _controller!.pause();
+                  } else {
+                    _controller!.play();
+                  }
+                });
+              },
+              icon: Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                    color: AppColors.kWarmCoralColor06,
+                    borderRadius: BorderRadius.circular(50)),
+                child: Icon(
+                  isPlaying ? Icons.pause : Icons.play_arrow,
+                  size: 40,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+  if(!widget.isVideoFile){
+    
     return Container(
       constraints: const BoxConstraints(maxHeight: 200),
       decoration: BoxDecoration(
@@ -219,9 +185,9 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
       child: Stack(
         alignment: AlignmentDirectional.center,
         children: [
-          if (fileBytes != null)
-            Image.file(
-              fileBytes,
+          if (capsuleURL.isNotEmpty)
+            Image.network(
+              capsuleURL,
               height: 200,
               filterQuality: FilterQuality.high,
               fit: BoxFit.fill,
@@ -241,6 +207,15 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
               ),
             ),
         ],
+      ),
+    );
+
+  }
+    return Center(
+      child: CircularProgressIndicator.adaptive(
+        valueColor: const AlwaysStoppedAnimation<Color>(
+            Colors.grey), // Buffered portion color
+        backgroundColor: AppColors.kWarmCoralColor, // Background color
       ),
     );
   }
@@ -392,7 +367,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
           constraints: const BoxConstraints(
               maxWidth: 150, minWidth: 70, maxHeight: 55, minHeight: 50),
           child: AppButton(
-            onPressed: saveCapsule,
+            onPressed: deleteCapsule,
             radius: 24,
             child: Center(
               child: isCapsuleLoading
@@ -400,7 +375,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
                       valueColor: AlwaysStoppedAnimation(AppColors.kWhiteColor),
                     )
                   : Text(
-                      "Save",
+                      "Delete",
                       style: TextStyle(
                         color: AppColors.kWhiteColor,
                         fontSize: 16,

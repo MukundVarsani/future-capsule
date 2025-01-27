@@ -30,6 +30,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   late final FirebaseAuthService _firebaseAuthService;
   late final UserService _userService;
 
+  bool isVisible  = false;
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -191,10 +193,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     // Password Field
                     TextFormField(
                       controller: _passwordController,
-                      obscureText: true,
+                      obscureText: isVisible,
                       decoration: InputDecoration(
                         labelText: "Password",
                         prefixIcon: const Icon(Icons.lock),
+                        suffixIcon: IconButton(onPressed: (){
+                          setState(() {
+                            isVisible = !isVisible;
+                          });
+                        }, icon: Icon(!isVisible ?  Icons.visibility : Icons.visibility_off)),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -235,6 +242,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       height: 50,
                       child: AppButton(
                         onPressed: () {
+
+                            FocusManager.instance.primaryFocus?.unfocus();
+
                           if (_formKey.currentState!.validate()) {
                             signUp();
                           }

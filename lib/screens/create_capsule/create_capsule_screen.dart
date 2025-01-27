@@ -97,6 +97,22 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
     FocusManager.instance.primaryFocus?.unfocus();
   }
 
+
+  void _resetData() {
+    titleController.clear();
+    descriptionController.clear();
+    _file = null;
+    _controller?.dispose();
+    _controller = null;
+    isCapsuleToggled = true;
+    isTimeToggled = true;
+    isMediaLoading = false;
+    isImageFile = false;
+    isVideoFile = false;
+    isOtherFile = false;
+    openDate = const Duration(hours: 1);
+    _selectedDate = DateTime.now();
+  }
   @override
   void initState() {
     openDate = const Duration(hours: 1);
@@ -175,21 +191,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
     );
   }
 
-  void _resetData() {
-    titleController.clear();
-    descriptionController.clear();
-    _file = null;
-    _controller?.dispose();
-    _controller = null;
-    isCapsuleToggled = true;
-    isTimeToggled = true;
-    isMediaLoading = false;
-    isImageFile = false;
-    isVideoFile = false;
-    isOtherFile = false;
-    openDate = const Duration(hours: 1);
-    _selectedDate = DateTime.now();
-  }
+
 
   Future<void> _selectDateTime(BuildContext context) async {
     // Step 1: Get the current date and time

@@ -16,6 +16,8 @@ class SignInScreen extends StatefulWidget {
 class _SignInScreenState extends State<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  bool isVisible = false;
+
   final TextEditingController _emailController = TextEditingController();
 
   final TextEditingController _passwordController = TextEditingController();
@@ -147,10 +149,19 @@ class _SignInScreenState extends State<SignInScreen> {
                     // Password Field
                     TextFormField(
                       controller: _passwordController,
-                      obscureText: true,
+                      obscureText: isVisible,
                       decoration: InputDecoration(
                         labelText: "Password",
                         prefixIcon: const Icon(Icons.lock),
+                        suffixIcon: IconButton(
+                            onPressed: () {
+                              setState(() {
+                                isVisible = !isVisible;
+                              });
+                            },
+                            icon: Icon(!isVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off)),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -171,6 +182,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       height: 50,
                       child: AppButton(
                         onPressed: () {
+                          FocusManager.instance.primaryFocus?.unfocus();
                           if (_formKey.currentState!.validate()) {
                             signInUser();
                           }
@@ -193,7 +205,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => SignUpScreen(),
+                                builder: (_) => const SignUpScreen(),
                               ),
                             );
                           },

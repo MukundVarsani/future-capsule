@@ -10,7 +10,6 @@ import 'package:velocity_x/velocity_x.dart';
 class UserService {
   static final UserService _instance = UserService._internal();
 
-
   UserService._internal();
 
   factory UserService() => _instance;
@@ -19,9 +18,8 @@ class UserService {
 
   String? _currentUserId;
 
- // Getter for the current user ID
+  // Getter for the current user ID
   String? get userId {
-  
     User? user = FirebaseAuthService.getCurrentUser();
     _currentUserId = user?.uid;
     return _currentUserId;
@@ -29,8 +27,6 @@ class UserService {
 
   // Setter for the current user ID
   set userId(String? id) => _currentUserId = id;
-  
-
 
   void createNewUser(Map<String, dynamic> newUser) async {
     User? user = FirebaseAuthService.getCurrentUser();
@@ -64,8 +60,7 @@ class UserService {
   }
 
   void updateUserData(Map<String, dynamic> updatedData) async {
-    User? user = FirebaseAuthService.getCurrentUser();
-    if (user == null) return;
+    if (_currentUserId == null) return;
     DateTime now = DateTime.now();
 
     updatedData['updatedAt'] = now.toIso8601String();
@@ -73,7 +68,7 @@ class UserService {
     try {
       await _firebaseFirestore
           .collection("Future_Capsule_Users")
-          .doc(user.uid)
+          .doc(_currentUserId)
           .update(updatedData)
           .then((value) => Vx.log("User data updated successfully."));
     } catch (e) {
@@ -82,8 +77,8 @@ class UserService {
       if (e.toString().contains('NOT_FOUND')) {
         Vx.log("Document not found, creating a new one.");
         await _firebaseFirestore
-            .collection("AllUsers")
-            .doc(user.uid)
+            .collection("Future_Capsule_Users")
+            .doc(_currentUserId)
             .set(updatedData);
       }
     }
@@ -127,5 +122,4 @@ class UserService {
       return null;
     }
   }
-
 }

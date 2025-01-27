@@ -212,22 +212,29 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
                 String formattedDate =
                     DateFormat('dd-MMM-yy, HH:mm:ss').format(openTime);
 
+                String? imgUrl = capsule.media[0].type.contains('video')
+                    ? capsule.media[0].thumbnail
+                    : capsule.media[0].url;
+
                 return GestureDetector(
                   onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (_) => MyCapsulesPreview(
-                            capsuleTitle: capsule.title,
-                            capsuleDescription: capsule.description ?? "..",
-                            openDateTime: capsule.openingDate,
-                            isTimePrivate: capsule.privacy.isTimePrivate,
-                            isCapsulePrivate: capsule.privacy.isCapsulePrivate,
-                            imageURL: capsule.media[0].url)));
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (_) => MyCapsulesPreview(
+                                capsuleTitle: capsule.title,
+                                capsuleDescription: capsule.description ?? "..",
+                                openDateTime: capsule.openingDate,
+                                isTimePrivate: capsule.privacy.isTimePrivate,
+                                isCapsulePrivate:
+                                    capsule.privacy.isCapsulePrivate,
+                                mediaURL: capsule.media[0].url,
+                                isVideoFile: capsule.media[0].type.contains('video'),
+                              )),
+                    );
                   },
                   child: CapsuleTile(
                     capsuleTitle: capsule.title,
-                    imgURL: (capsule.media[0].type.contains('image'))
-                        ? capsule.media[0].url
-                        : '',
+                    imgURL: imgUrl ?? '',
                     createDate: createdtime.timeAgo(),
                     isCapsulePrivate: capsule.privacy.isCapsulePrivate,
                     isTimePrivate: capsule.privacy.isTimePrivate,

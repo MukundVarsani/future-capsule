@@ -12,7 +12,7 @@ class FirebaseAuthService {
     return _instance;
   }
 
- static User? getCurrentUser() {
+ static User? getCurrentUser(){
     try {
       return _firebaseAuth.currentUser;
     } catch (e) {
@@ -90,6 +90,7 @@ class FirebaseAuthService {
   Future<void> signOut() async {
     try {
       await _firebaseAuth.signOut();
+      
     } catch (e) {
       throw ("Error while siging out user");
     }

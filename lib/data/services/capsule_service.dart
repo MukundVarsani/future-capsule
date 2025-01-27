@@ -13,7 +13,7 @@ class CapsuleService {
   CapsuleService._internal();
 
   factory CapsuleService() => _instance;
-
+                                              
   String _extractMediaIdFromUrl(String url) {
   // Define a regular expression to extract the value
   final regex = RegExp(r'capsule_media%2F[^%]*%2F([^%]*)%2F');
