@@ -8,10 +8,24 @@ class CapsuleService {
   static final CapsuleService _instance = CapsuleService._internal();
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
   final UserService _userService = UserService();
+  final  Uuid _uuid = const Uuid();
 
   CapsuleService._internal();
 
   factory CapsuleService() => _instance;
+
+  String _extractMediaIdFromUrl(String url) {
+  // Define a regular expression to extract the value
+  final regex = RegExp(r'capsule_media%2F[^%]*%2F([^%]*)%2F');
+  
+  // Match the regex with the input URL
+  final match = regex.firstMatch(url);
+
+  // If a match is found, return the extracted value, otherwise return an empty string
+  return match != null ? match.group(1) ?? '' : '';
+}
+
+
 
   void createCapsule(Map<String, dynamic> capsuleData) async {
     String? creatorId = _userService.userId;
@@ -19,9 +33,9 @@ class CapsuleService {
     if (creatorId == null) return;
 
     DateTime now = DateTime.now();
+    String capsuleId = _uuid.v4();
+    String mediaId = _extractMediaIdFromUrl(capsuleData['mediaURL']);
 
-    String capsuleId = const Uuid().v4();
-    String mediaId = const Uuid().v4();
     CapsuleModel capsuleModel = CapsuleModel(
       capsuleId: capsuleId,
       creatorId: creatorId,
@@ -29,6 +43,7 @@ class CapsuleService {
       description: capsuleData['description'],
       media: [
         Media(
+          thumbnail:capsuleData['thumbnail'] ,
           mediaId: mediaId,
           type: capsuleData['type'],
           url: capsuleData['mediaURL'],

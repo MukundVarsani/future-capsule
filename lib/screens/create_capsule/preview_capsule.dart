@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
@@ -9,6 +8,8 @@ import 'package:future_capsule/data/services/firebase_storage.dart';
 import 'package:future_capsule/screens/create_capsule/toggle.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:slide_countdown/slide_countdown.dart';
+import 'package:uuid/uuid.dart';
+import 'package:velocity_x/velocity_x.dart';
 
 class PreviewCapsule extends StatefulWidget {
   const PreviewCapsule({
@@ -20,7 +21,7 @@ class PreviewCapsule extends StatefulWidget {
     required this.isImageFile,
     required this.isVideoFile,
     required this.openDateTime,
-    required this.fileBytes,
+    required this.file,
     required this.xFile,
   });
 
@@ -31,7 +32,7 @@ class PreviewCapsule extends StatefulWidget {
   final bool isImageFile;
   final bool isVideoFile;
   final DateTime openDateTime;
-  final Uint8List? fileBytes;
+  final File? file;
   final XFile xFile;
 
   @override
@@ -42,7 +43,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
   late Duration openDate;
   late CapsuleService _capsuleService;
   late FirebaseStore _firebaseStore;
-
+  String uid = const Uuid().v4();
   bool isCapsuleLoading = false;
 
   @override
@@ -55,9 +56,25 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
   }
 
   Future<String?> uploadCapsuleFile() async {
-    File file = File(widget.xFile.path);
+    File mediaFile = File(widget.xFile.path);
+
     return await _firebaseStore.uploadImageToCloud(
-        fileName: "capsule_media", file: file,isProfile: false);
+      filePath: "capsule_media",
+      file: mediaFile,
+      mediaId: uid,
+      isProfile: false,
+      fileName: "$uid-data",
+    );
+  }
+
+  Future<String?> uploadThumbNailImage() async {
+    if (widget.file == null) return null;
+    return await _firebaseStore.uploadImageToCloud(
+        filePath: "capsule_media",
+        file: widget.file!,
+        isProfile: false,
+        mediaId: uid,
+        fileName: "thumbnail");
   }
 
   String getExtensionType() {
@@ -89,8 +106,15 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
     setState(() {
       isCapsuleLoading = true;
     });
+    String? mediaURL;
+    String? thumbnailUrl;
 
-    String? mediaURL = await uploadCapsuleFile();
+    if (widget.isVideoFile) {
+      thumbnailUrl = await uploadThumbNailImage();
+      mediaURL = await uploadCapsuleFile();
+    } else {
+      mediaURL = await uploadCapsuleFile();
+    }
     String type = getExtensionType();
 
     _capsuleService.createCapsule({
@@ -98,6 +122,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
       "type": type,
       "description": widget.capsuleDescription,
       "mediaURL": mediaURL,
+      "thumbnail": thumbnailUrl,
       "openingDate": widget.openDateTime,
       "isTimePrivate": widget.isTimePrivate,
       "isCapsulePrivate": widget.isCapsulePrivate,
@@ -141,7 +166,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
             const SizedBox(height: 20),
             _buildTitleField(widget.capsuleName),
             const SizedBox(height: 10),
-            _buildFilePreview(widget.fileBytes, widget.isCapsulePrivate),
+            _buildFilePreview(widget.file, widget.isCapsulePrivate),
             const SizedBox(height: 10),
             _buildDescriptionField(widget.capsuleDescription),
             const SizedBox(height: 30),
@@ -181,7 +206,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
     );
   }
 
-  Widget _buildFilePreview(Uint8List? fileBytes, bool isCapsulePrivate) {
+  Widget _buildFilePreview(File? fileBytes, bool isCapsulePrivate) {
     return Container(
       constraints: const BoxConstraints(maxHeight: 200),
       decoration: BoxDecoration(
@@ -192,7 +217,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
         alignment: AlignmentDirectional.center,
         children: [
           if (fileBytes != null)
-            Image.memory(
+            Image.file(
               fileBytes,
               height: 200,
               filterQuality: FilterQuality.high,

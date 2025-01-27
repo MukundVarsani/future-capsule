@@ -6,6 +6,7 @@ import 'package:future_capsule/data/services/capsule_service.dart';
 import 'package:future_capsule/data/services/user_service.dart';
 
 import 'package:future_capsule/screens/my_capsules/capsule_tile.dart';
+import 'package:future_capsule/screens/my_capsules/my_capsules_preview.dart';
 import 'package:intl/intl.dart';
 import 'package:velocity_x/velocity_x.dart';
 
@@ -211,13 +212,27 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
                 String formattedDate =
                     DateFormat('dd-MMM-yy, HH:mm:ss').format(openTime);
 
-                return CapsuleTile(
-                  capsuleTitle: capsule.title,
-                  imgURL: (capsule.media[0].type.contains('image'))?  capsule.media[0].url : '',
-                  createDate: createdtime.timeAgo(),
-                  isCapsulePrivate: capsule.privacy.isCapsulePrivate,
-                  isTimePrivate: capsule.privacy.isTimePrivate,
-                  openDate: formattedDate,
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => MyCapsulesPreview(
+                            capsuleTitle: capsule.title,
+                            capsuleDescription: capsule.description ?? "..",
+                            openDateTime: capsule.openingDate,
+                            isTimePrivate: capsule.privacy.isTimePrivate,
+                            isCapsulePrivate: capsule.privacy.isCapsulePrivate,
+                            imageURL: capsule.media[0].url)));
+                  },
+                  child: CapsuleTile(
+                    capsuleTitle: capsule.title,
+                    imgURL: (capsule.media[0].type.contains('image'))
+                        ? capsule.media[0].url
+                        : '',
+                    createDate: createdtime.timeAgo(),
+                    isCapsulePrivate: capsule.privacy.isCapsulePrivate,
+                    isTimePrivate: capsule.privacy.isTimePrivate,
+                    openDate: formattedDate,
+                  ),
                 );
               }),
         ));

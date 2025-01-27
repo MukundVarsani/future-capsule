@@ -46,7 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _showImageUploadingDialog();
 
       String? downloadUrl = await _firebaseStore.uploadImageToCloud(
-          file: _selectedFile!, fileName: "UserProfileImage");
+          file: _selectedFile!, filePath: "UserProfileImage");
 
       if (downloadUrl != null) {
         await _updateUserData({"profilePicture": downloadUrl});
@@ -65,10 +65,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  Stream<UserModel?> getUserStream(String userId) async* {
-    final userStream = _userService.getUserStream(userId);
-
-    // Listen to the stream and yield each individual UserModel
+  Stream<UserModel?> getUserStream() async* {
+    final userStream = _userService.getUserStream(_currentUserId!);
     await for (final user in userStream) {
       yield user;
     }
@@ -89,7 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: AppColors.kScreenBackgroundColor,
         body: (_currentUserId != null)
             ? StreamBuilder<UserModel?>(
-                stream: getUserStream(_currentUserId),
+                stream: getUserStream(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());

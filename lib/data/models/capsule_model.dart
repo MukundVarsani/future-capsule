@@ -14,20 +14,19 @@ class CapsuleModel {
   final String status;
   final int likes;
 
-  CapsuleModel({
-    required this.capsuleId,
-    required this.creatorId,
-    required this.title,
-    required this.description,
-    required this.media,
-    required this.openingDate,
-    required this.recipients,
-    required this.privacy,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.status,
-    this.likes = 0
-  });
+  CapsuleModel(
+      {required this.capsuleId,
+      required this.creatorId,
+      required this.title,
+      required this.description,
+      required this.media,
+      required this.openingDate,
+      required this.recipients,
+      required this.privacy,
+      required this.createdAt,
+      required this.updatedAt,
+      required this.status,
+      this.likes = 0});
 
   factory CapsuleModel.fromJson(Map<String, dynamic> json) {
     return CapsuleModel(
@@ -35,9 +34,8 @@ class CapsuleModel {
       creatorId: json['creatorId'],
       title: json['title'],
       description: json['description'],
-      media: (json['media'] as List)
-          .map((item) => Media.fromJson(item))
-          .toList(),
+      media:
+          (json['media'] as List).map((item) => Media.fromJson(item)).toList(),
       openingDate: DateTime.parse(json['openingDate']),
       recipients: (json['recipients'] as List)
           .map((item) => Recipient.fromJson(item))
@@ -46,7 +44,7 @@ class CapsuleModel {
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
       status: json['status'],
-      likes : json['likes'],
+      likes: json['likes'],
     );
   }
 
@@ -63,7 +61,7 @@ class CapsuleModel {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': createdAt.toIso8601String(),
       'status': status,
-      "likes" :likes,
+      "likes": likes,
     };
   }
 }
@@ -72,9 +70,12 @@ class Media {
   final String mediaId;
   final String type;
   final String url;
+  final String? thumbnail;
 
-  Media({
+  Media(
+ {
     required this.mediaId,
+    required this.thumbnail,
     required this.type,
     required this.url,
   });
@@ -84,6 +85,7 @@ class Media {
       mediaId: json['mediaId'] ?? const Uuid().v4(),
       type: json['type'],
       url: json['url'],
+      thumbnail : json['thumbnail'] ?? '',
     );
   }
 
@@ -92,6 +94,7 @@ class Media {
       'mediaId': mediaId,
       'type': type,
       'url': url,
+      'thumbnail' : thumbnail,
     };
   }
 }

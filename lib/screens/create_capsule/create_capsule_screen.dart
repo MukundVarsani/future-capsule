@@ -1,6 +1,4 @@
 import 'dart:io';
-import 'dart:math';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
@@ -14,7 +12,7 @@ import 'package:future_capsule/screens/create_capsule/toggle.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:velocity_x/velocity_x.dart';
-import 'package:video_compress/video_compress.dart';
+
 import 'package:video_player/video_player.dart';
 import 'package:slide_countdown/slide_countdown.dart';
 
@@ -28,11 +26,12 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
   final SelectFiles _files = SelectFiles();
 
   VideoPlayerController? _controller;
-  TextEditingController titleController = TextEditingController();
-  TextEditingController descriptionController = TextEditingController();
+  final TextEditingController titleController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
+  late final CompressFile _compressFile;
 
-  Uint8List? _fileBytes;
-  XFile? file;
+  File? _file;
+  XFile? xFile;
 
   late Duration openDate;
   DateTime _selectedDate = DateTime.now();
@@ -46,14 +45,14 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
   bool isOtherFile = false;
 
   Future<void> _selectVideo(BuildContext context) async {
-    file = await _files.selectVideo();
-    if (file == null) return;
+    xFile = await _files.selectVideo();
+    if (xFile == null) return;
     Navigator.of(context).pop();
 
     File? thumbnailFile =
-        await CompressFile.getThumbnailfromVideo(filePath: file!.path);
+        await CompressFile.getThumbnailfromVideo(filePath: xFile!.path);
 
-    _fileBytes = await thumbnailFile?.readAsBytes();
+    _file = thumbnailFile;
     setState(() {
       isMediaLoading = true;
     });
@@ -63,42 +62,32 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
     isOtherFile = false;
 
     _controller?.dispose();
-    _controller = VideoPlayerController.file(File(file!.path))
+    _controller = VideoPlayerController.file(File(xFile!.path))
       ..initialize().then((_) {});
 
-    await compressVideo(file!.path);
+    await compressVideo(xFile!.path);
     setState(() {
       isMediaLoading = false;
     });
-     FocusManager.instance.primaryFocus?.unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
   }
 
   Future<void> compressVideo(String path) async {
-    final MediaInfo? compressedVideo = await VideoCompress.compressVideo(
-      path,
-      quality: VideoQuality.MediumQuality,
-      deleteOrigin: false,
-      // Keep the original file
-    );
-    if (compressedVideo != null) {
-      // Retrieve the size of the compressed video
-      file = XFile(compressedVideo.file!.path);
-      final int sizeInBytes = compressedVideo.filesize!;
-      final String formattedSize = _formatBytes(sizeInBytes);
-
-      Vx.log("Compressed Video Size: $formattedSize");
+    File? compressFile = await _compressFile.compressVideo(filePath: path);
+    if (compressFile != null) {
+      xFile = XFile(compressFile.path);
     }
   }
 
   Future<void> _selectImage(BuildContext context) async {
-    file = await _files.selectImage();
-    if (file == null) return;
+    xFile = await _files.selectImage();
+    if (xFile == null) return;
     Navigator.of(context).pop();
     setState(() {
       isMediaLoading = true;
     });
-    _fileBytes = await file!.readAsBytes();
-    // uploadImage(file);
+    _file = File(xFile!.path);
+    
     setState(() {
       isImageFile = true;
       isVideoFile = false;
@@ -108,17 +97,17 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
     FocusManager.instance.primaryFocus?.unfocus();
   }
 
-  String _formatBytes(int bytes, [int decimalPlaces = 2]) {
-    if (bytes <= 0) return "0 Bytes";
-    const List<String> units = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-    int i = (log(bytes) / log(1024)).floor();
-    return '${(bytes / pow(1024, i)).toStringAsFixed(decimalPlaces)} ${units[i]}';
-  }
-
   @override
   void initState() {
     openDate = const Duration(hours: 1);
+    _compressFile = CompressFile();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _compressFile.dispose();
+    super.dispose();
   }
 
   @override
@@ -189,7 +178,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
   void _resetData() {
     titleController.clear();
     descriptionController.clear();
-    _fileBytes = null;
+    _file = null;
     _controller?.dispose();
     _controller = null;
     isCapsuleToggled = true;
@@ -239,7 +228,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
           // Allow selecting up to one year ahead
         });
 
-FocusManager.instance.primaryFocus?.unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
     if (pickedDate != null) {
       // Step 3: Show time picker after selecting the date
       final TimeOfDay? pickedTime = await showTimePicker(
@@ -388,12 +377,14 @@ FocusManager.instance.primaryFocus?.unfocus();
       );
     }
 
-    if (isImageFile && _fileBytes != null) {
+    if (isImageFile && _file != null) {
       return Center(
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: Image.memory(
-            _fileBytes!,
+          child: 
+          
+          Image.file(
+            _file!,
             height: 200,
             filterQuality: FilterQuality.high,
             fit: BoxFit.fill,
@@ -589,7 +580,7 @@ FocusManager.instance.primaryFocus?.unfocus();
               return;
             }
 
-            if (_fileBytes == null && file == null) {
+            if (_file == null && xFile == null) {
               appSnackBar(context: context, text: "Capsule file is required");
               return;
             }
@@ -605,8 +596,8 @@ FocusManager.instance.primaryFocus?.unfocus();
                   isImageFile: isImageFile,
                   isVideoFile: isVideoFile,
                   openDateTime: _selectedDate,
-                  fileBytes: _fileBytes,
-                  xFile: file!,
+                  file: _file,
+                  xFile: xFile!,
                 ),
               ),
               withNavBar: false,
@@ -615,7 +606,7 @@ FocusManager.instance.primaryFocus?.unfocus();
             if (result != null) {
               _resetData();
             }
-             FocusManager.instance.primaryFocus?.unfocus();
+            FocusManager.instance.primaryFocus?.unfocus();
             if (mounted) setState(() {});
           },
           radius: 24,

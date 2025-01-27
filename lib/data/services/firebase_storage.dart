@@ -21,20 +21,26 @@ class FirebaseStore {
   }
 
   Future<String?> uploadImageToCloud(
-      {required String fileName,
+      {required String filePath,
       required File file,
+      String mediaId = "",
+      String fileName = '',
       bool isProfile = true}) async {
     try {
       if (user == null) return null;
 
+      if (!isProfile && fileName.isEmpty) {
+        throw ArgumentError.notNull(
+            "File Name must be provided when isProfile is set to false.");
+      }
+
       Reference ref = _firebaseStorage
           .ref("Future_capsule")
-          .child(fileName)
+          .child(filePath)
           .child(user!.uid);
 
       if (!isProfile) {
-        String uid = uuid.v4();
-        ref = ref.child(uid);
+        ref = ref.child(mediaId).child(fileName);
       }
 
       // Upload the file data
