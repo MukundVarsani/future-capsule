@@ -13,17 +13,17 @@ class CapsuleService {
   CapsuleService._internal();
 
   factory CapsuleService() => _instance;
-                                              
-  String _extractMediaIdFromUrl(String url) {
-  // Define a regular expression to extract the value
-  final regex = RegExp(r'capsule_media%2F[^%]*%2F([^%]*)%2F');
-  
-  // Match the regex with the input URL
-  final match = regex.firstMatch(url);
 
-  // If a match is found, return the extracted value, otherwise return an empty string
-  return match != null ? match.group(1) ?? '' : '';
-}
+  String _extractMediaIdFromUrl(String url) {
+    // Define a regular expression to extract the value
+    final regex = RegExp(r'capsule_media%2F[^%]*%2F([^%]*)%2F');
+
+    // Match the regex with the input URL
+    final match = regex.firstMatch(url);
+
+    // If a match is found, return the extracted value, otherwise return an empty string
+    return match != null ? match.group(1) ?? '' : '';
+  }
 
 
 
@@ -84,10 +84,32 @@ class CapsuleService {
       }).toList();
 
       return usersCapsules;
-
+      
     } catch (e) {
       Vx.log("Error while getting User Created capsule: $e");
       throw "Error while getting User Created capsule: $e ";
     }
+  }
+
+  Future<List<CapsuleModel>> editCapsule(
+      Map<String, dynamic> updateData) async {
+    String? creatorId = _userService.userId;
+
+    if (creatorId == null) return [];
+
+    DateTime now = DateTime.now();
+    updateData['updatedAt'] = now.toIso8601String();
+
+
+    try {
+      await _firebaseFirestore
+          .collection("Users_Capsules")
+          .doc(updateData['capsule_Id'])
+          .update(updateData);
+      Vx.log("Update successfull");
+    } catch (e) {
+      Vx.log("Error while updating capsule: $e");
+    }
+    return [];
   }
 }
