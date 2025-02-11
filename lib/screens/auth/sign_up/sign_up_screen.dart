@@ -1,12 +1,11 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:future_capsule/config/firebase_auth_service.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
-import 'package:future_capsule/data/services/user_service.dart';
+import 'package:future_capsule/data/controllers/auth.controller.dart';
 import 'package:future_capsule/screens/auth/sign_in/sign_in_screen.dart';
-import 'package:future_capsule/screens/auth/verification/verification_screen.dart';
+import 'package:get/get.dart';
+import 'package:velocity_x/velocity_x.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -27,10 +26,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
 
-  late final FirebaseAuthService _firebaseAuthService;
-  late final UserService _userService;
+  final AuthController _authController = Get.put(AuthController());
 
-  bool isVisible  = false;
+  bool isVisible = false;
 
   @override
   void dispose() {
@@ -40,61 +38,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
-  void signUp() async {
+
+  void handleSignUp()async {
     try {
-      User? registeredUser = await _firebaseAuthService.createNewUser(
-        userEmail: _emailController.text.toLowerCase(),
-        userPassword: _passwordController.text,
-      );
-      if (registeredUser == null) {
-        appSnackBar(
-          context: context,
-          text: "Registeration Fail Try again",
-        );
-        return;
-      }
-
-      // await
-      Map<String, dynamic> user = {"name": _nameController.text};
-
-      _userService.createNewUser(user);
-      await _firebaseAuthService.sendEmailVerification(registeredUser);
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => VerificationScreen(verificationEmail: _emailController.text,),
-        ),
-      );
-
-      appSnackBar(
-        context: context,
-        text: "Verification email sent to the registerd email",
-      );
-    } on FirebaseAuthException catch (e) {
-      String? error = e.message ?? "Error";
-
-      if ((e.code) == '401') {
-        appSnackBar(
-            context: context,
-            text: error,
-            color: AppColors.kErrorSnackBarTextColor,
-            textColor: AppColors.kWhiteColor);
-      } else {
-        appSnackBar(
-            context: context,
-            text: error,
-            color: AppColors.kErrorSnackBarTextColor,
-            textColor: AppColors.kWhiteColor);
-      }
-      rethrow;
+     await  _authController.createNewUser(
+          userEmail: _emailController.text.trim(),
+          userPassword: _passwordController.text.trim(),
+          userName: _nameController.text.trim());
+    } catch (e) {
+      Vx.log("Error while handling SignUp : $e");
+      appBar(text: e.toString());
     }
   }
 
   @override
   void initState() {
-    _firebaseAuthService = FirebaseAuthService();
-    _userService = UserService();
     super.initState();
   }
 
@@ -197,11 +155,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       decoration: InputDecoration(
                         labelText: "Password",
                         prefixIcon: const Icon(Icons.lock),
-                        suffixIcon: IconButton(onPressed: (){
-                          setState(() {
-                            isVisible = !isVisible;
-                          });
-                        }, icon: Icon(!isVisible ?  Icons.visibility : Icons.visibility_off)),
+                        suffixIcon: IconButton(
+                            onPressed: () {
+                              setState(() {
+                                isVisible = !isVisible;
+                              });
+                            },
+                            icon: Icon(!isVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off)),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -241,19 +203,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     SizedBox(
                       height: 50,
                       child: AppButton(
-                        onPressed: () {
-
-                            FocusManager.instance.primaryFocus?.unfocus();
-
-                          if (_formKey.currentState!.validate()) {
-                            signUp();
-                          }
-                        },
-                        child: const Text(
-                          "Sign Up",
-                          style: TextStyle(fontSize: 18, color: Colors.white),
-                        ),
-                      ),
+                          onPressed: handleSignUp,
+                          child: Obx(
+                            () => _authController.isLoading.value
+                                ? CircularProgressIndicator.adaptive(
+                                    valueColor: AlwaysStoppedAnimation(
+                                        AppColors.kWhiteColor),
+                                  )
+                                : const Text(
+                                    "Sign Up",
+                                    style: TextStyle(
+                                        fontSize: 18, color: Colors.white),
+                                  ),
+                          )),
                     ),
                     const SizedBox(height: 20),
 

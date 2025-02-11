@@ -4,8 +4,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
+import 'package:future_capsule/data/controllers/auth.controller.dart';
 import 'package:future_capsule/screens/auth/sign_in/sign_in_screen.dart';
 import 'package:future_capsule/screens/bottom_navigation_bar.dart';
+import 'package:get/get.dart';
 
 class VerificationScreen extends StatefulWidget {
   const VerificationScreen({super.key, required this.verificationEmail});
@@ -16,12 +18,14 @@ class VerificationScreen extends StatefulWidget {
 }
 
 class _VerificationScreenState extends State<VerificationScreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final AuthController _authController = Get.put(AuthController());
+
   late Timer _timer;
 
   @override
   void initState() {
     _startUserReloadTimer();
+    _sendVerificationLink();
     super.initState();
   }
 
@@ -35,6 +39,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.blue[900],
         centerTitle: true,
         title: const Text(
@@ -47,7 +52,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
           width: double.infinity,
           height: 50,
         ),
-         Text(
+        Text(
           "Verification email has been sent to:\n ${widget.verificationEmail}",
           style: const TextStyle(
               fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black),
@@ -64,7 +69,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
           height: 50,
         ),
         ElevatedButton(
-            onPressed: _resendVerificationLink,
+            onPressed: _sendVerificationLink,
             child: const Text(
               "Resend verification email",
             )),
@@ -77,33 +82,16 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
   // Screen use method
 
-  void _resendVerificationLink() async {
+  void _sendVerificationLink() async {
     try {
-      await _auth.currentUser?.sendEmailVerification();
+     await _authController.sendEmailVerification();
 
-      appSnackBar(
-        context: context,
+      appBar(
         text: "Verification email sent to the registerd email",
       );
-    } on FirebaseAuthException catch (e) {
-      if ((e.code == "user-not-found")) {
-        appSnackBar(
-          context: context,
-          text: "user not found",
-          color: AppColors.kErrorSnackBarTextColor,
-          textColor: AppColors.kWhiteColor,
-        );
-      } else {
-        appSnackBar(
-          context: context,
-          text: "Internal Error, Try Again",
-          color: AppColors.kErrorSnackBarTextColor,
-          textColor: AppColors.kWhiteColor,
-        );
-      }
-
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (_) => const SignInScreen()));
+    } catch (e) {
+      appBar(text: e.toString());
+      Get.to(const SignInScreen());
     }
   }
 
@@ -143,12 +131,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
   void navigateToHomeScreen() {
     Future.delayed(const Duration(seconds: 2), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const BottomBar(),
-        ),
-      );
+      Get.to(const BottomBar());
     });
   }
 }

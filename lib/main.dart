@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:future_capsule/screens/auth/sign_in/sign_in_screen.dart';
 import 'package:future_capsule/screens/auth/verification/verification_screen.dart';
 import 'package:future_capsule/screens/bottom_navigation_bar.dart';
+import 'package:get/get_navigation/get_navigation.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +28,7 @@ class MyApp extends StatelessWidget {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -40,7 +41,7 @@ class MyApp extends StatelessWidget {
 
 Widget _getLandingPage(FirebaseAuth auth) {
   
-
+    
   return StreamBuilder<User?>(
     stream: auth.authStateChanges(),
     builder: (BuildContext context, snapshot) {

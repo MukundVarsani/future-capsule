@@ -1,10 +1,11 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/config/firebase_auth_service.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
+import 'package:future_capsule/data/controllers/auth.controller.dart';
 import 'package:future_capsule/screens/auth/sign_up/sign_up_screen.dart';
+import 'package:get/get.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -22,45 +23,36 @@ class _SignInScreenState extends State<SignInScreen> {
 
   final TextEditingController _passwordController = TextEditingController();
 
-  final FirebaseAuthService _firebaseAuthService = FirebaseAuthService();
+  final AuthController _authController = Get.put(AuthController());
 
-  void signInUser() async {
-    try {
-      await _firebaseAuthService.login(
-        userEmail: _emailController.text,
-        userPassword: _passwordController.text,
-      );
-    } on FirebaseAuthException catch (e) {
-      String? error = e.message ?? "Error";
 
-      if ((e.code) == '402') {
+  void _handleLogin() async {
+    if (_formKey.currentState!.validate()) {
+      FocusManager.instance.primaryFocus?.unfocus();
+      try {
+        await _authController.login(
+          userEmail: _emailController.text.trim(),
+          userPassword: _passwordController.text.trim(),
+        );
+      } catch (e) {
         appSnackBar(
             context: context,
-            text: error,
-            color: AppColors.kErrorSnackBarTextColor,
-            textColor: AppColors.kWhiteColor);
-      } else {
-        appSnackBar(
-            context: context,
-            text: error,
+            text: e.toString(),
             color: AppColors.kErrorSnackBarTextColor,
             textColor: AppColors.kWhiteColor);
       }
-      rethrow;
     }
   }
 
   void forgetPassword() {
     if (_emailController.text.isEmpty) {
-      appSnackBar(
-          context: context,
+      appBar(
           text: "Enter registered email to reset password",
           color: AppColors.kErrorSnackBarTextColor,
           textColor: AppColors.kWhiteColor);
       return;
     } else {
-      _firebaseAuthService.forgetPassword(email: _emailController.text);
-
+      _authController.forgetPassword(email: _emailController.text);
       appSnackBar(
           context: context,
           text: "Reset password link sent to registerd email");
@@ -181,15 +173,15 @@ class _SignInScreenState extends State<SignInScreen> {
                     SizedBox(
                       height: 50,
                       child: AppButton(
-                        onPressed: () {
-                          FocusManager.instance.primaryFocus?.unfocus();
-                          if (_formKey.currentState!.validate()) {
-                            signInUser();
-                          }
-                        },
-                        child: const Text(
-                          "Sign Up",
+                        onPressed: _handleLogin,
+                        child: 
+                        Obx(
+                          ()=>_authController.isLoading.value ? 
+                           CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation(AppColors.kWhiteColor),):
+                        const Text(
+                          "Sign In",
                           style: TextStyle(fontSize: 18, color: Colors.white),
+                        )
                         ),
                       ),
                     ),
