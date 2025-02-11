@@ -1,13 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:future_capsule/data/controllers/user.controller.dart';
 import 'package:future_capsule/data/models/capsule_model.dart';
-import 'package:future_capsule/data/services/user_service.dart';
+import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
 import 'package:velocity_x/velocity_x.dart';
 
 class CapsuleService {
   static final CapsuleService _instance = CapsuleService._internal();
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
-  final UserService _userService = UserService();
+  final UserController _userController = Get.put(UserController());
+  // final UserService _userService = UserService();
   final  Uuid _uuid = const Uuid();
 
   CapsuleService._internal();
@@ -25,10 +27,8 @@ class CapsuleService {
     return match != null ? match.group(1) ?? '' : '';
   }
 
-
-
   void createCapsule(Map<String, dynamic> capsuleData) async {
-    String? creatorId = _userService.userId;
+    String? creatorId = _userController.currentUser.value?.uid;
 
     if (creatorId == null) return;
 
@@ -93,7 +93,7 @@ class CapsuleService {
 
   Future<List<CapsuleModel>> editCapsule(
       Map<String, dynamic> updateData) async {
-    String? creatorId = _userService.userId;
+    String? creatorId = _userController.currentUser.value?.uid;
 
     if (creatorId == null) return [];
 

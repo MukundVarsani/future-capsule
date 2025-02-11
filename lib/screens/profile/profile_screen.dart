@@ -5,11 +5,12 @@ import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
+import 'package:future_capsule/data/controllers/user.controller.dart';
 import 'package:future_capsule/data/models/user_model.dart';
 import 'package:future_capsule/data/services/firebase_storage.dart';
-import 'package:future_capsule/data/services/user_service.dart';
 import 'package:future_capsule/features/select_files.dart';
 import 'package:future_capsule/screens/profile/info_field.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:velocity_x/velocity_x.dart';
 
@@ -20,12 +21,12 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  // UserModel? userData;
   File? _selectedFile;
   late final String? _currentUserId;
-  late final FirebaseStore _firebaseStore;
   late final SelectFiles _selectFiles;
-  late final UserService _userService;
+  final FirebaseStore _firebaseStore = FirebaseStore();
+
+  final UserController _userController = Get.put(UserController());
 
   void _selectProfileImage() async {
     XFile? xFile =
@@ -36,7 +37,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   _updateUserData(Map<String, dynamic> updatedData) {
-    _userService.updateUserData(updatedData);
+    _userController.updateUserData(updatedData);
   }
 
   void _updateProfileImage(BuildContext context) async {
@@ -66,18 +67,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Stream<UserModel?> getUserStream() async* {
-    final userStream = _userService.getUserStream(_currentUserId!);
+    final userStream = _userController.getUserStream(_currentUserId!);
     await for (final user in userStream) {
       yield user;
     }
   }
 
   @override
-  void initState() {
-    _userService = UserService();
-    _firebaseStore = FirebaseStore();
-    _selectFiles = SelectFiles();
-    _currentUserId = _userService.userId;
+  void initState() {  
+  _selectFiles = SelectFiles();
+    _currentUserId = _userController.currentUser.value?.uid ;
     super.initState();
   }
 

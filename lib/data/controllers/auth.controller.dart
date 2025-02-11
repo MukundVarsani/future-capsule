@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
 import 'package:future_capsule/data/controllers/user.controller.dart';
-import 'package:future_capsule/data/services/user_service.dart';
 import 'package:future_capsule/screens/auth/verification/verification_screen.dart';
 import 'package:get/get.dart';
 import 'package:velocity_x/velocity_x.dart';
@@ -11,7 +10,6 @@ class AuthController extends GetxController {
 
   final UserController _userController = Get.put(UserController());
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  final UserService _userService = UserService();
 
   @override
   void onInit() {
@@ -66,7 +64,7 @@ class AuthController extends GetxController {
       }
       Map<String, dynamic> user = {"name": userName};
 
-      await _userService.createNewUser(user);
+      await _userController.createNewUser(user);
 
       Get.off(VerificationScreen(verificationEmail: newUser.email ?? ""));
     } on FirebaseAuthException catch (e) {
@@ -109,6 +107,4 @@ class AuthController extends GetxController {
       throw "Email is not registered";
     }
   }
-
-
 }

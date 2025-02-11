@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
+import 'package:future_capsule/data/controllers/user.controller.dart';
 import 'package:future_capsule/data/models/capsule_model.dart';
 import 'package:future_capsule/data/services/capsule_service.dart';
-import 'package:future_capsule/data/services/user_service.dart';
-
 import 'package:future_capsule/screens/my_capsules/capsule_tile.dart';
 import 'package:future_capsule/screens/my_capsules/my_capsules_preview.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:velocity_x/velocity_x.dart';
@@ -20,16 +20,15 @@ class MyCapuslesScreen extends StatefulWidget {
 
 class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
   late CapsuleService _capsuleService;
-  late UserService _userService;
+  final UserController _userController = Get.put(UserController());
   late final String userId;
   List<CapsuleModel> _userCapsules = [];
   List<CapsuleModel> _filterCapsules = [];
 
   @override
   void initState() {
-    _userService = UserService();
     _capsuleService = CapsuleService();
-    userId = _userService.userId ?? "NA";
+    userId = _userController.currentUser.value?.uid ?? 'NA';
     getUserCapsules(userId);
     super.initState();
   }
