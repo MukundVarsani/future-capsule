@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
@@ -45,11 +46,20 @@ class CapsuleTile extends StatelessWidget {
                       AppImages.profile,
                       height: 80,
                     )
-                  : Image.network(
-                      imgURL,
+                  : CachedNetworkImage(
+                      imageUrl: imgURL,
+                      filterQuality: FilterQuality.high,
                       height: 80,
                       width: 80,
+                      fit: BoxFit.contain,
+                      progressIndicatorBuilder:
+                          (context, url, downloadProgress) =>
+                              CircularProgressIndicator(
+                                  value: downloadProgress.progress),
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.error),
                     ),
+              
             ]),
           ),
           Expanded(

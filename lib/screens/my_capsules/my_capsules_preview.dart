@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
+import 'package:future_capsule/data/models/capsule_model.dart';
 import 'package:future_capsule/screens/create_capsule/toggle.dart';
+import 'package:future_capsule/screens/my_capsules/edit_capsule.dart';
 import 'package:slide_countdown/slide_countdown.dart';
 import 'package:video_player/video_player.dart';
 
 class MyCapsulesPreview extends StatefulWidget {
-  const MyCapsulesPreview(
-      {super.key,
-      required this.capsuleTitle,
-      required this.capsuleDescription,
-      required this.openDateTime,
-      required this.isTimePrivate,
-      required this.isCapsulePrivate,
-      required this.mediaURL, required this.isVideoFile
-      });
+  const MyCapsulesPreview({
+    super.key,
+    required this.capsuleTitle,
+    required this.capsuleDescription,
+    required this.openDateTime,
+    required this.isTimePrivate,
+    required this.isCapsulePrivate,
+    required this.mediaURL,
+    required this.isVideoFile,
+    required this.capsule,
+  });
 
   final String capsuleTitle;
   final String capsuleDescription;
@@ -23,6 +27,7 @@ class MyCapsulesPreview extends StatefulWidget {
   final bool isTimePrivate;
   final bool isCapsulePrivate;
   final bool isVideoFile;
+  final CapsuleModel capsule;
 
   @override
   State<MyCapsulesPreview> createState() => _MyCapsulesPreviewState();
@@ -30,34 +35,29 @@ class MyCapsulesPreview extends StatefulWidget {
 
 class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
   late Duration openDate;
-  VideoPlayerController? _controller;
+  static VideoPlayerController? _controller;
   bool isCapsuleLoading = false;
 
   @override
   void initState() {
     openDate = widget.openDateTime.difference(DateTime.now());
-    if(widget.isVideoFile) _videoInitialize();
+    if (widget.isVideoFile) _videoInitialize();
     super.initState();
   }
 
   void _videoInitialize() {
-    if (_controller != null) {
-      _controller!.dispose(); // Dispose of the old controller if any
+    if (_controller == null || _controller!.dataSource != widget.mediaURL) {
+      if (_controller != null) {
+        _controller!.dispose(); // Dispose of the old controller if any
+      }
+
+      _controller = VideoPlayerController.networkUrl(Uri.parse(widget.mediaURL))
+        ..initialize().then((_) {
+          setState(() {});
+        }).catchError((error) {
+          debugPrint("Error initializing video: $error");
+        });
     }
-
-    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.mediaURL))
-      ..initialize().then((_) {
-        setState(() {});
-      })
-      .catchError((error) {
-        debugPrint("Error initializing video: $error");
-      });
-  }
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
   }
 
   void deleteCapsule() async {}
@@ -132,9 +132,10 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
   }
 
   Widget _buildFilePreview(String capsuleURL, bool isCapsulePrivate) {
-    if (widget.isVideoFile && _controller != null && _controller!.value.isInitialized) {
+    if (widget.isVideoFile &&
+        _controller != null &&
+        _controller!.value.isInitialized) {
       bool isPlaying = _controller!.value.isPlaying;
-
       return Stack(
         alignment: AlignmentDirectional.center,
         children: [
@@ -149,13 +150,15 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
             child: IconButton(
               onPressed: () {
                 if (_controller == null) return;
-                setState(() {
-                  if (isPlaying) {
-                    _controller!.pause();
-                  } else {
-                    _controller!.play();
-                  }
-                });
+                setState(
+                  () {
+                    if (isPlaying) {
+                      _controller!.pause();
+                    } else {
+                      _controller!.play();
+                    }
+                  },
+                );
               },
               icon: Container(
                 padding: const EdgeInsets.all(5),
@@ -174,43 +177,41 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
       );
     }
 
-  if(!widget.isVideoFile){
-    
-    return Container(
-      constraints: const BoxConstraints(maxHeight: 200),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.kWarmCoralColor, width: 2),
-      ),
-      child: Stack(
-        alignment: AlignmentDirectional.center,
-        children: [
-          if (capsuleURL.isNotEmpty)
-            Image.network(
-              capsuleURL,
-              height: 200,
-              filterQuality: FilterQuality.high,
-              fit: BoxFit.fill,
-            ),
-          if (isCapsulePrivate)
-            Container(
-              height: double.infinity,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-                color: AppColors.kTealGreenColor07,
+    if (!widget.isVideoFile) {
+      return Container(
+        constraints: const BoxConstraints(maxHeight: 200),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.kWarmCoralColor, width: 2),
+        ),
+        child: Stack(
+          alignment: AlignmentDirectional.center,
+          children: [
+            if (capsuleURL.isNotEmpty)
+              Image.network(
+                capsuleURL,
+                height: 200,
+                filterQuality: FilterQuality.high,
+                fit: BoxFit.fill,
               ),
-              child: Icon(
-                Icons.lock,
-                size: 50,
-                color: AppColors.kWarmCoralColor,
+            if (isCapsulePrivate)
+              Container(
+                height: double.infinity,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  color: AppColors.kTealGreenColor07,
+                ),
+                child: Icon(
+                  Icons.lock,
+                  size: 50,
+                  color: AppColors.kWarmCoralColor,
+                ),
               ),
-            ),
-        ],
-      ),
-    );
-
-  }
+          ],
+        ),
+      );
+    }
     return Center(
       child: CircularProgressIndicator.adaptive(
         valueColor: const AlwaysStoppedAnimation<Color>(
@@ -349,7 +350,13 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
           constraints: const BoxConstraints(
               maxWidth: 150, minWidth: 70, maxHeight: 55, minHeight: 50),
           child: AppButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => EditCapsuleScreen(
+                          capsuleModel: widget.capsule,
+                          controller: _controller,
+                        ))),
             radius: 24,
             child: Center(
               child: Text(

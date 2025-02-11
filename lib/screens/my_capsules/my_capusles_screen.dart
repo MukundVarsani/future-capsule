@@ -8,6 +8,7 @@ import 'package:future_capsule/data/services/user_service.dart';
 import 'package:future_capsule/screens/my_capsules/capsule_tile.dart';
 import 'package:future_capsule/screens/my_capsules/my_capsules_preview.dart';
 import 'package:intl/intl.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:velocity_x/velocity_x.dart';
 
 class MyCapuslesScreen extends StatefulWidget {
@@ -172,8 +173,20 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
     Navigator.of(context, rootNavigator: true).pop();
   }
 
+
+void updateCapsule(){
+
+  Map<String, dynamic> data = {
+    "capsule_Id" : "ca38d616-0e8a-4d32-b1a3-cc92e61f0023",
+    "title" : "My Garden",
+    "privacy.isTimePrivate" : true,
+  };
+  _capsuleService.editCapsule(data);
+}
+
   @override
   Widget build(BuildContext context) {
+    updateCapsule();
     return Scaffold(
         appBar: AppBar(
           title: Row(
@@ -218,9 +231,12 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
 
                 return GestureDetector(
                   onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
+                   PersistentNavBarNavigator.pushDynamicScreen(
+                    context,
+                    withNavBar: false,
+                      screen:  MaterialPageRoute(
                           builder: (_) => MyCapsulesPreview(
+                            capsule: capsule,
                                 capsuleTitle: capsule.title,
                                 capsuleDescription: capsule.description ?? "..",
                                 openDateTime: capsule.openingDate,

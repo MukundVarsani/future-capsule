@@ -400,7 +400,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
                       valueColor: AlwaysStoppedAnimation(AppColors.kWhiteColor),
                     )
                   : Text(
-                      "Save",
+                      "Create",
                       style: TextStyle(
                         color: AppColors.kWhiteColor,
                         fontSize: 16,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:future_capsule/config/firebase_auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:future_capsule/core/widgets/snack_bar.dart';
+import 'package:future_capsule/data/controllers/auth.controller.dart';
+import 'package:get/get.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,7 +12,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final FirebaseAuthService _firebaseAuthService = FirebaseAuthService();
+  final AuthController _authController = Get.put(AuthController());
   User? user;
 
   @override
@@ -54,6 +56,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _signOut() async {
-    await _firebaseAuthService.signOut();
+    try {
+      await _authController.signOut();
+    } catch (e) {
+      appBar(text: e.toString());
+    }
   }
 }

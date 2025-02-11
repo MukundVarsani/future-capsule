@@ -28,7 +28,7 @@ class UserService {
   // Setter for the current user ID
   set userId(String? id) => _currentUserId = id;
 
-  void createNewUser(Map<String, dynamic> newUser) async {
+  Future<void> createNewUser(Map<String, dynamic> newUser) async {
     User? user = FirebaseAuthService.getCurrentUser();
     if (user == null) return;
 
