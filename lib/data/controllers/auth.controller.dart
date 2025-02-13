@@ -83,8 +83,8 @@ class AuthController extends GetxController {
 
   Future<void> sendEmailVerification() async {
     try {
-      if (_userController.currentUser.value == null) return;
-      await _userController.currentUser.value?.sendEmailVerification();
+      if (_userController.getUser == null) return;
+      await _userController.getUser?.sendEmailVerification();
     } catch (e) {
       throw Exception('Unable to send verification email.');
     }
@@ -93,7 +93,7 @@ class AuthController extends GetxController {
   Future<void> signOut() async {
     try {
       await _firebaseAuth.signOut();
-      _userController.currentUser.value = null;
+      _userController.setUser = null;
     } catch (e) {
       Vx.log("Error while signing out user : $e");
       throw "Sign-out Failed";

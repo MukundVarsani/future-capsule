@@ -53,13 +53,23 @@ class CapsuleTile extends StatelessWidget {
                       width: 80,
                       fit: BoxFit.contain,
                       progressIndicatorBuilder:
-                          (context, url, downloadProgress) =>
-                              CircularProgressIndicator(
-                                  value: downloadProgress.progress),
+                          (context, url, downloadProgress) => Align(
+                        alignment: Alignment
+                            .center, // Keep it centered inside the parent
+                        child: SizedBox(
+                          height: 30, // Explicitly set smaller height
+                          width: 30, // Explicitly set smaller width
+                          child: CircularProgressIndicator(
+                            value: downloadProgress.progress,
+                            valueColor:
+                            AlwaysStoppedAnimation(AppColors.kWhiteColor),
+                            strokeWidth: 2, // Make it thinner
+                          ),
+                        ),
+                      ),
                       errorWidget: (context, url, error) =>
                           const Icon(Icons.error),
                     ),
-              
             ]),
           ),
           Expanded(

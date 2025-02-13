@@ -14,16 +14,16 @@ class UserController extends GetxController {
   // Initailization
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
   //Observable Current User
-  var currentUser = Rxn<User>();
+  final  _currentUser = Rxn<User>();
 
   set setUser(User? user) {
-    currentUser.value = user;
+    _currentUser.value = user;
   }
 
-  User? get getUser => currentUser.value;
+  User? get getUser => _currentUser.value;
 
 Future<void> createNewUser(Map<String, dynamic> newUser) async {
-    User? user = currentUser.value;
+    User? user = _currentUser.value;
     if (user == null) return;
 
     DateTime now = DateTime.now();
@@ -73,7 +73,7 @@ Future<void> createNewUser(Map<String, dynamic> newUser) async {
   }
 
    void updateUserData(Map<String, dynamic> updatedData) async {
-    if (currentUser.value?.uid == null) return;
+    if (_currentUser.value?.uid == null) return;
     DateTime now = DateTime.now();
 
     updatedData['updatedAt'] = now.toIso8601String();
@@ -81,7 +81,7 @@ Future<void> createNewUser(Map<String, dynamic> newUser) async {
     try {
       await _firebaseFirestore
           .collection("Future_Capsule_Users")
-          .doc(currentUser.value?.uid)
+          .doc(_currentUser.value?.uid)
           .update(updatedData)
           .then((value) => Vx.log("User data updated successfully."));
     } catch (e) {
@@ -91,7 +91,7 @@ Future<void> createNewUser(Map<String, dynamic> newUser) async {
         Vx.log("Document not found, creating a new one.");
         await _firebaseFirestore
             .collection("Future_Capsule_Users")
-            .doc(currentUser.value?.uid)
+            .doc(_currentUser.value?.uid)
             .set(updatedData);
       }
     }

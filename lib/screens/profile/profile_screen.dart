@@ -76,7 +76,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {  
   _selectFiles = SelectFiles();
-    _currentUserId = _userController.currentUser.value?.uid ;
+    _currentUserId = _userController.getUser?.uid ;
     super.initState();
   }
 

@@ -4,16 +4,15 @@ import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
+import 'package:future_capsule/data/controllers/capsule.controller.dart';
 import 'package:future_capsule/data/models/capsule_model.dart';
 import 'package:future_capsule/features/compress_file.dart';
 import 'package:future_capsule/features/select_files.dart';
 import 'package:future_capsule/screens/create_capsule/custom_picker.dart';
-import 'package:future_capsule/screens/create_capsule/preview_capsule.dart';
 import 'package:future_capsule/screens/create_capsule/toggle.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:velocity_x/velocity_x.dart';
-
 import 'package:video_player/video_player.dart';
 import 'package:slide_countdown/slide_countdown.dart';
 
@@ -33,15 +32,16 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
 
   final TextEditingController titleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
+  final CapsuleController _capsuleController = Get.put(CapsuleController());
   late final CompressFile _compressFile;
   VideoPlayerController? _controller;
 
-  File? _file;
+  // File? _file;
   XFile? xFile;
   String? media;
 
   late Duration openDate;
-  DateTime _selectedDate = DateTime.now();
+  DateTime? _selectedDate;
 
   bool isCapsuleToggled = true;
   bool isTimeToggled = true;
@@ -59,10 +59,15 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
     File? thumbnailFile =
         await CompressFile.getThumbnailfromVideo(filePath: xFile!.path);
 
-    _file = thumbnailFile;
-    setState(() {
-      isMediaLoading = true;
-    });
+    // _file = thumbnailFile;
+    if (thumbnailFile == null) return;
+
+    xFile = XFile(thumbnailFile.path);
+    if (mounted) {
+      setState(() {
+        isMediaLoading = true;
+      });
+    }
 
     isImageFile = false;
     isVideoFile = true;
@@ -93,7 +98,7 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
     setState(() {
       isMediaLoading = true;
     });
-    _file = File(xFile!.path);
+    // _file = File(xFile!.path);
 
     setState(() {
       isImageFile = true;
@@ -107,7 +112,7 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
   void _resetData() {
     titleController.clear();
     descriptionController.clear();
-    _file = null;
+    // _file = null;
     _controller?.dispose();
     _controller = null;
     isCapsuleToggled = true;
@@ -120,15 +125,46 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
     _selectedDate = DateTime.now();
   }
 
+  void _updateCapsule() {
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    if (titleController.text.isEmpty) {
+      appSnackBar(context: context, text: "Capsule title is required");
+      return;
+    }
+
+    if (xFile == null && media == null) {
+      // if (_file == null && xFile == null && media == null) {
+      appSnackBar(context: context, text: "Capsule file is required");
+      return;
+    }
+
+    Map<String, dynamic> updatedData = {
+      "capsule_Id": widget.capsuleModel.capsuleId,
+      "title": titleController.text,
+      'description': descriptionController.text,
+      'openingDate': _selectedDate?.toIso8601String() ?? widget.capsuleModel.openingDate.toIso8601String(),
+      'privacy': {
+        "isCapsulePrivate": isCapsuleToggled,
+        'isTimePrivate': isTimeToggled,
+      }
+    };
+    _capsuleController.editCapsule(updatedData);
+  
+  }
+
   @override
   void initState() {
     _compressFile = CompressFile();
     titleController.text = widget.capsuleModel.title;
     media = widget.capsuleModel.media[0].url;
     descriptionController.text = widget.capsuleModel.description ?? "";
-    openDate = widget.capsuleModel.openingDate.timeZoneOffset;
+    openDate = widget.capsuleModel.openingDate.difference(DateTime.now());
     isCapsuleToggled = widget.capsuleModel.privacy.isCapsulePrivate;
     isTimeToggled = widget.capsuleModel.privacy.isTimePrivate;
+
+    // Vx.log("Opendate : $openDate");
+    // Vx.log(widget.capsuleModel.openingDate);
 
     if (widget.capsuleModel.media[0].type.contains("video")) {
       isImageFile = false;
@@ -145,6 +181,9 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
   @override
   void dispose() {
     _compressFile.dispose();
+    descriptionController.dispose();
+    titleController.dispose();
+    _resetData();
     super.dispose();
   }
 
@@ -220,11 +259,11 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
   }
 
   Future<void> _selectDateTime(BuildContext context) async {
-    // Step 1: Get the current date and time
+    //^ Step 1: Get the current date and time
     DateTime now = DateTime.now();
 
     DateTime oneMonthLater = now.add(const Duration(days: 30));
-    // Step 2: Show date picker
+    //^ Step 2: Show date picker
     final DateTime? pickedDate = await showDatePicker(
         context: context,
         initialDate: now, // Initial date should be today's date
@@ -240,13 +279,9 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
               dialogBackgroundColor: Colors
                   .blueGrey[50], // Change the background color of the dialog
               textTheme: TextTheme(
-                  bodyMedium: TextStyle(color: AppColors.kTealGreenColor)
-                  // bodyText2: TextStyle(color: Colors.black), // Change the text color
-                  ),
+                  bodyMedium: TextStyle(color: AppColors.kTealGreenColor)),
               primaryTextTheme: TextTheme(
-                  headlineLarge: TextStyle(color: AppColors.kTealGreenColor)
-                  // headline6: TextStyle(color: Colors.black), // Change the header text color
-                  ),
+                  headlineLarge: TextStyle(color: AppColors.kTealGreenColor)),
               cardColor: AppColors.kTealGreenColor,
               canvasColor: AppColors.kTealGreenColor,
             ),
@@ -258,14 +293,14 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
 
     FocusManager.instance.primaryFocus?.unfocus();
     if (pickedDate != null) {
-      // Step 3: Show time picker after selecting the date
+      //^ Step 3: Show time picker after selecting the date
       final TimeOfDay? pickedTime = await showTimePicker(
         context: context,
         initialTime: TimeOfDay(
             hour: now.hour, minute: now.minute), // Set current time as default
       );
       if (pickedTime != null) {
-        // Step 4: Combine selected date and time
+        //^ Step 4: Combine selected date and time
 
         _selectedDate = DateTime(
           pickedDate.year,
@@ -275,9 +310,11 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
           pickedTime.minute,
         );
 
-        // Step 5: Check if the selected DateTime is in the future
-        if (_selectedDate.isAfter(now)) {
-          openDate = _selectedDate.difference(now);
+        if (_selectedDate == null) return;
+
+        //^ Step 5: Check if the selected DateTime is in the future
+        if (_selectedDate!.isAfter(now)) {
+          openDate = _selectedDate!.difference(now);
 
           setState(() {});
         } else {
@@ -397,6 +434,7 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
   }
 
   Widget _buildMediaPreview() {
+    //* If file media is loading
     if (isMediaLoading) {
       return Center(
         child: CircularProgressIndicator.adaptive(
@@ -405,19 +443,27 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
       );
     }
 
-    if (isImageFile && _file != null ) {
+    //* If image_file and user select new image
+    //*
+    if (isImageFile && xFile != null) {
+      // else if (isImageFile && _file != null) {
+
+      Vx.log("User select Image file");
       return Center(
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: Image.file(
-            _file!,
+            File(xFile!.path),
             height: 200,
             filterQuality: FilterQuality.high,
             fit: BoxFit.fill,
           ),
         ),
       );
-    }else if(isImageFile && media != null){
+    }
+    //* If image_file and has already uploaded to firebase
+    else if (isImageFile && media != null) {
+      Vx.log("User have Image from cloud");
       return Center(
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
@@ -431,11 +477,15 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
       );
     }
 
+    // TODO  If videoFile and has already uploaded to cloud storage
+
+    //* If videoFile and User have video OR if user select new video
+    //*
     if (isVideoFile &&
         _controller != null &&
         _controller!.value.isInitialized) {
       bool isPlaying = _controller!.value.isPlaying;
-
+      Vx.log("User have Video from cloud or Select from storage");
       return Stack(
         alignment: AlignmentDirectional.center,
         children: [
@@ -613,49 +663,33 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
       height: 50,
       child: AppButton(
           onPressed: () async {
+            FocusManager.instance.primaryFocus?.unfocus();
             if (titleController.text.isEmpty) {
               appSnackBar(context: context, text: "Capsule title is required");
               return;
             }
 
-            if (_file == null && xFile == null) {
+            if (xFile == null && xFile == null && media == null) {
+              // if (_file == null && xFile == null && media == null) {
               appSnackBar(context: context, text: "Capsule file is required");
               return;
             }
 
-            var result = await PersistentNavBarNavigator.pushDynamicScreen(
-              context,
-              screen: MaterialPageRoute(
-                builder: (context) => PreviewCapsule(
-                  capsuleName: titleController.text,
-                  capsuleDescription: descriptionController.text,
-                  isCapsulePrivate: isCapsuleToggled,
-                  isTimePrivate: isTimeToggled,
-                  isImageFile: isImageFile,
-                  isVideoFile: isVideoFile,
-                  openDateTime: _selectedDate,
-                  file: _file,
-                  xFile: xFile!,
-                ),
-              ),
-              withNavBar: false,
-            );
-
-            if (result != null) {
-              _resetData();
-            }
-            FocusManager.instance.primaryFocus?.unfocus();
-            if (mounted) setState(() {});
+            _updateCapsule();
           },
           radius: 24,
-          child: Text(
-            "Preview Capsule",
-            style: TextStyle(
-              color: AppColors.kWhiteColor,
-              fontSize: 22,
-              fontWeight: FontWeight.w500,
-            ),
-          )),
+          child: Obx(() => 
+          
+          _capsuleController.isCapsuleLoading.value ? 
+          CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation(AppColors.kWhiteColor),)
+          : Text(
+                "Save Capsule",
+                style: TextStyle(
+                  color: AppColors.kWhiteColor,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w500,
+                ),
+              ))),
     );
   }
 }
