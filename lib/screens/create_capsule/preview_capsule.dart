@@ -1,17 +1,16 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:future_capsule/config/firebase_auth_service.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
-import 'package:future_capsule/data/services/capsule_service.dart';
+import 'package:future_capsule/data/controllers/capsule.controller.dart';
 import 'package:future_capsule/data/services/firebase_storage.dart';
 import 'package:future_capsule/screens/create_capsule/toggle.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:slide_countdown/slide_countdown.dart';
 import 'package:uuid/uuid.dart';
 import 'package:velocity_x/velocity_x.dart';
-
 
 class PreviewCapsule extends StatefulWidget {
   const PreviewCapsule({
@@ -25,6 +24,7 @@ class PreviewCapsule extends StatefulWidget {
     required this.openDateTime,
     required this.file,
     required this.xFile,
+    this.media,
   });
 
   final String capsuleName;
@@ -35,7 +35,8 @@ class PreviewCapsule extends StatefulWidget {
   final bool isVideoFile;
   final DateTime openDateTime;
   final File? file;
-  final XFile xFile;
+  final XFile? xFile;
+  final String? media;
 
   @override
   State<PreviewCapsule> createState() => _PreviewCapsuleState();
@@ -43,14 +44,12 @@ class PreviewCapsule extends StatefulWidget {
 
 class _PreviewCapsuleState extends State<PreviewCapsule> {
   late Duration openDate;
-  late CapsuleService _capsuleService;
+  final CapsuleController _capsuleController = Get.put(CapsuleController());
   late FirebaseStore _firebaseStore;
   String uid = const Uuid().v4();
-  bool isCapsuleLoading = false;
 
   @override
   void initState() {
-    _capsuleService = CapsuleService();
     _firebaseStore = FirebaseStore();
     openDate = widget.openDateTime.difference(DateTime.now());
 
@@ -58,8 +57,8 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
   }
 
   Future<String?> uploadCapsuleFile() async {
-    File mediaFile = File(widget.xFile.path);
-
+    if(widget.xFile == null) return null;
+    File mediaFile = File(widget.xFile!.path);
     return await _firebaseStore.uploadImageToCloud(
       filePath: "capsule_media",
       file: mediaFile,
@@ -80,7 +79,8 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
   }
 
   String getExtensionType() {
-    String extension = widget.xFile.path.split('.').last.toLowerCase();
+     if(widget.xFile == null) return "null";
+    String extension = widget.xFile!.path.split('.').last.toLowerCase();
 
     const Map<String, String> mimeTypes = {
       'jpg': 'image/jpeg',
@@ -105,43 +105,49 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
   }
 
   void saveCapsule() async {
-    setState(() {
-      isCapsuleLoading = true;
-    });
+    // Set loading to true at the very beginning
+    _capsuleController.isCapsuleLoading(true);
+
     String? mediaURL;
     String? thumbnailUrl;
 
-    if (widget.isVideoFile) {
-      thumbnailUrl = await uploadThumbNailImage();
-      mediaURL = await uploadCapsuleFile();
-    } else {
-      mediaURL = await uploadCapsuleFile();
+    try {
+      if (widget.isVideoFile) {
+        List<String?> result = await Future.wait([
+          uploadThumbNailImage(),
+          uploadCapsuleFile(),
+        ]);
+        thumbnailUrl = result[0];
+        mediaURL = result[1];
+      } else {
+        mediaURL = await uploadCapsuleFile();
+      }
+
+      String type = getExtensionType();
+
+      _capsuleController.createCapsule({
+        "title": widget.capsuleName,
+        "type": type,
+        "description": widget.capsuleDescription,
+        "mediaURL": mediaURL,
+        "thumbnail": thumbnailUrl,
+        "openingDate": widget.openDateTime,
+        "isTimePrivate": widget.isTimePrivate,
+        "isCapsulePrivate": widget.isCapsulePrivate,
+      });
+
+      appBar(text: "Future Capsule has been created");
+      Navigator.of(context).pop("result");
+    } catch (e) {
+      Vx.log("Error in saveCapsule: $e");
+    } finally {
+      // Ensure loading is turned off in case of error
+      _capsuleController.isCapsuleLoading(false);
     }
-    String type = getExtensionType();
-
-    _capsuleService.createCapsule({
-      "title": widget.capsuleName,
-      "type": type,
-      "description": widget.capsuleDescription,
-      "mediaURL": mediaURL,
-      "thumbnail": thumbnailUrl,
-      "openingDate": widget.openDateTime,
-      "isTimePrivate": widget.isTimePrivate,
-      "isCapsulePrivate": widget.isCapsulePrivate,
-    });
-
-    appSnackBar(context: context, text: "Future Capsule has been created");
-
-    setState(() {
-      isCapsuleLoading = false;
-    });
-
-    Navigator.of(context).pop("result");
   }
 
   @override
   Widget build(BuildContext context) {
-   
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -219,6 +225,13 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
       child: Stack(
         alignment: AlignmentDirectional.center,
         children: [
+          if (widget.media != null)
+            Image.network(
+              widget.media!,
+              height: 200,
+              filterQuality: FilterQuality.high,
+              fit: BoxFit.fill,
+            ),
           if (fileBytes != null)
             Image.file(
               fileBytes,
@@ -394,8 +407,9 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
           child: AppButton(
             onPressed: saveCapsule,
             radius: 24,
-            child: Center(
-              child: isCapsuleLoading
+            child: Center(child: Obx(() {
+              Vx.log(_capsuleController.isCapsuleLoading.value);
+              return _capsuleController.isCapsuleLoading.value
                   ? CircularProgressIndicator.adaptive(
                       valueColor: AlwaysStoppedAnimation(AppColors.kWhiteColor),
                     )
@@ -406,8 +420,8 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
-                    ),
-            ),
+                    );
+            })),
           ),
         ),
       ],

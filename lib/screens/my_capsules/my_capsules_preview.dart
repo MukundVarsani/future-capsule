@@ -5,28 +5,15 @@ import 'package:future_capsule/data/models/capsule_model.dart';
 import 'package:future_capsule/screens/create_capsule/toggle.dart';
 import 'package:future_capsule/screens/my_capsules/edit_capsule.dart';
 import 'package:slide_countdown/slide_countdown.dart';
+import 'package:velocity_x/velocity_x.dart';
 import 'package:video_player/video_player.dart';
 
 class MyCapsulesPreview extends StatefulWidget {
   const MyCapsulesPreview({
     super.key,
-    required this.capsuleTitle,
-    required this.capsuleDescription,
-    required this.openDateTime,
-    required this.isTimePrivate,
-    required this.isCapsulePrivate,
-    required this.mediaURL,
-    required this.isVideoFile,
     required this.capsule,
   });
 
-  final String capsuleTitle;
-  final String capsuleDescription;
-  final String mediaURL;
-  final DateTime openDateTime;
-  final bool isTimePrivate;
-  final bool isCapsulePrivate;
-  final bool isVideoFile;
   final CapsuleModel capsule;
 
   @override
@@ -37,25 +24,31 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
   late Duration openDate;
   static VideoPlayerController? _controller;
   bool isCapsuleLoading = false;
+  late CapsuleModel userCapsule; 
+  bool isVideoFile = false;
 
   @override
   void initState() {
-    openDate = widget.openDateTime.difference(DateTime.now());
-    if (widget.isVideoFile) _videoInitialize();
+
+    userCapsule  = widget.capsule;  
+    isVideoFile = userCapsule.media[0].type.contains('video');
+    openDate = userCapsule.openingDate.difference(DateTime.now());
+    if (isVideoFile) _videoInitialize();
+
     super.initState();
   }
 
   void _videoInitialize() {
-    if (_controller == null || _controller!.dataSource != widget.mediaURL) {
+    if (_controller == null || _controller!.dataSource != userCapsule.media[0].url) {
       if (_controller != null) {
         _controller!.dispose(); // Dispose of the old controller if any
       }
 
-      _controller = VideoPlayerController.networkUrl(Uri.parse(widget.mediaURL))
+      _controller = VideoPlayerController.networkUrl(Uri.parse(userCapsule.media[0].url))
         ..initialize().then((_) {
           setState(() {});
         }).catchError((error) {
-          debugPrint("Error initializing video: $error");
+          Vx.log("Error initializing video: $error");
         });
     }
   }
@@ -89,11 +82,11 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
         child: ListView(
           children: [
             const SizedBox(height: 20),
-            _buildTitleField(widget.capsuleTitle),
+            _buildTitleField(userCapsule.title),
             const SizedBox(height: 10),
-            _buildFilePreview(widget.mediaURL, widget.isCapsulePrivate),
+            _buildFilePreview(userCapsule.media[0].url, userCapsule.privacy.isCapsulePrivate),
             const SizedBox(height: 10),
-            _buildDescriptionField(widget.capsuleDescription),
+            _buildDescriptionField(userCapsule.description ?? ".."),
             const SizedBox(height: 30),
             _buildDateTimePreview(),
             const SizedBox(height: 24),
@@ -132,7 +125,7 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
   }
 
   Widget _buildFilePreview(String capsuleURL, bool isCapsulePrivate) {
-    if (widget.isVideoFile &&
+    if (isVideoFile &&
         _controller != null &&
         _controller!.value.isInitialized) {
       bool isPlaying = _controller!.value.isPlaying;
@@ -177,7 +170,7 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
       );
     }
 
-    if (!widget.isVideoFile) {
+    if (!isVideoFile) {
       return Container(
         constraints: const BoxConstraints(maxHeight: 200),
         decoration: BoxDecoration(
@@ -311,7 +304,7 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
               height: 8,
             ),
             AnimatedToggle(
-              isToggled: widget.isCapsulePrivate,
+              isToggled: userCapsule.privacy.isCapsulePrivate,
               onIcon: Icons.lock,
               offIcon: Icons.lock_open,
             ),
@@ -332,7 +325,7 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
               height: 8,
             ),
             AnimatedToggle(
-              isToggled: widget.isTimePrivate,
+              isToggled: userCapsule.privacy.isTimePrivate,
               onIcon: Icons.check,
               offIcon: Icons.close,
             ),

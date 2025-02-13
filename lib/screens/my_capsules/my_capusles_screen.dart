@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
-import 'package:future_capsule/data/controllers/user.controller.dart';
+import 'package:future_capsule/data/controllers/capsule.controller.dart';
 import 'package:future_capsule/data/models/capsule_model.dart';
-import 'package:future_capsule/data/services/capsule_service.dart';
 import 'package:future_capsule/screens/my_capsules/capsule_tile.dart';
 import 'package:future_capsule/screens/my_capsules/my_capsules_preview.dart';
 import 'package:get/get.dart';
@@ -19,23 +18,21 @@ class MyCapuslesScreen extends StatefulWidget {
 }
 
 class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
-  late CapsuleService _capsuleService;
-  final UserController _userController = Get.put(UserController());
-  late final String userId;
+  final CapsuleController _capsuleController = Get.put(CapsuleController());
+
   List<CapsuleModel> _userCapsules = [];
   List<CapsuleModel> _filterCapsules = [];
 
   @override
   void initState() {
-    _capsuleService = CapsuleService();
-    userId = _userController.currentUser.value?.uid ?? 'NA';
-    getUserCapsules(userId);
+
+    getUserCapsules();
     super.initState();
   }
 
-  void getUserCapsules(String userId) async {
-    _userCapsules = await _capsuleService.getUserCreateCapsule(userId);
-    _filterCapsules = _userCapsules;
+  void getUserCapsules() async {
+    _capsuleController.getUserCapsule();
+     _filterCapsules = _capsuleController.capsules;
     if (mounted) setState(() {});
   }
 
@@ -173,21 +170,13 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
   }
 
 
-void updateCapsule(){
-
-  Map<String, dynamic> data = {
-    "capsule_Id" : "ca38d616-0e8a-4d32-b1a3-cc92e61f0023",
-    "title" : "My Garden",
-    "privacy.isTimePrivate" : true,
-  };
-  _capsuleService.editCapsule(data);
-}
 
   @override
   Widget build(BuildContext context) {
-    updateCapsule();
+    // updateCapsule();
     return Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           title: Row(
             children: [
               Text(
@@ -213,50 +202,66 @@ void updateCapsule(){
           ],
         ),
         body: RefreshIndicator.adaptive(
-          color: AppColors.kWarmCoralColor,
-          onRefresh: () async => getUserCapsules(userId),
-          child: ListView.builder(
-              itemCount: _filterCapsules.length,
-              itemBuilder: (context, index) {
-                CapsuleModel capsule = _filterCapsules[index];
-                DateTime createdtime = capsule.createdAt;
-                DateTime openTime = capsule.openingDate;
-                String formattedDate =
-                    DateFormat('dd-MMM-yy, HH:mm:ss').format(openTime);
+            color: AppColors.kWarmCoralColor,
+            onRefresh: () async => getUserCapsules(),
+            child: Obx(
+              () {
+                final capsules = _capsuleController.capsules;
+                _filterCapsules = _capsuleController.capsules;
 
-                String? imgUrl = capsule.media[0].type.contains('video')
-                    ? capsule.media[0].thumbnail
-                    : capsule.media[0].url;
+                if (_capsuleController.isCapsuleLoading.value) {
+                  return Center(
+                    child: CircularProgressIndicator.adaptive(
+                        valueColor:
+                            AlwaysStoppedAnimation(AppColors.kWarmCoralColor)),
+                  );
+                }
 
-                return GestureDetector(
-                  onTap: () {
-                   PersistentNavBarNavigator.pushDynamicScreen(
-                    context,
-                    withNavBar: false,
-                      screen:  MaterialPageRoute(
-                          builder: (_) => MyCapsulesPreview(
-                            capsule: capsule,
-                                capsuleTitle: capsule.title,
-                                capsuleDescription: capsule.description ?? "..",
-                                openDateTime: capsule.openingDate,
-                                isTimePrivate: capsule.privacy.isTimePrivate,
-                                isCapsulePrivate:
-                                    capsule.privacy.isCapsulePrivate,
-                                mediaURL: capsule.media[0].url,
-                                isVideoFile: capsule.media[0].type.contains('video'),
-                              )),
-                    );
-                  },
-                  child: CapsuleTile(
-                    capsuleTitle: capsule.title,
-                    imgURL: imgUrl ?? '',
-                    createDate: createdtime.timeAgo(),
-                    isCapsulePrivate: capsule.privacy.isCapsulePrivate,
-                    isTimePrivate: capsule.privacy.isTimePrivate,
-                    openDate: formattedDate,
-                  ),
-                );
-              }),
-        ));
+                if (capsules.isEmpty) {
+                  return const Center(
+                      child:
+                          Text("No capsules available")); // Handle empty state
+                }
+                return ListView.builder(
+                    itemCount: _filterCapsules.length,
+                    itemBuilder: (context, index) {
+                      CapsuleModel capsule = _filterCapsules[index];
+                      DateTime createdtime = capsule.createdAt;
+                      DateTime openTime = capsule.openingDate;
+                      String formattedDate =
+                          DateFormat('dd-MMM-yy, HH:mm:ss').format(openTime);
+
+                      String? imgUrl = capsule.media[0].type.contains('video')
+                          ? capsule.media[0].thumbnail
+                          : capsule.media[0].url;
+
+                      return GestureDetector(
+                        onTap: () =>
+                            _navigateToCapsulePreview(context, capsule),
+                        child: CapsuleTile(
+                          capsuleTitle: capsule.title,
+                          imgURL: imgUrl ?? '',
+                          createDate: createdtime.timeAgo(),
+                          isCapsulePrivate: capsule.privacy.isCapsulePrivate,
+                          isTimePrivate: capsule.privacy.isTimePrivate,
+                          openDate: formattedDate,
+                        ),
+                      );
+                    });
+              },
+            )));
+  }
+
+  void _navigateToCapsulePreview(BuildContext context, CapsuleModel capsule) {
+    PersistentNavBarNavigator.pushDynamicScreen(
+      context,
+      withNavBar: false,
+      screen: MaterialPageRoute(
+        builder: (_) => MyCapsulesPreview(
+          capsule: capsule,
+    
+        ),
+      ),
+    );
   }
 }
