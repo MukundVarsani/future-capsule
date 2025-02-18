@@ -17,7 +17,7 @@ class FirebaseAuthService {
     try {
       return _firebaseAuth.currentUser;
     } catch (e) {
-      print("Error while getting current User=============== $e");
+      Vx.log("Error while getting current User=============== $e");
       return null;
     }
   }

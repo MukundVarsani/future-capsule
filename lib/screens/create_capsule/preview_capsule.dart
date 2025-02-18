@@ -57,7 +57,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
   }
 
   Future<String?> uploadCapsuleFile() async {
-    if(widget.xFile == null) return null;
+    if (widget.xFile == null) return null;
     File mediaFile = File(widget.xFile!.path);
     return await _firebaseStore.uploadImageToCloud(
       filePath: "capsule_media",
@@ -79,7 +79,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
   }
 
   String getExtensionType() {
-     if(widget.xFile == null) return "null";
+    if (widget.xFile == null) return "null";
     String extension = widget.xFile!.path.split('.').last.toLowerCase();
 
     const Map<String, String> mimeTypes = {
@@ -105,13 +105,12 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
   }
 
   void saveCapsule() async {
-    // Set loading to true at the very beginning
-    _capsuleController.isCapsuleLoading(true);
-
     String? mediaURL;
     String? thumbnailUrl;
 
     try {
+      _capsuleController.isCapsuleLoading(true);
+
       if (widget.isVideoFile) {
         List<String?> result = await Future.wait([
           uploadThumbNailImage(),
@@ -141,7 +140,6 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
     } catch (e) {
       Vx.log("Error in saveCapsule: $e");
     } finally {
-      // Ensure loading is turned off in case of error
       _capsuleController.isCapsuleLoading(false);
     }
   }
@@ -407,21 +405,20 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
           child: AppButton(
             onPressed: saveCapsule,
             radius: 24,
-            child: Center(child: Obx(() {
-              Vx.log(_capsuleController.isCapsuleLoading.value);
-              return _capsuleController.isCapsuleLoading.value
-                  ? CircularProgressIndicator.adaptive(
-                      valueColor: AlwaysStoppedAnimation(AppColors.kWhiteColor),
-                    )
-                  : Text(
-                      "Create",
-                      style: TextStyle(
-                        color: AppColors.kWhiteColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    );
-            })),
+            child: Center(
+                child: Obx(() => _capsuleController.isCapsuleLoading.value
+                    ? CircularProgressIndicator.adaptive(
+                        valueColor:
+                            AlwaysStoppedAnimation(AppColors.kWhiteColor),
+                      )
+                    : Text(
+                        "Create",
+                        style: TextStyle(
+                          color: AppColors.kWhiteColor,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ))),
           ),
         ),
       ],

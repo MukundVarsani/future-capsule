@@ -152,7 +152,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             },
                             icon: Icon(!isVisible
                                 ? Icons.visibility
-                                : Icons.visibility_off)),
+                                : Icons.visibility_off),),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),

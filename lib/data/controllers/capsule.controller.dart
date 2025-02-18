@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
 import 'package:future_capsule/data/controllers/user.controller.dart';
 import 'package:future_capsule/data/models/capsule_model.dart';
@@ -18,6 +19,7 @@ class CapsuleController extends GetxController {
 
   var capsules = <CapsuleModel>[].obs;
   var isCapsuleLoading = false.obs;
+  var isCapsuleDeleting = false.obs;
 
   String _extractMediaIdFromUrl(String url) {
     // Define a regular expression to extract the value
@@ -35,9 +37,9 @@ class CapsuleController extends GetxController {
 
     if (creatorId == null) return;
 
+    String mediaId = _extractMediaIdFromUrl(capsuleData['mediaURL']);
     DateTime now = DateTime.now();
     String capsuleId = _uuid.v4();
-    String mediaId = _extractMediaIdFromUrl(capsuleData['mediaURL']);
 
     CapsuleModel capsuleModel = CapsuleModel(
       capsuleId: capsuleId,
@@ -65,17 +67,22 @@ class CapsuleController extends GetxController {
     );
 
     try {
+
       await _firebaseFirestore
           .collection("Users_Capsules")
           .doc(capsuleId)
           .set(capsuleModel.toJson());
+
+      await getUserCapsule();
     } catch (e) {
       Vx.log("Error while creating capsule: $e");
-      throw "Error------> $e";
-    } finally {}
+      rethrow;
+    } finally {
+    isCapsuleLoading(false);
+    }
   }
 
-  void getUserCapsule() async {
+  Future getUserCapsule() async {
     CollectionReference reference =
         _firebaseFirestore.collection("Users_Capsules");
 
@@ -133,7 +140,7 @@ class CapsuleController extends GetxController {
           .doc(updateData['capsule_Id'])
           .update(updateData);
 
-      getUserCapsule();
+      await getUserCapsule();
       Get.back();
       Get.back();
       appBar(text: "Capsule Updated");
@@ -142,6 +149,27 @@ class CapsuleController extends GetxController {
       appBar(text: "Error in updating Capsule : $e");
     } finally {
       isCapsuleLoading(false);
+    }
+  }
+
+  void deleteCapsule({required String capsuleId}) async {
+    String? creatorId = _userController.getUser?.uid;
+    if (creatorId == null) return;
+
+    try {
+      isCapsuleDeleting(true);
+      await FirebaseFirestore.instance
+          .collection("Users_Capsules")
+          .doc(capsuleId)
+          .delete();
+
+      await getUserCapsule();
+      Get.back();
+      appBar(text: "Capsule deleted Successfully");
+    } catch (e) {
+      Vx.log("Error while deleting Capsule : $e");
+    } finally {
+      isCapsuleDeleting(false);
     }
   }
 }

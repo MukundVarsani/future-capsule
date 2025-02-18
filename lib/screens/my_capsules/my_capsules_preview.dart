@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
+import 'package:future_capsule/data/controllers/capsule.controller.dart';
 import 'package:future_capsule/data/models/capsule_model.dart';
 import 'package:future_capsule/screens/create_capsule/toggle.dart';
 import 'package:future_capsule/screens/my_capsules/edit_capsule.dart';
+import 'package:get/get.dart';
 import 'package:slide_countdown/slide_countdown.dart';
 import 'package:velocity_x/velocity_x.dart';
 import 'package:video_player/video_player.dart';
@@ -24,13 +26,13 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
   late Duration openDate;
   static VideoPlayerController? _controller;
   bool isCapsuleLoading = false;
-  late CapsuleModel userCapsule; 
+  late CapsuleModel userCapsule;
   bool isVideoFile = false;
+  final CapsuleController _capsuleController = Get.put(CapsuleController());
 
   @override
   void initState() {
-
-    userCapsule  = widget.capsule;  
+    userCapsule = widget.capsule;
     isVideoFile = userCapsule.media[0].type.contains('video');
     openDate = userCapsule.openingDate.difference(DateTime.now());
     if (isVideoFile) _videoInitialize();
@@ -39,21 +41,28 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
   }
 
   void _videoInitialize() {
-    if (_controller == null || _controller!.dataSource != userCapsule.media[0].url) {
+    if (_controller == null ||
+        _controller!.dataSource != userCapsule.media[0].url) {
       if (_controller != null) {
         _controller!.dispose(); // Dispose of the old controller if any
       }
 
-      _controller = VideoPlayerController.networkUrl(Uri.parse(userCapsule.media[0].url))
-        ..initialize().then((_) {
-          setState(() {});
-        }).catchError((error) {
-          Vx.log("Error initializing video: $error");
-        });
+      _controller =
+          VideoPlayerController.networkUrl(Uri.parse(userCapsule.media[0].url))
+            ..initialize().then((_) {
+              if (mounted) {
+                if (mounted) setState(() {});
+              }
+            }).catchError((error) {
+              Vx.log("Error initializing video: $error");
+            });
     }
   }
 
-  void deleteCapsule() async {}
+  void deleteCapsule(String capsuleId) async {
+    _capsuleController.deleteCapsule(capsuleId: capsuleId);
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +93,8 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
             const SizedBox(height: 20),
             _buildTitleField(userCapsule.title),
             const SizedBox(height: 10),
-            _buildFilePreview(userCapsule.media[0].url, userCapsule.privacy.isCapsulePrivate),
+            _buildFilePreview(
+                userCapsule.media[0].url, userCapsule.privacy.isCapsulePrivate),
             const SizedBox(height: 10),
             _buildDescriptionField(userCapsule.description ?? ".."),
             const SizedBox(height: 30),
@@ -367,10 +377,11 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
           constraints: const BoxConstraints(
               maxWidth: 150, minWidth: 70, maxHeight: 55, minHeight: 50),
           child: AppButton(
-            onPressed: deleteCapsule,
+            onPressed: () => deleteCapsule(userCapsule.capsuleId),
             radius: 24,
             child: Center(
-              child: isCapsuleLoading
+                child: Obx(
+              () => _capsuleController.isCapsuleDeleting.value
                   ? CircularProgressIndicator.adaptive(
                       valueColor: AlwaysStoppedAnimation(AppColors.kWhiteColor),
                     )
@@ -382,7 +393,7 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-            ),
+            )),
           ),
         ),
       ],

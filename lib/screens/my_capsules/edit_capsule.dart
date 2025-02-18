@@ -477,7 +477,6 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
       );
     }
 
-    // TODO  If videoFile and has already uploaded to cloud storage
 
     //* If videoFile and User have video OR if user select new video
     //*

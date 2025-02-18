@@ -20,7 +20,7 @@ class MyCapuslesScreen extends StatefulWidget {
 class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
   final CapsuleController _capsuleController = Get.put(CapsuleController());
 
-  List<CapsuleModel> _userCapsules = [];
+  final List<CapsuleModel> _userCapsules = [];
   List<CapsuleModel> _filterCapsules = [];
 
   @override
@@ -141,14 +141,14 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
   void filterByCreateDate() {
     _filterCapsules = _userCapsules;
     _filterCapsules.sort((b, a) => a.createdAt.compareTo(b.createdAt));
-    setState(() {});
+  if (mounted) setState(() {});
     Navigator.of(context, rootNavigator: true).pop();
   }
 
   void filterByOpenDate() {
     _filterCapsules = _userCapsules;
     _filterCapsules.sort((a, b) => a.openingDate.compareTo(b.openingDate));
-    setState(() {});
+    if (mounted) setState(() {});
     Navigator.of(context, rootNavigator: true).pop();
   }
 
@@ -157,7 +157,7 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
       return d.privacy.isCapsulePrivate == true;
     }).toList();
 
-    setState(() {});
+    if (mounted) setState(() {});
     Navigator.of(context, rootNavigator: true).pop();
   }
 
@@ -165,7 +165,7 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
     _filterCapsules = _userCapsules.where((d) {
       return d.privacy.isTimePrivate == true;
     }).toList();
-    setState(() {});
+   if (mounted) setState(() {});
     Navigator.of(context, rootNavigator: true).pop();
   }
 

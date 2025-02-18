@@ -36,7 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _showEditImageDialog();
   }
 
-  _updateUserData(Map<String, dynamic> updatedData) {
+    _updateUserData(Map<String, dynamic> updatedData) {
     _userController.updateUserData(updatedData);
   }
 
