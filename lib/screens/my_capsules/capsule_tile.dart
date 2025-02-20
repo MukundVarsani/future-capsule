@@ -33,9 +33,9 @@ class CapsuleTile extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
                 color: AppColors.kWarmCoralColor,
-                borderRadius: const BorderRadius.only(
+                borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(10),
                   bottomLeft: Radius.circular(10),
                 )),
@@ -62,7 +62,7 @@ class CapsuleTile extends StatelessWidget {
                           child: CircularProgressIndicator(
                             value: downloadProgress.progress,
                             valueColor:
-                            AlwaysStoppedAnimation(AppColors.kWhiteColor),
+                            const AlwaysStoppedAnimation(AppColors.kWhiteColor),
                             strokeWidth: 2, // Make it thinner
                           ),
                         ),

@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
 import 'package:future_capsule/data/controllers/user.controller.dart';
 import 'package:future_capsule/data/models/capsule_model.dart';
+import 'package:future_capsule/data/models/user_model.dart';
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
 import 'package:velocity_x/velocity_x.dart';
@@ -20,10 +20,14 @@ class CapsuleController extends GetxController {
   var capsules = <CapsuleModel>[].obs;
   var isCapsuleLoading = false.obs;
   var isCapsuleDeleting = false.obs;
+  var isAvailableUserLoading = false.obs;
+
+  RxInt selectedUser = (-1).obs;
+  RxList<UserModel> usersList = <UserModel>[].obs;
 
   String _extractMediaIdFromUrl(String url) {
     // Define a regular expression to extract the value
-    final regex = RegExp(r'capsule_media%2F[^%]*%2F([^%]*)%2F');
+    final regex = RegExp(r'capsule_media%2F[^%]*%2F([^;%]*)%2F');
 
     // Match the regex with the input URL
     final match = regex.firstMatch(url);
@@ -67,7 +71,6 @@ class CapsuleController extends GetxController {
     );
 
     try {
-
       await _firebaseFirestore
           .collection("Users_Capsules")
           .doc(capsuleId)
@@ -78,7 +81,7 @@ class CapsuleController extends GetxController {
       Vx.log("Error while creating capsule: $e");
       rethrow;
     } finally {
-    isCapsuleLoading(false);
+      isCapsuleLoading(false);
     }
   }
 
@@ -171,5 +174,58 @@ class CapsuleController extends GetxController {
     } finally {
       isCapsuleDeleting(false);
     }
+  }
+
+  void getAvailableUser() async {
+    String? currentUserId = _userController.getUser?.uid;
+    if (currentUserId == null) return;
+
+    try {
+      isAvailableUserLoading(true);
+      QuerySnapshot snapshot = await _firebaseFirestore
+          .collection('Future_Capsule_Users')
+          .where('userId', isNotEqualTo: currentUserId) // Exclude current user
+          .get();
+
+      List<UserModel> fetchedUsers = snapshot.docs
+          .map((doc) => UserModel.fromJson(doc.data() as Map<String, dynamic>))
+          .toList();
+
+      // Update the GetX observable list
+      usersList.assignAll(fetchedUsers);
+    } catch (e) {
+      Vx.log(e.toString());
+    } finally {
+      isAvailableUserLoading(false);
+    }
+  }
+
+  void sendCapsuleToUser({
+    required CapsuleModel capsule,
+  }) async {
+    String? currentUserId = _userController.getUser?.uid;
+  
+    String? recipientId = usersList.value[selectedUser.value].userId;
+    if (currentUserId == null) return;
+
+    DocumentReference capsuleRef =
+        _firebaseFirestore.collection('Users_Capsules').doc(capsule.capsuleId);
+    Map<String, dynamic> recipientData = {
+      "recipientId": recipientId,
+      "status": capsule.status
+    };
+
+    try {
+      await capsuleRef.update({
+        "privacy.sharedWith": FieldValue.arrayUnion([recipientId]),
+        "recipients": FieldValue.arrayUnion([recipientData])
+      });
+
+      appBar(text: 'Capsule sent');
+      selectedUser(-1);
+    
+    } catch (e) {
+      Vx.log(e.toString());
+    } 
   }
 }

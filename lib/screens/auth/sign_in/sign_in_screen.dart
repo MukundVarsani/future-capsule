@@ -75,13 +75,13 @@ class _SignInScreenState extends State<SignInScreen> {
             Container(
               width: double.infinity,
               height: 250,
-              decoration: BoxDecoration(
+              decoration:const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [AppColors.kWarmCoralColor, AppColors.kAmberColor],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: const BorderRadius.only(
+                borderRadius:  BorderRadius.only(
                   bottomLeft: Radius.circular(50),
                   bottomRight: Radius.circular(50),
                 ),
@@ -176,7 +176,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         child: 
                         Obx(
                           ()=>_authController.isLoading.value ? 
-                           CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation(AppColors.kWhiteColor),):
+                         const  CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation(AppColors.kWhiteColor),):
                         const Text(
                           "Sign In",
                           style: TextStyle(fontSize: 18, color: Colors.white),
@@ -200,7 +200,7 @@ class _SignInScreenState extends State<SignInScreen> {
                               ),
                             );
                           },
-                          child: Text(
+                          child: const Text(
                             "Sign up",
                             style: TextStyle(
                               color: AppColors.kWarmCoralColor,
@@ -211,7 +211,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         const Spacer(),
                         GestureDetector(
                             onTap: forgetPassword,
-                            child: Text(
+                            child:const Text(
                               "Forget password?",
                               style: TextStyle(
                                   fontWeight: FontWeight.w500,

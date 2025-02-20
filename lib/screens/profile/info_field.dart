@@ -41,7 +41,7 @@ class _InfoFieldState extends State<InfoField> {
                   ),
                   TextField(
                     controller: _controller,
-                    decoration: InputDecoration(
+                    decoration:  const  InputDecoration(
                       focusedBorder: UnderlineInputBorder(
                         borderSide: BorderSide(
                             color: AppColors.kWarmCoralColor, width: 2.0),
@@ -57,7 +57,7 @@ class _InfoFieldState extends State<InfoField> {
                     children: [
                       GestureDetector(
                         onTap: ()=> Navigator.pop(context),
-                        child: Text(
+                        child:  const  Text(
                           "Cancel",
                           style: TextStyle(
                               color: AppColors.kWarmCoralColor,
@@ -75,7 +75,7 @@ class _InfoFieldState extends State<InfoField> {
                       }
                           Navigator.pop(context); // Close dialog
                         },
-                        child: Text(
+                        child: const  Text(
                           "Save",
                           style: TextStyle(
                               color: AppColors.kWarmCoralColor,
@@ -113,7 +113,7 @@ class _InfoFieldState extends State<InfoField> {
                 children: [
                   Text(
                     widget.fieldName,
-                    style: TextStyle(
+                    style: const  TextStyle(
                         color: AppColors.kLightBlackColor,
                         fontSize: 14,
                         fontWeight: FontWeight.w500),
@@ -121,7 +121,7 @@ class _InfoFieldState extends State<InfoField> {
                   SizedBox(
                     width: MediaQuery.sizeOf(context).width - 130,
                     child: Text(widget.fieldValue,
-                        style: TextStyle(
+                        style: const  TextStyle(
                             overflow: TextOverflow.ellipsis,
                             color: AppColors.kLightGreyColor,
                             fontSize: 16,
@@ -133,7 +133,7 @@ class _InfoFieldState extends State<InfoField> {
               if (widget.isEditable)
                 GestureDetector(
                   onTap: _editField,
-                  child: Icon(
+                  child: const  Icon(
                     Icons.edit,
                     size: 22,
                     color: AppColors.kWarmCoralColor,

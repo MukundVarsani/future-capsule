@@ -1,9 +1,13 @@
+// ignore_for_file: invalid_use_of_protected_member
+
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
+import 'package:future_capsule/core/widgets/snack_bar.dart';
 import 'package:future_capsule/data/controllers/capsule.controller.dart';
 import 'package:future_capsule/data/models/capsule_model.dart';
 import 'package:future_capsule/screens/create_capsule/toggle.dart';
+import 'package:future_capsule/screens/my_capsules/all_user_tile.dart';
 import 'package:future_capsule/screens/my_capsules/edit_capsule.dart';
 import 'package:get/get.dart';
 import 'package:slide_countdown/slide_countdown.dart';
@@ -25,6 +29,7 @@ class MyCapsulesPreview extends StatefulWidget {
 class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
   late Duration openDate;
   static VideoPlayerController? _controller;
+
   bool isCapsuleLoading = false;
   late CapsuleModel userCapsule;
   bool isVideoFile = false;
@@ -35,6 +40,7 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
     userCapsule = widget.capsule;
     isVideoFile = userCapsule.media[0].type.contains('video');
     openDate = userCapsule.openingDate.difference(DateTime.now());
+    _capsuleController.getAvailableUser();
     if (isVideoFile) _videoInitialize();
 
     super.initState();
@@ -61,7 +67,15 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
 
   void deleteCapsule(String capsuleId) async {
     _capsuleController.deleteCapsule(capsuleId: capsuleId);
+  }
 
+  void _sendCapsule() {
+    if (_capsuleController.selectedUser.value > -1) {
+      _capsuleController.sendCapsuleToUser(capsule: widget.capsule);
+    }else{
+      appBar(text: "Select user");
+    }
+    Get.back();
   }
 
   @override
@@ -72,13 +86,13 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_back,
             color: AppColors.kWhiteColor,
           ),
         ),
         backgroundColor: AppColors.kWarmCoralColor,
-        title: Text(
+        title: const Text(
           "Craft a Future Capsule",
           style: TextStyle(
               color: AppColors.kWhiteColor,
@@ -92,17 +106,26 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
           children: [
             const SizedBox(height: 20),
             _buildTitleField(userCapsule.title),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             _buildFilePreview(
                 userCapsule.media[0].url, userCapsule.privacy.isCapsulePrivate),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             _buildDescriptionField(userCapsule.description ?? ".."),
-            const SizedBox(height: 30),
+            const SizedBox(height: 18),
             _buildDateTimePreview(),
-            const SizedBox(height: 24),
+            const SizedBox(height: 18),
             _privacyBuilder(),
-            const SizedBox(height: 24),
+            const SizedBox(height: 18),
             _buildActionButtons(context),
+            const SizedBox(height: 18),
+            AppButton(
+                backgroundColor: AppColors.kTealGreenColor,
+                onPressed: _openBottomBar,
+                child: const Text("Send",
+                    style: TextStyle(
+                        color: AppColors.kWhiteColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 20)))
           ],
         ),
       ),
@@ -117,16 +140,16 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
         TextFormField(
           readOnly: true,
           initialValue: title,
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             hintText: "Capsule title",
             hintStyle: TextStyle(color: AppColors.kLightGreyColor),
-            border: const OutlineInputBorder(
+            border: OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(12)),
             ),
             focusedBorder: OutlineInputBorder(
               borderSide:
                   BorderSide(color: AppColors.kWarmCoralColor, width: 2.0),
-              borderRadius: const BorderRadius.all(Radius.circular(12)),
+              borderRadius: BorderRadius.all(Radius.circular(12)),
             ),
           ),
         ),
@@ -205,7 +228,7 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
                   borderRadius: BorderRadius.circular(18),
                   color: AppColors.kTealGreenColor07,
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.lock,
                   size: 50,
                   color: AppColors.kWarmCoralColor,
@@ -215,9 +238,9 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
         ),
       );
     }
-    return Center(
+    return const Center(
       child: CircularProgressIndicator.adaptive(
-        valueColor: const AlwaysStoppedAnimation<Color>(
+        valueColor: AlwaysStoppedAnimation<Color>(
             Colors.grey), // Buffered portion color
         backgroundColor: AppColors.kWarmCoralColor, // Background color
       ),
@@ -234,16 +257,16 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
           minLines: 3,
           readOnly: true,
           initialValue: description,
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             hintText: "Describe capsule",
             hintStyle: TextStyle(color: AppColors.kLightGreyColor),
-            border: const OutlineInputBorder(
+            border: OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(12)),
             ),
             focusedBorder: OutlineInputBorder(
               borderSide:
                   BorderSide(color: AppColors.kWarmCoralColor, width: 2.0),
-              borderRadius: const BorderRadius.all(Radius.circular(12)),
+              borderRadius: BorderRadius.all(Radius.circular(12)),
             ),
           ),
         ),
@@ -258,7 +281,7 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
         Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               "Revealing Your Capsule In",
               style: TextStyle(
                   fontSize: 18,
@@ -271,15 +294,15 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
             SlideCountdownSeparated(
               duration: openDate,
               slideDirection: SlideDirection.down,
-              separatorStyle:
-                  TextStyle(color: AppColors.kWarmCoralColor, fontSize: 20),
+              separatorStyle: const TextStyle(
+                  color: AppColors.kWarmCoralColor, fontSize: 20),
               separatorType: SeparatorType.symbol,
               separator: ':',
               decoration: BoxDecoration(
                 color: AppColors.kWarmCoralColor,
                 borderRadius: BorderRadius.circular(8),
               ),
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppColors.kWhiteColor,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -304,7 +327,7 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(
+            const Text(
               "Is Capsule private?",
               style: TextStyle(
                   fontWeight: FontWeight.bold,
@@ -324,7 +347,7 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               "Want Time private?",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
@@ -361,7 +384,7 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
                           controller: _controller,
                         ))),
             radius: 24,
-            child: Center(
+            child: const Center(
               child: Text(
                 "Edit",
                 style: TextStyle(
@@ -382,10 +405,10 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
             child: Center(
                 child: Obx(
               () => _capsuleController.isCapsuleDeleting.value
-                  ? CircularProgressIndicator.adaptive(
+                  ? const CircularProgressIndicator.adaptive(
                       valueColor: AlwaysStoppedAnimation(AppColors.kWhiteColor),
                     )
-                  : Text(
+                  : const Text(
                       "Delete",
                       style: TextStyle(
                         color: AppColors.kWhiteColor,
@@ -397,6 +420,105 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
           ),
         ),
       ],
+    );
+  }
+
+  void _openBottomBar() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          height: 600, // Fixed height of 600px
+          padding: const EdgeInsets.all(16),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  SizedBox(
+                    width: MediaQuery.sizeOf(context).width / 2,
+                    child: const Text(
+                      "Select User",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Get.back(),
+                    icon: const Icon(Icons.close,
+                        size: 28, color: AppColors.kWarmCoralColor),
+                  )
+                ],
+              ),
+              const SizedBox(height: 16),
+              Obx(
+                () => _capsuleController.isAvailableUserLoading.value
+                    ? const Center(
+                        child: CircularProgressIndicator.adaptive(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.grey), // Buffered portion color
+                          backgroundColor:
+                              AppColors.kWarmCoralColor, // Background color
+                        ),
+                      )
+                    : (_capsuleController.usersList.isNotEmpty)
+                        ? Expanded(
+                            child: ListView.builder(
+                              itemCount: _capsuleController.usersList.length,
+                              itemBuilder: (context, index) {
+                                return InkWell(
+                                  onTap: () => _capsuleController
+                                      .selectedUser.value = index,
+                                  child: Obx(() => AllUserTile(
+                                        isUserSelect: _capsuleController
+                                                .selectedUser.value ==
+                                            index,
+                                        name: _capsuleController
+                                            .usersList.value[index].name,
+                                        imgURL: _capsuleController.usersList
+                                            .value[index].profilePicture,
+                                      )),
+                                );
+                              },
+                            ),
+                          )
+                        : const Center(
+                            child: Text(
+                              "No User Found",
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+              ),
+              Container(
+                constraints: const BoxConstraints(maxWidth: 300, minWidth: 250),
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                child: AppButton(
+                  onPressed: _sendCapsule,
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      "Send",
+                      style:
+                          TextStyle(fontSize: 16, color: AppColors.kWhiteColor),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

@@ -36,7 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _showEditImageDialog();
   }
 
-    _updateUserData(Map<String, dynamic> updatedData) {
+  _updateUserData(Map<String, dynamic> updatedData) {
     _userController.updateUserData(updatedData);
   }
 
@@ -74,9 +74,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   @override
-  void initState() {  
-  _selectFiles = SelectFiles();
-    _currentUserId = _userController.getUser?.uid ;
+  void initState() {
+    _selectFiles = SelectFiles();
+    _currentUserId = _userController.getUser?.uid;
     super.initState();
   }
 
@@ -171,9 +171,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             height: 400,
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             width: MediaQuery.sizeOf(context).width,
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               color: AppColors.kWhiteColor,
-                              borderRadius: const BorderRadius.only(
+                              borderRadius: BorderRadius.only(
                                 bottomLeft: Radius.circular(36),
                                 bottomRight: Radius.circular(36),
                               ),
@@ -228,7 +228,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 borderRadius: BorderRadius.circular(24),
                                 color: AppColors.kWhiteColor,
                               ),
-                              child: Column(
+                              child: const Column(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceAround,
                                 children: [
@@ -238,13 +238,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     children: [
                                       Column(
                                         children: [
-                                          const Icon(
+                                          Icon(
                                             Icons.chat,
                                             size: 28,
                                             color:
                                                 Color.fromRGBO(255, 111, 97, 1),
                                           ),
-                                          const SizedBox(
+                                          SizedBox(
                                             height: 5,
                                           ),
                                           Text(
@@ -257,11 +257,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       ),
                                       Column(
                                         children: [
-                                          const Icon(Icons.dock,
+                                          Icon(Icons.dock,
                                               size: 28,
                                               color: Color.fromRGBO(
                                                   153, 113, 238, 1)),
-                                          const SizedBox(
+                                          SizedBox(
                                             height: 5,
                                           ),
                                           Text(
@@ -274,13 +274,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       ),
                                       Column(
                                         children: [
-                                          const Icon(
+                                          Icon(
                                             Icons.location_on_outlined,
                                             size: 28,
                                             color:
                                                 Color.fromRGBO(99, 197, 103, 1),
                                           ),
-                                          const SizedBox(
+                                          SizedBox(
                                             height: 5,
                                           ),
                                           Text(
@@ -302,11 +302,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     children: [
                                       Column(
                                         children: [
-                                          const Icon(Icons.family_restroom,
+                                          Icon(Icons.family_restroom,
                                               size: 28,
                                               color: Color.fromRGBO(
                                                   99, 197, 103, 1)),
-                                          const SizedBox(
+                                          SizedBox(
                                             height: 5,
                                           ),
                                           Text(
@@ -319,13 +319,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       ),
                                       Column(
                                         children: [
-                                          const Icon(
+                                          Icon(
                                             Icons.settings,
                                             size: 28,
                                             color: Color.fromRGBO(
                                                 153, 113, 238, 1),
                                           ),
-                                          const SizedBox(
+                                          SizedBox(
                                             height: 5,
                                           ),
                                           Text(
@@ -338,13 +338,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       ),
                                       Column(
                                         children: [
-                                          const Icon(
+                                          Icon(
                                             Icons.notifications,
                                             size: 28,
                                             color:
                                                 Color.fromRGBO(255, 111, 97, 1),
                                           ),
-                                          const SizedBox(
+                                          SizedBox(
                                             height: 5,
                                           ),
                                           Text(
@@ -403,14 +403,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
-                      child: Text(
+                      child: const Text(
                         "Cancel",
                         style: TextStyle(color: AppColors.kWhiteColor),
                       ),
                     ),
                     AppButton(
                       onPressed: () => _updateProfileImage(context),
-                      child: Text(
+                      child: const Text(
                         "Save",
                         style: TextStyle(color: AppColors.kWhiteColor),
                       ),
@@ -427,7 +427,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return showDialog(
         context: context,
         builder: (_) {
-          return Center(
+          return const Center(
             child: CircularProgressIndicator.adaptive(
               valueColor: AlwaysStoppedAnimation(AppColors.kWarmCoralColor),
             ),
@@ -476,10 +476,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           right: 0,
           child: GestureDetector(
             onTap: _selectProfileImage,
-            child: CircleAvatar(
+            child: const CircleAvatar(
               backgroundColor: AppColors.kWarmCoralColor,
               radius: 25,
-              child: const Icon(Icons.camera_alt_outlined, color: Colors.white),
+              child: Icon(Icons.camera_alt_outlined, color: Colors.white),
             ),
           ),
         ),

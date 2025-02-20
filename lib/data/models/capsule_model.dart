@@ -1,3 +1,4 @@
+import 'package:future_capsule/data/models/user_model.dart';
 import 'package:uuid/uuid.dart';
 
 class CapsuleModel {

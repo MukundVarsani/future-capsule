@@ -9,7 +9,7 @@ class CustomPicker extends StatelessWidget {
   final Color iconColor;
   final Color textColor;
 
-  CustomPicker({
+  const  CustomPicker({
     super.key,
     required this.icon,
     required this.label,

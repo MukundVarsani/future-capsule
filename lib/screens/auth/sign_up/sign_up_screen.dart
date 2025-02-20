@@ -66,13 +66,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
             Container(
               width: double.infinity,
               height: 250,
-              decoration: BoxDecoration(
+              decoration:const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [AppColors.kWarmCoralColor, AppColors.kAmberColor],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: const BorderRadius.only(
+                borderRadius:  BorderRadius.only(
                   bottomLeft: Radius.circular(50),
                   bottomRight: Radius.circular(50),
                 ),
@@ -206,7 +206,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           onPressed: handleSignUp,
                           child: Obx(
                             () => _authController.isLoading.value
-                                ? CircularProgressIndicator.adaptive(
+                                ?const CircularProgressIndicator.adaptive(
                                     valueColor: AlwaysStoppedAnimation(
                                         AppColors.kWhiteColor),
                                   )
@@ -233,7 +233,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               ),
                             );
                           },
-                          child: Text(
+                          child:const Text(
                             "Login",
                             style: TextStyle(
                               color: AppColors.kWarmCoralColor,

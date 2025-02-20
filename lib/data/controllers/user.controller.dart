@@ -14,7 +14,7 @@ class UserController extends GetxController {
   // Initailization
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
   //Observable Current User
-  final  _currentUser = Rxn<User>();
+  final _currentUser = Rxn<User>();
 
   set setUser(User? user) {
     _currentUser.value = user;
@@ -22,7 +22,7 @@ class UserController extends GetxController {
 
   User? get getUser => _currentUser.value;
 
-Future<void> createNewUser(Map<String, dynamic> newUser) async {
+  Future<void> createNewUser(Map<String, dynamic> newUser) async {
     User? user = _currentUser.value;
     if (user == null) return;
 
@@ -53,8 +53,7 @@ Future<void> createNewUser(Map<String, dynamic> newUser) async {
     }
   }
 
-
-   Stream<UserModel?> getUserStream(String userId) {
+  Stream<UserModel?> getUserStream(String userId) {
     return _firebaseFirestore
         .collection("Future_Capsule_Users")
         .doc(userId)
@@ -72,7 +71,7 @@ Future<void> createNewUser(Map<String, dynamic> newUser) async {
     });
   }
 
-   void updateUserData(Map<String, dynamic> updatedData) async {
+  void updateUserData(Map<String, dynamic> updatedData) async {
     if (_currentUser.value?.uid == null) return;
     DateTime now = DateTime.now();
 

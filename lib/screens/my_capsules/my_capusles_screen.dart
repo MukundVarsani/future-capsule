@@ -67,7 +67,7 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                     const Text(
                       "Sort by : ",
                       style: TextStyle(
                         color: AppColors.kWarmCoralColor,
@@ -84,7 +84,7 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
                       children: [
                         GestureDetector(
                           onTap: filterByOpenDate,
-                          child: Text(
+                          child:  const Text(
                             "Opening date",
                             style: TextStyle(
                               fontSize: 16,
@@ -95,7 +95,7 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
                         ),
                         GestureDetector(
                           onTap: getPrivateCapsule,
-                          child: Text(
+                          child: const  Text(
                             "Private Capsule",
                             style: TextStyle(
                               fontSize: 16,
@@ -106,7 +106,7 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
                         ),
                         GestureDetector(
                           onTap: filterByCreateDate,
-                          child: Text(
+                          child:  const Text(
                             "Created date",
                             style: TextStyle(
                               fontSize: 16,
@@ -117,7 +117,7 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
                         ),
                         GestureDetector(
                           onTap: getPrivateTime,
-                          child: Text(
+                          child:  const Text(
                             "Private time",
                             style: TextStyle(
                               fontSize: 16,
@@ -173,13 +173,13 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // updateCapsule();
+
     return Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
           title: Row(
             children: [
-              Text(
+             const  Text(
                 "Capsules Storage",
                 style: TextStyle(
                     color: AppColors.kWhiteColor, fontWeight: FontWeight.w500),
@@ -194,7 +194,7 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
           actions: [
             IconButton(
               onPressed: showFilterDialog,
-              icon: Icon(
+              icon:  const  Icon(
                 Icons.filter_alt_rounded,
                 color: AppColors.kWhiteColor,
               ),
@@ -210,7 +210,7 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
                 _filterCapsules = _capsuleController.capsules;
 
                 if (_capsuleController.isCapsuleLoading.value) {
-                  return Center(
+                  return const Center(
                     child: CircularProgressIndicator.adaptive(
                         valueColor:
                             AlwaysStoppedAnimation(AppColors.kWarmCoralColor)),

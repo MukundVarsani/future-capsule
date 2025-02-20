@@ -152,13 +152,13 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: Icon(
+          icon:  const  Icon(
             Icons.arrow_back,
             color: AppColors.kWhiteColor,
           ),
         ),
         backgroundColor: AppColors.kWarmCoralColor,
-        title: Text(
+        title: const  Text(
           "Craft a Future Capsule",
           style: TextStyle(
               color: AppColors.kWhiteColor,
@@ -196,16 +196,16 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
         TextFormField(
           readOnly: true,
           initialValue: title,
-          decoration: InputDecoration(
+          decoration: const  InputDecoration(
             hintText: "Capsule title",
             hintStyle: TextStyle(color: AppColors.kLightGreyColor),
-            border: const OutlineInputBorder(
+            border:  OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(12)),
             ),
             focusedBorder: OutlineInputBorder(
               borderSide:
                   BorderSide(color: AppColors.kWarmCoralColor, width: 2.0),
-              borderRadius: const BorderRadius.all(Radius.circular(12)),
+              borderRadius:  BorderRadius.all(Radius.circular(12)),
             ),
           ),
         ),
@@ -245,7 +245,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
                 borderRadius: BorderRadius.circular(18),
                 color: AppColors.kTealGreenColor07,
               ),
-              child: Icon(
+              child:  const Icon(
                 Icons.lock,
                 size: 50,
                 color: AppColors.kWarmCoralColor,
@@ -266,16 +266,16 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
           minLines: 3,
           readOnly: true,
           initialValue: description,
-          decoration: InputDecoration(
+          decoration:  const InputDecoration(
             hintText: "Describe capsule",
             hintStyle: TextStyle(color: AppColors.kLightGreyColor),
-            border: const OutlineInputBorder(
+            border:  OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(12)),
             ),
             focusedBorder: OutlineInputBorder(
               borderSide:
                   BorderSide(color: AppColors.kWarmCoralColor, width: 2.0),
-              borderRadius: const BorderRadius.all(Radius.circular(12)),
+              borderRadius:  BorderRadius.all(Radius.circular(12)),
             ),
           ),
         ),
@@ -290,7 +290,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
         Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Text(
+             const  Text(
               "Revealing Your Capsule In",
               style: TextStyle(
                   fontSize: 18,
@@ -304,14 +304,14 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
               duration: openDate,
               slideDirection: SlideDirection.down,
               separatorStyle:
-                  TextStyle(color: AppColors.kWarmCoralColor, fontSize: 20),
+                  const  TextStyle(color: AppColors.kWarmCoralColor, fontSize: 20),
               separatorType: SeparatorType.symbol,
               separator: ':',
               decoration: BoxDecoration(
                 color: AppColors.kWarmCoralColor,
                 borderRadius: BorderRadius.circular(8),
               ),
-              style: TextStyle(
+              style: const  TextStyle(
                 color: AppColors.kWhiteColor,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -336,7 +336,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(
+            const  Text(
               "Is Capsule private?",
               style: TextStyle(
                   fontWeight: FontWeight.bold,
@@ -356,7 +356,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+           const   Text(
               "Want Time private?",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
@@ -387,7 +387,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
           child: AppButton(
             onPressed: () => Navigator.of(context).pop(),
             radius: 24,
-            child: Center(
+            child: const  Center(
               child: Text(
                 "Edit",
                 style: TextStyle(
@@ -407,11 +407,11 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
             radius: 24,
             child: Center(
                 child: Obx(() => _capsuleController.isCapsuleLoading.value
-                    ? CircularProgressIndicator.adaptive(
+                    ? const  CircularProgressIndicator.adaptive(
                         valueColor:
                             AlwaysStoppedAnimation(AppColors.kWhiteColor),
                       )
-                    : Text(
+                    : const  Text(
                         "Create",
                         style: TextStyle(
                           color: AppColors.kWhiteColor,
@@ -424,4 +424,6 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
       ],
     );
   }
+
+
 }
