@@ -25,14 +25,13 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
 
   @override
   void initState() {
-
     getUserCapsules();
     super.initState();
   }
 
   void getUserCapsules() async {
-    _capsuleController.getUserCapsule();
-     _filterCapsules = _capsuleController.capsules;
+    await _capsuleController.getUserCapsule();
+    _filterCapsules = _capsuleController.capsules;
     if (mounted) setState(() {});
   }
 
@@ -67,7 +66,7 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                     const Text(
+                    const Text(
                       "Sort by : ",
                       style: TextStyle(
                         color: AppColors.kWarmCoralColor,
@@ -84,7 +83,7 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
                       children: [
                         GestureDetector(
                           onTap: filterByOpenDate,
-                          child:  const Text(
+                          child: const Text(
                             "Opening date",
                             style: TextStyle(
                               fontSize: 16,
@@ -95,7 +94,7 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
                         ),
                         GestureDetector(
                           onTap: getPrivateCapsule,
-                          child: const  Text(
+                          child: const Text(
                             "Private Capsule",
                             style: TextStyle(
                               fontSize: 16,
@@ -106,7 +105,7 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
                         ),
                         GestureDetector(
                           onTap: filterByCreateDate,
-                          child:  const Text(
+                          child: const Text(
                             "Created date",
                             style: TextStyle(
                               fontSize: 16,
@@ -117,7 +116,7 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
                         ),
                         GestureDetector(
                           onTap: getPrivateTime,
-                          child:  const Text(
+                          child: const Text(
                             "Private time",
                             style: TextStyle(
                               fontSize: 16,
@@ -141,7 +140,7 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
   void filterByCreateDate() {
     _filterCapsules = _userCapsules;
     _filterCapsules.sort((b, a) => a.createdAt.compareTo(b.createdAt));
-  if (mounted) setState(() {});
+    if (mounted) setState(() {});
     Navigator.of(context, rootNavigator: true).pop();
   }
 
@@ -165,21 +164,18 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
     _filterCapsules = _userCapsules.where((d) {
       return d.privacy.isTimePrivate == true;
     }).toList();
-   if (mounted) setState(() {});
+    if (mounted) setState(() {});
     Navigator.of(context, rootNavigator: true).pop();
   }
 
-
-
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
           title: Row(
             children: [
-             const  Text(
+              const Text(
                 "Capsules Storage",
                 style: TextStyle(
                     color: AppColors.kWhiteColor, fontWeight: FontWeight.w500),
@@ -194,7 +190,7 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
           actions: [
             IconButton(
               onPressed: showFilterDialog,
-              icon:  const  Icon(
+              icon: const Icon(
                 Icons.filter_alt_rounded,
                 color: AppColors.kWhiteColor,
               ),
@@ -238,7 +234,7 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
                       return GestureDetector(
                         onTap: () =>
                             _navigateToCapsulePreview(context, capsule),
-                        child: CapsuleTile(
+                        child: MyCapsuleTile(
                           capsuleTitle: capsule.title,
                           imgURL: imgUrl ?? '',
                           createDate: createdtime.timeAgo(),
@@ -259,8 +255,7 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
       screen: MaterialPageRoute(
         builder: (_) => MyCapsulesPreview(
           capsule: capsule,
-    
-        ),
+        )
       ),
     );
   }

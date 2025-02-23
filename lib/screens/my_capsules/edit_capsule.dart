@@ -78,9 +78,11 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
       ..initialize().then((_) {});
 
     await compressVideo(xFile!.path);
-    setState(() {
-      isMediaLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        isMediaLoading = false;
+      });
+    }
     FocusManager.instance.primaryFocus?.unfocus();
   }
 
@@ -95,17 +97,17 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
     xFile = await _files.selectImage();
     if (xFile == null) return;
     Navigator.of(context).pop();
-    setState(() {
-      isMediaLoading = true;
-    });
-    // _file = File(xFile!.path);
 
-    setState(() {
-      isImageFile = true;
-      isVideoFile = false;
-      isOtherFile = false;
-      isMediaLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        isMediaLoading = true;
+        isImageFile = true;
+        isVideoFile = false;
+        isOtherFile = false;
+        isMediaLoading = false;
+      });
+    }
+
     FocusManager.instance.primaryFocus?.unfocus();
   }
 
@@ -143,14 +145,14 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
       "capsule_Id": widget.capsuleModel.capsuleId,
       "title": titleController.text,
       'description': descriptionController.text,
-      'openingDate': _selectedDate?.toIso8601String() ?? widget.capsuleModel.openingDate.toIso8601String(),
+      'openingDate': _selectedDate?.toIso8601String() ??
+          widget.capsuleModel.openingDate.toIso8601String(),
       'privacy': {
         "isCapsulePrivate": isCapsuleToggled,
         'isTimePrivate': isTimeToggled,
       }
     };
     _capsuleController.editCapsule(updatedData);
-  
   }
 
   @override
@@ -194,11 +196,11 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
         backgroundColor: AppColors.kWarmCoralColor,
         leading: IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon:  const  Icon(
+            icon: const Icon(
               Icons.arrow_back,
               color: AppColors.kWhiteColor,
             )),
-        title:  const  Text(
+        title: const Text(
           "Edit a Future Capsule",
           style: TextStyle(
               color: AppColors.kWhiteColor,
@@ -226,7 +228,7 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
                 child: Stack(alignment: AlignmentDirectional.center, children: [
                   _buildMediaPreview(),
                   if (isMediaLoading)
-                    const  Center(
+                    const Center(
                         child: CircularProgressIndicator.adaptive(
                       valueColor: AlwaysStoppedAnimation<Color>(
                           AppColors.kWarmCoralColor),
@@ -278,9 +280,9 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
                   const ButtonThemeData(textTheme: ButtonTextTheme.primary),
               dialogBackgroundColor: Colors
                   .blueGrey[50], // Change the background color of the dialog
-              textTheme: const  TextTheme(
+              textTheme: const TextTheme(
                   bodyMedium: TextStyle(color: AppColors.kTealGreenColor)),
-              primaryTextTheme:  const  TextTheme(
+              primaryTextTheme: const TextTheme(
                   headlineLarge: TextStyle(color: AppColors.kTealGreenColor)),
               cardColor: AppColors.kTealGreenColor,
               canvasColor: AppColors.kTealGreenColor,
@@ -316,7 +318,7 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
         if (_selectedDate!.isAfter(now)) {
           openDate = _selectedDate!.difference(now);
 
-          setState(() {});
+          if (mounted) setState(() {});
         } else {
           // Step 6: Show error if the selected time is in the past
           appSnackBar(
@@ -338,7 +340,7 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-               const   Text(
+                const Text(
                   "Select File",
                   style: TextStyle(
                     color: AppColors.kPrimaryTextColor,
@@ -388,16 +390,16 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
         TextFormField(
           maxLength: 20,
           controller: titleController,
-          decoration: const  InputDecoration(
+          decoration: const InputDecoration(
             hintText: "Capsule title",
             hintStyle: TextStyle(color: AppColors.kLightGreyColor),
-            border:  OutlineInputBorder(
+            border: OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(12)),
             ),
             focusedBorder: OutlineInputBorder(
               borderSide:
                   BorderSide(color: AppColors.kWarmCoralColor, width: 2.0),
-              borderRadius:  BorderRadius.all(Radius.circular(12)),
+              borderRadius: BorderRadius.all(Radius.circular(12)),
             ),
           ),
         ),
@@ -416,16 +418,16 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
         TextFormField(
           maxLines: 2,
           controller: descriptionController,
-          decoration:  const InputDecoration(
+          decoration: const InputDecoration(
             hintText: "Decribe capsule",
             hintStyle: TextStyle(color: AppColors.kLightGreyColor),
-            border:  OutlineInputBorder(
+            border: OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(12)),
             ),
             focusedBorder: OutlineInputBorder(
               borderSide:
                   BorderSide(color: AppColors.kWarmCoralColor, width: 2.0),
-              borderRadius:  BorderRadius.all(Radius.circular(12)),
+              borderRadius: BorderRadius.all(Radius.circular(12)),
             ),
           ),
         )
@@ -436,7 +438,7 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
   Widget _buildMediaPreview() {
     //* If file media is loading
     if (isMediaLoading) {
-      return  const  Center(
+      return const Center(
         child: CircularProgressIndicator.adaptive(
           valueColor: AlwaysStoppedAnimation(AppColors.kWarmCoralColor),
         ),
@@ -476,7 +478,6 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
         ),
       );
     }
-
 
     //* If videoFile and User have video OR if user select new video
     //*
@@ -541,7 +542,7 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
         Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            const  Text(
+            const Text(
               "Revealing Your Capsule In",
               style: TextStyle(
                   fontSize: 18,
@@ -554,15 +555,15 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
             SlideCountdownSeparated(
               duration: openDate,
               slideDirection: SlideDirection.down,
-              separatorStyle:
-                 const   TextStyle(color: AppColors.kWarmCoralColor, fontSize: 20),
+              separatorStyle: const TextStyle(
+                  color: AppColors.kWarmCoralColor, fontSize: 20),
               separatorType: SeparatorType.symbol,
               separator: ':',
               decoration: BoxDecoration(
                 color: AppColors.kWarmCoralColor,
                 borderRadius: BorderRadius.circular(8),
               ),
-              style: const  TextStyle(
+              style: const TextStyle(
                 color: AppColors.kWhiteColor,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -583,7 +584,7 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
           constraints: const BoxConstraints(
               maxHeight: 55, minHeight: 45, minWidth: 80, maxWidth: 80),
           child: AppButton(
-            child: const  Text(
+            child: const Text(
               "Set",
               style: TextStyle(color: AppColors.kWhiteColor),
             ),
@@ -602,7 +603,7 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-         const     Text(
+            const Text(
               "Is Capsule private?",
               style: TextStyle(
                   fontWeight: FontWeight.bold,
@@ -613,9 +614,11 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
             ),
             GestureDetector(
               onTap: () {
-                setState(() {
-                  isCapsuleToggled = !isCapsuleToggled;
-                });
+                if (mounted) {
+                  setState(() {
+                    isCapsuleToggled = !isCapsuleToggled;
+                  });
+                }
               },
               child: AnimatedToggle(
                 isToggled: isCapsuleToggled,
@@ -629,7 +632,7 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const  Text(
+            const Text(
               "Want Time private?",
               style: TextStyle(
                   fontWeight: FontWeight.bold,
@@ -640,9 +643,11 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
             ),
             GestureDetector(
               onTap: () {
-                setState(() {
-                  isTimeToggled = !isTimeToggled;
-                });
+                if (mounted) {
+                  setState(() {
+                    isTimeToggled = !isTimeToggled;
+                  });
+                }
               },
               child: AnimatedToggle(
                 isToggled: isTimeToggled,
@@ -677,18 +682,18 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
             _updateCapsule();
           },
           radius: 24,
-          child: Obx(() => 
-          
-          _capsuleController.isCapsuleLoading.value ? 
-          const  CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation(AppColors.kWhiteColor),)
-          : const  Text(
-                "Save Capsule",
-                style: TextStyle(
-                  color: AppColors.kWhiteColor,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w500,
-                ),
-              ))),
+          child: Obx(() => _capsuleController.isCapsuleLoading.value
+              ? const CircularProgressIndicator.adaptive(
+                  valueColor: AlwaysStoppedAnimation(AppColors.kWhiteColor),
+                )
+              : const Text(
+                  "Save Capsule",
+                  style: TextStyle(
+                    color: AppColors.kWhiteColor,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ))),
     );
   }
 }

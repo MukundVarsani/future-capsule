@@ -72,7 +72,7 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
   void _sendCapsule() {
     if (_capsuleController.selectedUser.value > -1) {
       _capsuleController.sendCapsuleToUser(capsule: widget.capsule);
-    }else{
+    } else {
       appBar(text: "Select user");
     }
     Get.back();
@@ -176,15 +176,17 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
             child: IconButton(
               onPressed: () {
                 if (_controller == null) return;
-                setState(
-                  () {
-                    if (isPlaying) {
-                      _controller!.pause();
-                    } else {
-                      _controller!.play();
-                    }
-                  },
-                );
+                if (mounted) {
+                  setState(
+                    () {
+                      if (isPlaying) {
+                        _controller!.pause();
+                      } else {
+                        _controller!.play();
+                      }
+                    },
+                  );
+                }
               },
               icon: Container(
                 padding: const EdgeInsets.all(5),

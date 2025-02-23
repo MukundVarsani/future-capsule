@@ -17,13 +17,27 @@ class CapsuleController extends GetxController {
   final Uuid _uuid = const Uuid();
   final UserController _userController = Get.put(UserController());
 
+//*  Capsule variable
+
   var capsules = <CapsuleModel>[].obs;
+  var sentCapsules = <CapsuleModel>[].obs;
+  var capsuleSentUsers = <UserModel>[].obs;
   var isCapsuleLoading = false.obs;
   var isCapsuleDeleting = false.obs;
+  var isRecipientLoading = false.obs;
   var isAvailableUserLoading = false.obs;
 
   RxInt selectedUser = (-1).obs;
   RxList<UserModel> usersList = <UserModel>[].obs;
+  var recipientCapsuleMap = <String, List<CapsuleModel>>{}.obs;
+
+//^  Capsule Methods
+  @override
+  void onInit() {
+    super.onInit();
+    getUserSentCapsule();
+    Vx.log("Capsule Controller Initialize.................");
+  }
 
   String _extractMediaIdFromUrl(String url) {
     // Define a regular expression to extract the value
@@ -85,7 +99,7 @@ class CapsuleController extends GetxController {
     }
   }
 
-  Future getUserCapsule() async {
+  Future<void> getUserCapsule() async {
     CollectionReference reference =
         _firebaseFirestore.collection("Users_Capsules");
 
@@ -100,7 +114,7 @@ class CapsuleController extends GetxController {
       List<CapsuleModel> usersCapsules = querySnapshot.docs.map((doc) {
         return CapsuleModel.fromJson(doc.data() as Map<String, dynamic>);
       }).toList();
-      capsules.value = usersCapsules;
+      capsules(usersCapsules);
     } catch (e) {
       Vx.log("Error while getting User Created capsule: $e");
       appBar(text: "Error in getting Capsule : $e");
@@ -204,7 +218,7 @@ class CapsuleController extends GetxController {
     required CapsuleModel capsule,
   }) async {
     String? currentUserId = _userController.getUser?.uid;
-  
+
     String? recipientId = usersList.value[selectedUser.value].userId;
     if (currentUserId == null) return;
 
@@ -212,7 +226,8 @@ class CapsuleController extends GetxController {
         _firebaseFirestore.collection('Users_Capsules').doc(capsule.capsuleId);
     Map<String, dynamic> recipientData = {
       "recipientId": recipientId,
-      "status": capsule.status
+      "status": capsule.status,
+      "createdAt" : DateTime.now().toIso8601String()
     };
 
     try {
@@ -223,9 +238,64 @@ class CapsuleController extends GetxController {
 
       appBar(text: 'Capsule sent');
       selectedUser(-1);
-    
     } catch (e) {
       Vx.log(e.toString());
-    } 
+    }
   }
+
+ void getUserSentCapsule() async {
+  String? currentUserId = _userController.getUser?.uid;
+  if (currentUserId == null) return;
+
+  try {
+    isRecipientLoading(true);
+    capsuleSentUsers.clear();
+    recipientCapsuleMap.clear();
+
+    QuerySnapshot snapshot = await _firebaseFirestore
+        .collection('Users_Capsules')
+        .where('creatorId', isEqualTo: currentUserId)
+        .get();
+
+    //* Get the current user capsule that he has sent to someone
+    List<CapsuleModel> sentCapsules = snapshot.docs
+        .map((doc) => CapsuleModel.fromJson(doc.data() as Map<String, dynamic>))
+        .where((capsule) => capsule.recipients.isNotEmpty)
+        .toList();
+
+    //* Get all recipients user Id
+    Set<String> recipientIds = sentCapsules
+        .expand((capsule) => capsule.privacy.sharedWith)
+        .where((id) => id != null)
+        .cast<String>()
+        .toSet();
+
+    //* Get all recipients user Data
+    List<UserModel?> users = await Future.wait(
+      recipientIds.map(
+        (id) => _userController.getUserById(userId: id),
+      ),
+    );
+
+    //* Map all recipient's Id with their capsules (sorted by time)
+    for (var recipientId in recipientIds) {
+      List<CapsuleModel> filteredCapsules = sentCapsules
+          .where((capsule) =>
+              capsule.recipients.any((r) => r?.recipientId == recipientId))
+          .toList();
+
+    //* Sort capsules by openingDate in descending order (latest first)
+      filteredCapsules.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+      recipientCapsuleMap[recipientId] = filteredCapsules;
+    }
+
+    capsuleSentUsers.addAll(users.whereType<UserModel>());
+  } catch (e) {
+    Vx.log("error while getting user sent capsule: $e");
+  } finally {
+    isRecipientLoading(false);
+  }
+}
+
 }

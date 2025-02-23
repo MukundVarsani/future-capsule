@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
 
-class CapsuleTile extends StatelessWidget {
-  const CapsuleTile(
+class MyCapsuleTile extends StatelessWidget {
+  const MyCapsuleTile(
       {super.key,
       required this.capsuleTitle,
       required this.openDate,

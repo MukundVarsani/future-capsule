@@ -39,6 +39,7 @@ class UserController extends GetxController {
         notificationsEnabled: false,
         theme: "Dark",
       ),
+      fcmToken: null,
       updatedAt: now,
       createdAt: now,
     );
@@ -93,6 +94,24 @@ class UserController extends GetxController {
             .doc(_currentUser.value?.uid)
             .set(updatedData);
       }
+    }
+  }
+
+  Future<UserModel?> getUserById({required String userId}) async {
+    try {
+      DocumentSnapshot doc = await _firebaseFirestore
+          .collection('Future_Capsule_Users')
+          .doc(userId)
+          .get();
+
+      if (!doc.exists) {
+        Vx.log("User not found by Id : $userId");
+        return null;
+      }
+      return UserModel.fromJson(doc.data() as Map<String, dynamic>);
+    } catch (e) {
+      Vx.log('Error while getting user By id : $e');
+      return null;
     }
   }
 }
