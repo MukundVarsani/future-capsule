@@ -1,4 +1,3 @@
-import 'package:future_capsule/data/models/user_model.dart';
 import 'package:uuid/uuid.dart';
 
 class CapsuleModel {
@@ -73,8 +72,7 @@ class Media {
   final String url;
   final String? thumbnail;
 
-  Media(
- {
+  Media({
     required this.mediaId,
     required this.thumbnail,
     required this.type,
@@ -86,7 +84,7 @@ class Media {
       mediaId: json['mediaId'] ?? const Uuid().v4(),
       type: json['type'],
       url: json['url'],
-      thumbnail : json['thumbnail'] ?? '',
+      thumbnail: json['thumbnail'] ?? '',
     );
   }
 
@@ -95,7 +93,7 @@ class Media {
       'mediaId': mediaId,
       'type': type,
       'url': url,
-      'thumbnail' : thumbnail,
+      'thumbnail': thumbnail,
     };
   }
 }
@@ -103,8 +101,10 @@ class Media {
 class Recipient {
   final String recipientId;
   final String status;
+  final DateTime createdAt;
 
   Recipient({
+    required this.createdAt,
     required this.recipientId,
     required this.status,
   });
@@ -113,6 +113,7 @@ class Recipient {
     return Recipient(
       recipientId: json['recipientId'],
       status: json['status'],
+      createdAt: DateTime.parse(json['createdAt']),
     );
   }
 
@@ -120,6 +121,7 @@ class Recipient {
     return {
       'recipientId': recipientId,
       'status': status,
+      'createdAt': createdAt.toIso8601String(),
     };
   }
 }
