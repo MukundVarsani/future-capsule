@@ -36,7 +36,7 @@ class CapsuleController extends GetxController {
   void onInit() {
     super.onInit();
     getUserSentCapsule();
-    Vx.log("Capsule Controller Initialize.................");
+    // Vx.log("Capsule Controller Initialize.................");
   }
 
   String _extractMediaIdFromUrl(String url) {

@@ -152,4 +152,5 @@ class Privacy {
       'sharedWith': sharedWith,
     };
   }
+  
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
 import 'package:future_capsule/data/controllers/capsule.controller.dart';
-import 'package:future_capsule/data/models/capsule_model.dart';
 import 'package:future_capsule/data/models/user_model.dart';
 import 'package:future_capsule/screens/my_sent_capsules/my_sent_capsules_tile.dart';
 import 'package:get/get.dart';

@@ -13,7 +13,9 @@ class UserController extends GetxController {
 
   // Initailization
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   //Observable Current User
+
   final _currentUser = Rxn<User>();
 
   set setUser(User? user) {
@@ -21,6 +23,13 @@ class UserController extends GetxController {
   }
 
   User? get getUser => _currentUser.value;
+
+  @override
+  void onInit() {
+    _currentUser(_firebaseAuth.currentUser);
+    // Vx.log("User controller Initialize");
+    super.onInit();
+  }
 
   Future<void> createNewUser(Map<String, dynamic> newUser) async {
     User? user = _currentUser.value;

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
 import 'package:future_capsule/data/controllers/user.controller.dart';
+import 'package:future_capsule/data/services/notification_service.dart';
 import 'package:future_capsule/screens/auth/verification/verification_screen.dart';
 import 'package:get/get.dart';
 import 'package:velocity_x/velocity_x.dart';
@@ -10,6 +11,7 @@ class AuthController extends GetxController {
 
   final UserController _userController = Get.put(UserController());
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  final NotificationService _notificationService = NotificationService();
 
   @override
   void onInit() {
@@ -18,6 +20,8 @@ class AuthController extends GetxController {
     _firebaseAuth.authStateChanges().listen((User? user) {
       _userController.setUser = user;
     });
+
+    // Vx.log("Auth controller init--------");
   }
 
   Future<void> login({
@@ -32,6 +36,7 @@ class AuthController extends GetxController {
       final User? user = credential.user;
       if (user == null) return;
       _userController.setUser = user;
+      _notificationService.setFcmToken();
     } on FirebaseAuthException catch (e) {
       String error = e.code;
       if (error == "invalid-credential") {
@@ -93,6 +98,7 @@ class AuthController extends GetxController {
   Future<void> signOut() async {
     try {
       await _firebaseAuth.signOut();
+     await _notificationService.removeFcmToken();
       _userController.setUser = null;
     } catch (e) {
       Vx.log("Error while signing out user : $e");
