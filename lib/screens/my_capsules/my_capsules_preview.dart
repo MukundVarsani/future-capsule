@@ -5,7 +5,8 @@ import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
 import 'package:future_capsule/data/controllers/capsule.controller.dart';
-import 'package:future_capsule/data/models/capsule_model.dart';
+import 'package:future_capsule/data/controllers/recipients.controller.dart';
+import 'package:future_capsule/data/models/capsule_modal.dart';
 import 'package:future_capsule/screens/create_capsule/toggle.dart';
 import 'package:future_capsule/screens/my_capsules/all_user_tile.dart';
 import 'package:future_capsule/screens/my_capsules/edit_capsule.dart';
@@ -34,13 +35,16 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
   late CapsuleModel userCapsule;
   bool isVideoFile = false;
   final CapsuleController _capsuleController = Get.put(CapsuleController());
+  final RecipientController _recipientController =
+      Get.put(RecipientController());
 
   @override
   void initState() {
     userCapsule = widget.capsule;
     isVideoFile = userCapsule.media[0].type.contains('video');
     openDate = userCapsule.openingDate.difference(DateTime.now());
-    _capsuleController.getAvailableUser();
+    // _capsuleController.getAvailableUser();
+    _recipientController.getAvailableRecipients();
     if (isVideoFile) _videoInitialize();
 
     super.initState();
@@ -70,12 +74,14 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
   }
 
   void _sendCapsule() {
-    if (_capsuleController.selectedUser.value > -1) {
-      _capsuleController.sendCapsuleToUser(capsule: widget.capsule);
+    if (_recipientController.availableRecipientIds.isNotEmpty) {
+      _recipientController.sendCapsule(capsule: widget.capsule);
+     
     } else {
       appBar(text: "Select user");
     }
     Get.back();
+
   }
 
   @override
@@ -104,7 +110,7 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: ListView(
           children: [
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
             _buildTitleField(userCapsule.title),
             const SizedBox(height: 12),
             _buildFilePreview(
@@ -126,6 +132,8 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
                         color: AppColors.kWhiteColor,
                         fontWeight: FontWeight.w600,
                         fontSize: 20)))
+                      ,
+                      const SizedBox(height: 10),
           ],
         ),
       ),
@@ -464,7 +472,7 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
               ),
               const SizedBox(height: 16),
               Obx(
-                () => _capsuleController.isAvailableUserLoading.value
+                () => _recipientController.isRecipientLoading.value
                     ? const Center(
                         child: CircularProgressIndicator.adaptive(
                           valueColor: AlwaysStoppedAnimation<Color>(
@@ -473,22 +481,37 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
                               AppColors.kWarmCoralColor, // Background color
                         ),
                       )
-                    : (_capsuleController.usersList.isNotEmpty)
+                    : (_recipientController.availableRecipients.isNotEmpty)
                         ? Expanded(
                             child: ListView.builder(
-                              itemCount: _capsuleController.usersList.length,
+                              itemCount: _recipientController
+                                  .availableRecipients.length,
                               itemBuilder: (context, index) {
                                 return InkWell(
-                                  onTap: () => _capsuleController
-                                      .selectedUser.value = index,
+                                  onTap: () {
+
+
+                                    if (_recipientController.availableRecipientIds
+                                        .contains(index)) {
+                                      _recipientController
+                                          .removeRecipient(index);
+                                    } else {
+                                      _recipientController.addRecipient(index);
+                                    }
+                                      Vx.log(_recipientController.availableRecipientIds);
+                                  },
                                   child: Obx(() => AllUserTile(
-                                        isUserSelect: _capsuleController
-                                                .selectedUser.value ==
-                                            index,
-                                        name: _capsuleController
-                                            .usersList.value[index].name,
-                                        imgURL: _capsuleController.usersList
-                                            .value[index].profilePicture,
+                                        isUserSelect: _recipientController
+                                            .availableRecipientIds
+                                            .contains(index),
+                                        name: _recipientController
+                                            .availableRecipients
+                                            .value[index]
+                                            .name,
+                                        imgURL: _recipientController
+                                            .availableRecipients
+                                            .value[index]
+                                            .profilePicture,
                                       )),
                                 );
                               },
@@ -507,14 +530,24 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
                 margin: const EdgeInsets.symmetric(vertical: 8),
                 child: AppButton(
                   onPressed: _sendCapsule,
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8),
-                    child: Text(
-                      "Send",
-                      style:
-                          TextStyle(fontSize: 16, color: AppColors.kWhiteColor),
-                    ),
-                  ),
+                  child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Obx(
+                        () => _recipientController.isCapsuleSending.value
+                            ? const Center(
+                                child: CircularProgressIndicator.adaptive(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.grey), // Buffered portion color
+                                  backgroundColor:
+                                      AppColors.kWhiteColor, // Background color
+                                ),
+                              )
+                            : const Text(
+                                "Send",
+                                style: TextStyle(
+                                    fontSize: 16, color: AppColors.kWhiteColor),
+                              ),
+                      )),
                 ),
               ),
             ],

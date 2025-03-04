@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
 import 'package:future_capsule/data/controllers/capsule.controller.dart';
-import 'package:future_capsule/data/models/capsule_model.dart';
+import 'package:future_capsule/data/models/capsule_modal.dart';
 import 'package:future_capsule/screens/my_capsules/capsule_tile.dart';
 import 'package:future_capsule/screens/my_capsules/my_capsules_preview.dart';
 import 'package:get/get.dart';
@@ -32,7 +32,7 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
   void getUserCapsules() async {
     await _capsuleController.getUserCapsule();
     _filterCapsules = _capsuleController.capsules;
-    if (mounted) setState(() {});
+    // if (mounted) setState(() {});
   }
 
   void showFilterDialog() {

@@ -7,7 +7,7 @@ class CapsuleModel {
   final String? description;
   final List<Media> media;
   final DateTime openingDate;
-  final List<Recipient?> recipients;
+  final List<String?> recipients;
   final Privacy privacy;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -37,9 +37,10 @@ class CapsuleModel {
       media:
           (json['media'] as List).map((item) => Media.fromJson(item)).toList(),
       openingDate: DateTime.parse(json['openingDate']),
-      recipients: (json['recipients'] as List)
-          .map((item) => Recipient.fromJson(item))
-          .toList(),
+      recipients: (json['recipients'] as List<dynamic>?)
+              ?.map((item) => item.toString()) // ✅ Ensures proper casting
+              .toList() ??
+          [],
       privacy: Privacy.fromJson(json['privacy']),
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
@@ -56,7 +57,7 @@ class CapsuleModel {
       'description': description,
       'media': media.map((item) => item.toJson()).toList(),
       'openingDate': openingDate.toIso8601String(),
-      'recipients': recipients.map((item) => item?.toJson()).toList(),
+      'recipients': recipients,
       'privacy': privacy.toJson(),
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': createdAt.toIso8601String(),
@@ -98,33 +99,33 @@ class Media {
   }
 }
 
-class Recipient {
-  final String recipientId;
-  final String status;
-  final DateTime createdAt;
+// class Recipient {
+//   final String recipientId;
+//   final String status;
+//   final DateTime createdAt;
 
-  Recipient({
-    required this.createdAt,
-    required this.recipientId,
-    required this.status,
-  });
+//   Recipient({
+//     required this.createdAt,
+//     required this.recipientId,
+//     required this.status,
+//   });
 
-  factory Recipient.fromJson(Map<String, dynamic> json) {
-    return Recipient(
-      recipientId: json['recipientId'],
-      status: json['status'],
-      createdAt: DateTime.parse(json['createdAt']),
-    );
-  }
+//   factory Recipient.fromJson(Map<String, dynamic> json) {
+//     return Recipient(
+//       recipientId: json['recipientId'],
+//       status: json['status'],
+//       createdAt: DateTime.parse(json['createdAt']),
+//     );
+//   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'recipientId': recipientId,
-      'status': status,
-      'createdAt': createdAt.toIso8601String(),
-    };
-  }
-}
+//   Map<String, dynamic> toJson() {
+//     return {
+//       'recipientId': recipientId,
+//       'status': status,
+//       'createdAt': createdAt.toIso8601String(),
+//     };
+//   }
+// }
 
 class Privacy {
   final bool isTimePrivate;
@@ -152,5 +153,4 @@ class Privacy {
       'sharedWith': sharedWith,
     };
   }
-  
 }

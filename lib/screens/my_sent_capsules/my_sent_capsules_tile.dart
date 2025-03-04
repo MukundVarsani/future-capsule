@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
-import 'package:future_capsule/data/models/user_model.dart';
+import 'package:future_capsule/data/models/user_modal.dart';
 
 
 class MySentCapsuleTile extends StatelessWidget {

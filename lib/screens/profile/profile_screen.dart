@@ -6,7 +6,7 @@ import 'package:future_capsule/core/images/images.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
 import 'package:future_capsule/data/controllers/user.controller.dart';
-import 'package:future_capsule/data/models/user_model.dart';
+import 'package:future_capsule/data/models/user_modal.dart';
 import 'package:future_capsule/data/services/firebase_storage.dart';
 import 'package:future_capsule/features/select_files.dart';
 import 'package:future_capsule/screens/profile/info_field.dart';

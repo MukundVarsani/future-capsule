@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
 import 'package:future_capsule/data/controllers/user.controller.dart';
-import 'package:future_capsule/data/models/capsule_model.dart';
-import 'package:future_capsule/data/models/user_model.dart';
+import 'package:future_capsule/data/models/capsule_modal.dart';
+import 'package:future_capsule/data/models/user_modal.dart';
+
+
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
 import 'package:velocity_x/velocity_x.dart';
@@ -13,9 +15,9 @@ class CapsuleController extends GetxController {
 
   factory CapsuleController() => _instance;
 
-  final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
-  final Uuid _uuid = const Uuid();
-  final UserController _userController = Get.put(UserController());
+    final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
+    final Uuid _uuid = const Uuid();
+    final UserController _userController = Get.put(UserController());
 
 //*  Capsule variable
 
@@ -27,17 +29,15 @@ class CapsuleController extends GetxController {
   var isRecipientLoading = false.obs;
   var isAvailableUserLoading = false.obs;
 
-  RxInt selectedUser = (-1).obs;
-  RxList<UserModel> usersList = <UserModel>[].obs;
   var recipientCapsuleMap = <String, List<CapsuleModel>>{}.obs;
 
 //^  Capsule Methods
-  @override
-  void onInit() {
-    super.onInit();
-    getUserSentCapsule();
-    // Vx.log("Capsule Controller Initialize.................");
-  }
+  // @override
+  // void onInit() {
+  //   super.onInit();
+    // getUserSentCapsule();
+    
+  // }
 
   String _extractMediaIdFromUrl(String url) {
     // Define a regular expression to extract the value
@@ -81,7 +81,7 @@ class CapsuleController extends GetxController {
       ),
       createdAt: now,
       updatedAt: now,
-      status: "Locked",
+      status: "locked",
     );
 
     try {
@@ -108,12 +108,17 @@ class CapsuleController extends GetxController {
 
     try {
       isCapsuleLoading(true);
+
       final querySnapshot =
           await reference.where('creatorId', isEqualTo: currentUserId).get();
+      
+      List<CapsuleModel> usersCapsules = querySnapshot.docs
+          .map((doc) =>
+              CapsuleModel.fromJson(doc.data() as Map<String, dynamic>))
+          .where((capsule) => capsule
+              .recipients.isEmpty) // ✅ Filter out capsules without recipients
+          .toList();
 
-      List<CapsuleModel> usersCapsules = querySnapshot.docs.map((doc) {
-        return CapsuleModel.fromJson(doc.data() as Map<String, dynamic>);
-      }).toList();
       capsules(usersCapsules);
     } catch (e) {
       Vx.log("Error while getting User Created capsule: $e");
@@ -122,7 +127,7 @@ class CapsuleController extends GetxController {
       isCapsuleLoading(false);
     }
   }
-
+    
   void editCapsule(Map<String, dynamic> updateData) async {
     String? creatorId = _userController.getUser?.uid;
 
@@ -190,112 +195,62 @@ class CapsuleController extends GetxController {
     }
   }
 
-  void getAvailableUser() async {
-    String? currentUserId = _userController.getUser?.uid;
-    if (currentUserId == null) return;
+  
+  // void getUserSentCapsule() async {
+  //   String? currentUserId = _userController.getUser?.uid;
+  //   if (currentUserId == null) return;
 
-    try {
-      isAvailableUserLoading(true);
-      QuerySnapshot snapshot = await _firebaseFirestore
-          .collection('Future_Capsule_Users')
-          .where('userId', isNotEqualTo: currentUserId) // Exclude current user
-          .get();
+  //   try {
+  //     isRecipientLoading(true);
+  //     capsuleSentUsers.clear();
+  //     recipientCapsuleMap.clear();
 
-      List<UserModel> fetchedUsers = snapshot.docs
-          .map((doc) => UserModel.fromJson(doc.data() as Map<String, dynamic>))
-          .toList();
+  //     QuerySnapshot snapshot = await _firebaseFirestore
+  //         .collection('Users_Capsules')
+  //         .where('creatorId', isEqualTo: currentUserId)
+  //         .get();
 
-      // Update the GetX observable list
-      usersList.assignAll(fetchedUsers);
-    } catch (e) {
-      Vx.log(e.toString());
-    } finally {
-      isAvailableUserLoading(false);
-    }
-  }
+  //     //* Get the current user capsule that he has sent to someone
+  //     List<CapsuleModel> sentCapsules = snapshot.docs
+  //         .map((doc) =>
+  //             CapsuleModel.fromJson(doc.data() as Map<String, dynamic>))
+  //         .where((capsule) => capsule.recipients.isNotEmpty)
+  //         .toList();
 
-  void sendCapsuleToUser({
-    required CapsuleModel capsule,
-  }) async {
-    String? currentUserId = _userController.getUser?.uid;
+  //     //* Get all recipients user Id
+  //     Set<String> recipientIds = sentCapsules
+  //         .expand((capsule) => capsule.recipients)
+  //         .where((id) => id != null)
+  //         .cast<String>()
+  //         .toSet();
 
-    String? recipientId = usersList.value[selectedUser.value].userId;
-    if (currentUserId == null) return;
+  //     //* Get all recipients user Data
+  //     List<UserModel?> users = await Future.wait(
+  //       recipientIds.map(
+  //         (id) => _userController.getUserById(userId: id),
+  //       ),
+  //     );
 
-    DocumentReference capsuleRef =
-        _firebaseFirestore.collection('Users_Capsules').doc(capsule.capsuleId);
-    Map<String, dynamic> recipientData = {
-      "recipientId": recipientId,
-      "status": capsule.status,
-      "createdAt" : DateTime.now().toIso8601String()
-    };
+  //     //* Map all recipient's Id with their capsules (sorted by time)
+  //     for (var recipientId in recipientIds) {
+  //       List<CapsuleModel> filteredCapsules = sentCapsules
+  //           .where((capsule) =>
+  //               capsule.recipients.any((r) => r == recipientId))
+  //           .toList();
 
-    try {
-      await capsuleRef.update({
-        "privacy.sharedWith": FieldValue.arrayUnion([recipientId]),
-        "recipients": FieldValue.arrayUnion([recipientData])
-      });
+  //       //* Sort capsules by openingDate in descending order (latest first)
+  //       filteredCapsules.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-      appBar(text: 'Capsule sent');
-      selectedUser(-1);
-    } catch (e) {
-      Vx.log(e.toString());
-    }
-  }
+  //       recipientCapsuleMap[recipientId] = filteredCapsules;
+  //     }
 
- void getUserSentCapsule() async {
-  String? currentUserId = _userController.getUser?.uid;
-  if (currentUserId == null) return;
+  //     capsuleSentUsers.addAll(users.whereType<UserModel>());
+  //   } catch (e) {
+  //     Vx.log("error while getting user sent capsule: $e");
+  //   } finally {
+  //     isRecipientLoading(false);
+  //   }
+  // }
 
-  try {
-    isRecipientLoading(true);
-    capsuleSentUsers.clear();
-    recipientCapsuleMap.clear();
-
-    QuerySnapshot snapshot = await _firebaseFirestore
-        .collection('Users_Capsules')
-        .where('creatorId', isEqualTo: currentUserId)
-        .get();
-
-    //* Get the current user capsule that he has sent to someone
-    List<CapsuleModel> sentCapsules = snapshot.docs
-        .map((doc) => CapsuleModel.fromJson(doc.data() as Map<String, dynamic>))
-        .where((capsule) => capsule.recipients.isNotEmpty)
-        .toList();
-
-    //* Get all recipients user Id
-    Set<String> recipientIds = sentCapsules
-        .expand((capsule) => capsule.privacy.sharedWith)
-        .where((id) => id != null)
-        .cast<String>()
-        .toSet();
-
-    //* Get all recipients user Data
-    List<UserModel?> users = await Future.wait(
-      recipientIds.map(
-        (id) => _userController.getUserById(userId: id),
-      ),
-    );
-
-    //* Map all recipient's Id with their capsules (sorted by time)
-    for (var recipientId in recipientIds) {
-      List<CapsuleModel> filteredCapsules = sentCapsules
-          .where((capsule) =>
-              capsule.recipients.any((r) => r?.recipientId == recipientId))
-          .toList();
-
-    //* Sort capsules by openingDate in descending order (latest first)
-      filteredCapsules.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
-      recipientCapsuleMap[recipientId] = filteredCapsules;
-    }
-
-    capsuleSentUsers.addAll(users.whereType<UserModel>());
-  } catch (e) {
-    Vx.log("error while getting user sent capsule: $e");
-  } finally {
-    isRecipientLoading(false);
-  }
-}
 
 }

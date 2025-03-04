@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:future_capsule/data/models/settings_model.dart';
-import 'package:future_capsule/data/models/user_model.dart';
+import 'package:future_capsule/data/models/settings_modal.dart';
+import 'package:future_capsule/data/models/user_modal.dart';
 import 'package:get/get.dart';
 import 'package:velocity_x/velocity_x.dart';
 
@@ -123,4 +123,7 @@ class UserController extends GetxController {
       return null;
     }
   }
+
+
+
 }

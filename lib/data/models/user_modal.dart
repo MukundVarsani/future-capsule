@@ -1,4 +1,4 @@
-import 'package:future_capsule/data/models/settings_model.dart';
+import 'package:future_capsule/data/models/settings_modal.dart';
 
 class UserModel {
   final String userId;

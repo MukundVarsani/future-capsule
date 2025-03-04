@@ -48,16 +48,16 @@ class _BottomBarState extends State<BottomBar> {
           screenTransitionAnimationType: ScreenTransitionAnimationType.fadeIn,
         ),
       ),
-      confineToSafeArea: true,
+      confineToSafeArea: false,
       navBarStyle: NavBarStyle.style15,
-      navBarHeight: MediaQuery.sizeOf(context).height * 0.07,
+      navBarHeight: MediaQuery.sizeOf(context).height * 0.075,
     );
   }
 
   List<Widget> _buildScreens() {
     return const [
-      HomeScreen(),
       MySentCapuslesScreen(),
+      HomeScreen(),
       CreateCapsuleScreen(),
       MyCapuslesScreen(),
       ProfileScreen(),
@@ -89,7 +89,7 @@ class _BottomBarState extends State<BottomBar> {
       PersistentBottomNavBarItem(
         contentPadding: 12,
          
-        icon: const Icon(CupertinoIcons.create,size: 34,),
+        icon: const Icon(CupertinoIcons.create,size: 30,),
         title: ("Create"),
         iconSize: 348,
         activeColorPrimary: Colors.white,

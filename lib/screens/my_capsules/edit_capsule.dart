@@ -5,7 +5,7 @@ import 'package:future_capsule/core/images/images.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
 import 'package:future_capsule/data/controllers/capsule.controller.dart';
-import 'package:future_capsule/data/models/capsule_model.dart';
+import 'package:future_capsule/data/models/capsule_modal.dart';
 import 'package:future_capsule/features/compress_file.dart';
 import 'package:future_capsule/features/select_files.dart';
 import 'package:future_capsule/screens/create_capsule/custom_picker.dart';

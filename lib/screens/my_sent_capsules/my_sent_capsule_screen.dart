@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
 import 'package:future_capsule/data/controllers/capsule.controller.dart';
-import 'package:future_capsule/data/models/user_model.dart';
+import 'package:future_capsule/data/controllers/recipients.controller.dart';
+import 'package:future_capsule/data/models/capsule_modal.dart';
+
+import 'package:future_capsule/data/models/user_modal.dart';
 import 'package:future_capsule/screens/my_sent_capsules/my_sent_capsules_tile.dart';
 import 'package:get/get.dart';
 import 'package:velocity_x/velocity_x.dart';
@@ -15,16 +18,20 @@ class MySentCapuslesScreen extends StatefulWidget {
 }
 
 class _MyCapuslesScreenState extends State<MySentCapuslesScreen> {
-  final CapsuleController _capsuleController = Get.put(CapsuleController());
+  final RecipientController _recipientController =
+      Get.put(RecipientController());
 
-  @override
+
+@override
   void initState() {
-    _capsuleController.getUserSentCapsule();
+    _recipientController.getUsersYouSentCapsulesTo();
     super.initState();
   }
 
+
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
@@ -53,27 +60,30 @@ class _MyCapuslesScreenState extends State<MySentCapuslesScreen> {
           ],
         ),
         body: Obx(
-          () => _capsuleController.isRecipientLoading.value
+          () => _recipientController.isCapsuleLoading.value
               ? const Center(
                   child: CircularProgressIndicator.adaptive(
                       valueColor:
                           AlwaysStoppedAnimation(AppColors.kWarmCoralColor)),
                 )
-              : _capsuleController.capsuleSentUsers.isNotEmpty
+              : _recipientController.recipientUser.isNotEmpty
                   ? ListView.builder(
-                      itemCount: _capsuleController.capsuleSentUsers.length,
+                      itemCount: _recipientController.recipientUser.length,
                       itemBuilder: (context, index) {
                         UserModel user =
-                            _capsuleController.capsuleSentUsers.value[index];
+                            _recipientController.recipientUser.value[index];
 
-                        return MySentCapsuleTile(
-                          openDate: _capsuleController
-                                  .recipientCapsuleMap[user.userId]?[0].title ??
-                              "Not found",
-                          createDate: _capsuleController
-                                  .recipientCapsuleMap[user.userId]?[0].createdAt.timeAgo() ??
-                              "Not found",
-                          user: user,
+                        return GestureDetector(
+                          // onTap: (){
+                          // _recipientController.recipientCapsulesMap[_recipientController.recipientUserIds[index]]?.forEach((CapsuleModel c){
+                          //   Vx.log(c.title);
+                          // });
+                          // },
+                          child: MySentCapsuleTile(
+                            openDate: _recipientController.recipientCapsulesMap[_recipientController.recipientUserIds[index]]?.last.title ?? "Not found",
+                            createDate:  _recipientController.recipientUserSendDate[index].timeAgo(),
+                            user: user,
+                          ),
                         );
                       })
                   : const Center(
