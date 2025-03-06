@@ -23,11 +23,16 @@ class RecipientController extends GetxController {
   RxList<String> recipientUserIds = <String>[].obs;
   RxList<DateTime> recipientUserSendDate = <DateTime>[].obs;
   RxList<UserModel> recipientUser = <UserModel>[].obs;
+
   var recipientCapsulesMap = <String, List<CapsuleModel>>{}.obs;
 
   var isRecipientLoading = false.obs;
   var isCapsuleSending = false.obs;
   var isCapsuleLoading = false.obs;
+
+  //^ My Future Variable
+  RxList<CapsuleModel> myFutureCapusles = <CapsuleModel>[].obs;
+  RxList<DateTime> sharedDate = <DateTime>[].obs;
 
   //* Add a recipient to the list
   void addRecipient(int userId) {
@@ -129,7 +134,6 @@ class RecipientController extends GetxController {
       getCapsulesSentToUser();
       getUsersYouSentCapsulesTo();
 
-  
       for (int recipientId in availableRecipientIds) {
         String userName = availableRecipients[recipientId].name;
         NotificationService.sendNotification(
@@ -168,7 +172,6 @@ class RecipientController extends GetxController {
   }
 
 //* Get recipients Id sorted by last capsule sent
-
   Future<void> getRecipientIds() async {
     String? currentUserId = _userController.getUser?.uid;
     if (currentUserId == null) return;
@@ -195,7 +198,7 @@ class RecipientController extends GetxController {
     await getCapsulesSentToUser();
   }
 
-
+//* Get all User capusles that they have sent
   Future<void> getCapsulesSentToUser() async {
     String? currentUserId = _userController.getUser?.uid;
     if (currentUserId == null) return;
@@ -234,6 +237,81 @@ class RecipientController extends GetxController {
     }
   }
 
+//* Get My Future Capsules
+  void getMyFutureCapusle() async {
+    String? currentUserId = _userController.getUser?.uid;
+    if (currentUserId == null) return;
 
+    try {
+      // Step 1: Fetch shared capsules for the current user
+      QuerySnapshot snap = await _firebaseFirestore
+          .collection("SharedCapsules")
+          .where("recipientId", isEqualTo: currentUserId)
+          .get();
 
+      // Step 2: Convert snapshot to a sorted list of capsule IDs
+      List<String> capsuleIds = (snap.docs
+              .map((doc) =>
+                  SharedCapsule.fromJson(doc.data() as Map<String, dynamic>))
+              .toList()
+            ..sort((a, b) =>
+                b.shareDate.compareTo(a.shareDate))) // Sort by recent date
+          .map((capsule) => capsule.capsuleId)
+          .toList();
+
+      if (capsuleIds.isEmpty) {
+        myFutureCapusles.value = [];
+        return;
+      }
+
+      // Step 3: Fetch capsules in batches using whereIn (Firestore allows max 10 IDs per query)
+      List<CapsuleModel> capsulesList = [];
+
+      for (int i = 0; i < capsuleIds.length; i += 10) {
+        List<String> batch = capsuleIds.sublist(
+            i, i + 10 > capsuleIds.length ? capsuleIds.length : i + 10);
+        QuerySnapshot capsuleSnap = await _firebaseFirestore
+            .collection("Users_Capsules")
+            .where(FieldPath.documentId, whereIn: batch)
+            .get();
+
+        capsulesList.addAll(capsuleSnap.docs.map((doc) =>
+            CapsuleModel.fromJson(doc.data() as Map<String, dynamic>)));
+      }
+
+      myFutureCapusles.value = capsuleIds
+          .map((id) =>
+              capsulesList.firstWhere((capsule) => capsule.capsuleId == id))
+          .toList();
+
+      Vx.log(myFutureCapusles[0].title);
+    } catch (e) {
+      Vx.log("Error in myFutureCapsule: $e");
+    }
+  }
+
+  void getSortedSharedDate() async {
+    String? currentUserId = _userController.getUser?.uid;
+    if (currentUserId == null) return;
+
+    try {
+       QuerySnapshot snap = await _firebaseFirestore
+          .collection("SharedCapsules")
+          .where("recipientId", isEqualTo: currentUserId)
+          .get();
+
+      // Step 2: Convert snapshot to a sorted list of capsule IDs
+      List<DateTime> capsuleDates = (snap.docs
+              .map((doc) =>
+                  SharedCapsule.fromJson(doc.data() as Map<String, dynamic>))
+              .toList()
+            ..sort((a, b) =>
+                b.shareDate.compareTo(a.shareDate))) // Sort by recent date
+          .map((capsule) => capsule.shareDate)
+          .toList();
+sharedDate(capsuleDates);
+    } catch (e) {
+      Vx.log("Error in getSortedSharedDate $e");
+    }
+  }
 }

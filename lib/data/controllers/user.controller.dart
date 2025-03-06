@@ -123,7 +123,108 @@ class UserController extends GetxController {
       return null;
     }
   }
-
-
-
 }
+
+
+
+// /* 
+  
+// {
+//      "foodName": [
+//         "iced tea",
+//         "iced tea",
+//         "beer"
+//     ],
+//  "nutritional_info": {
+//      "calories": 142.0,
+//          "dailyIntakeReference": {
+//             "CHOCDF": {
+//                 "label": "Carbs",
+//                 "level": "LOW",
+//                 "percent": 5.0721738701363766
+//             },
+//             "ENERC_KCAL": {
+//                 "label": "Energy",
+//                 "level": "NONE",
+//                 "percent": 6.898933808039899
+//             },
+           
+       
+//             "PROCNT": {
+//                 "label": "Protein",
+//                 "level": "LOW",
+//                 "percent": 1.475011481775291
+//             },
+//             "SUGAR": {
+//                 "label": "Sugars",
+//                 "level": "NONE",
+//                 "percent": 0.0
+//             },
+//            "totalNutrients": {
+//              "ALC": {
+//                 "label": "Alcohol",
+//                 "quantity": 15.839999999999998,
+//                 "unit": "g"
+//             },
+//             "CA": {
+//                 "label": "Calcium",
+//                 "quantity": 27.3,
+//                 "unit": "mg"
+//             },
+//             "CAFFN": {
+//                 "label": "Caffeine",
+//                 "quantity": 2.0,
+//                 "unit": "mg"
+//             },
+//             "CHOCDF": {
+//                 "label": "Carbs",
+//                 "quantity": 11.744999999999997,
+//                 "unit": "g"
+//             },
+//          },
+//  },
+//      "nutritional_info_per_item": [
+//         {
+//             "food_item_position": 1,
+//             "hasNutritionalInfo": true,
+//                "id": 1937,
+//             "nutritional_info": {
+//                    "calories": 0.05,
+//                 "dailyIntakeReference": {
+                  
+//                       "CHOCDF": {
+//                         "label": "Carbs",
+//                         "level": "LOW",
+//                         "percent": 0.006477872120225258
+//                     },
+//                     "ENERC_KCAL": {
+//                         "label": "Energy",
+//                         "level": "NONE",
+//                         "percent": 0.002429202045084472
+//                     },
+//                 },
+//                 "totalNutrients": {
+//                       "ALC": {
+//                         "label": "Alcohol",
+//                         "quantity": 0.0,
+//                         "unit": "g"
+//                     },
+//                     "CA": {
+//                         "label": "Calcium",
+//                         "quantity": 7.050000000000001,
+//                         "unit": "mg"
+//                     },
+//                     "CAFFN": {
+//                         "label": "Caffeine",
+//                         "quantity": 1.0,
+//                         "unit": "mg"
+//                     },
+//                 }
+//               },
+//                    "serving_size": 240.0
+//         },
+//      ]
+//    "serving_size": 810.0
+//   }
+
+//   // */ 

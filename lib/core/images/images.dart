@@ -6,4 +6,10 @@ class AppImages {
   static const yas = 'assets/images/yas.jpeg';
   static const openCapsule = 'assets/images/open_capsule.png';
   static const capsules = 'assets/images/capsule.png';
+  static const capture = 'assets/images/capture.jpg';
+  static const lightLockedCapsule = 'assets/images/dark_locked_capule.png';
+  static const darkLockedCapsule =  'assets/images/light_locked_capule.png';
+  static const lightCapsuleLock = 'assets/images/light_capsule_lock.png';
+  static const darkCapsuleLock =  'assets/images/dark_capsule_lock.png';
+  static const lightCapsuleUnLock =  'assets/images/light_capsule_un_lock.png';
 }

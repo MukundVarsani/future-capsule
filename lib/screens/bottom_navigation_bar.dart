@@ -1,8 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/screens/create_capsule/create_capsule_screen.dart';
-import 'package:future_capsule/screens/home/home_screen.dart';
+
 import 'package:future_capsule/screens/my_capsules/my_capusles_screen.dart';
+import 'package:future_capsule/screens/my_futures/my_future_capusles.dart';
 import 'package:future_capsule/screens/my_sent_capsules/my_sent_capsule_screen.dart';
 import 'package:future_capsule/screens/profile/profile_screen.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
@@ -24,7 +25,7 @@ class _BottomBarState extends State<BottomBar> {
     return PersistentTabView(
       context,
       controller: _controller,
-    
+
       screens: _buildScreens(),
       items: _navBarsItems(),
       handleAndroidBackButtonPress: false, // Default is true.
@@ -32,7 +33,7 @@ class _BottomBarState extends State<BottomBar> {
           true, // This needs to be true if you want to move up the screen on a non-scrollable screen when keyboard appears. Default is true.
       stateManagement: true, // Default is true.
       hideNavigationBarWhenKeyboardAppears: true,
-      padding: const EdgeInsets.only(top: 12,bottom: 8),
+      padding: const EdgeInsets.only(top: 12, bottom: 8),
       backgroundColor: Colors.red,
       isVisible: true,
       animationSettings: const NavBarAnimationSettings(
@@ -57,11 +58,10 @@ class _BottomBarState extends State<BottomBar> {
   List<Widget> _buildScreens() {
     return const [
       MySentCapuslesScreen(),
-      HomeScreen(),
+      MyFutureCapusles(),
       CreateCapsuleScreen(),
       MyCapuslesScreen(),
       ProfileScreen(),
-
     ];
   }
 
@@ -73,50 +73,41 @@ class _BottomBarState extends State<BottomBar> {
         activeColorPrimary: Colors.white,
         inactiveColorPrimary: Colors.white70,
         scrollController: _scrollController,
-       
       ),
-      
       PersistentBottomNavBarItem(
-        icon: const Icon(CupertinoIcons.rectangle_fill_on_rectangle_angled_fill),
+        icon:
+            const Icon(CupertinoIcons.rectangle_fill_on_rectangle_angled_fill),
         title: ("Future"),
-
         activeColorPrimary: Colors.white,
         inactiveColorPrimary: Colors.white70,
         scrollController: _scrollController,
-      
       ),
-     
       PersistentBottomNavBarItem(
         contentPadding: 12,
-         
-        icon: const Icon(CupertinoIcons.create,size: 30,),
+        icon: const Icon(
+          CupertinoIcons.create,
+          size: 30,
+        ),
         title: ("Create"),
         iconSize: 348,
         activeColorPrimary: Colors.white,
         activeColorSecondary: Colors.red,
         inactiveColorPrimary: Colors.white70,
-
         scrollController: _scrollController,
-        
       ),
-
-
       PersistentBottomNavBarItem(
         icon: const Icon(CupertinoIcons.macwindow),
         title: ("My capusles"),
         activeColorPrimary: Colors.white,
         inactiveColorPrimary: Colors.white70,
         scrollController: _scrollController,
-        
-       
       ),
       PersistentBottomNavBarItem(
         icon: const Icon(CupertinoIcons.person),
         title: ("Settings"),
-      activeColorPrimary: Colors.white,
+        activeColorPrimary: Colors.white,
         inactiveColorPrimary: Colors.white70,
         scrollController: _scrollController,
-       
       ),
     ];
   }
