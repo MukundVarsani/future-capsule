@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/screens/create_capsule/create_capsule_screen.dart';
-
 import 'package:future_capsule/screens/my_capsules/my_capusles_screen.dart';
+import 'package:future_capsule/screens/my_futures/my_future_capsule_view.dart';
 import 'package:future_capsule/screens/my_futures/my_future_capusles.dart';
 import 'package:future_capsule/screens/my_sent_capsules/my_sent_capsule_screen.dart';
 import 'package:future_capsule/screens/profile/profile_screen.dart';
@@ -28,9 +28,9 @@ class _BottomBarState extends State<BottomBar> {
 
       screens: _buildScreens(),
       items: _navBarsItems(),
-      handleAndroidBackButtonPress: false, // Default is true.
+      handleAndroidBackButtonPress: false,
       resizeToAvoidBottomInset:
-          true, // This needs to be true if you want to move up the screen on a non-scrollable screen when keyboard appears. Default is true.
+          true, 
       stateManagement: true, // Default is true.
       hideNavigationBarWhenKeyboardAppears: true,
       padding: const EdgeInsets.only(top: 12, bottom: 8),
@@ -58,6 +58,7 @@ class _BottomBarState extends State<BottomBar> {
   List<Widget> _buildScreens() {
     return const [
       MySentCapuslesScreen(),
+      // MyFutureCapsuleView(),
       MyFutureCapusles(),
       CreateCapsuleScreen(),
       MyCapuslesScreen(),

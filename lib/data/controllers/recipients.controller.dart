@@ -30,9 +30,10 @@ class RecipientController extends GetxController {
   var isCapsuleSending = false.obs;
   var isCapsuleLoading = false.obs;
 
-  //^ My Future Variable
-  RxList<CapsuleModel> myFutureCapusles = <CapsuleModel>[].obs;
-  RxList<DateTime> sharedDate = <DateTime>[].obs;
+  //^ My Future Capsule Variable
+  RxList<UserModel> myFutureUserList = <UserModel>[].obs;
+  var myFuture = <String, List<Map<String, dynamic>>>{}.obs;
+  var isMyFutureLoading = false.obs;
 
   //* Add a recipient to the list
   void addRecipient(int userId) {
@@ -237,81 +238,132 @@ class RecipientController extends GetxController {
     }
   }
 
-//* Get My Future Capsules
-  void getMyFutureCapusle() async {
+  Future<void> fetchSharedCapsulesWithUsers() async {
     String? currentUserId = _userController.getUser?.uid;
     if (currentUserId == null) return;
 
     try {
-      // Step 1: Fetch shared capsules for the current user
-      QuerySnapshot snap = await _firebaseFirestore
-          .collection("SharedCapsules")
-          .where("recipientId", isEqualTo: currentUserId)
+      myFutureUserList.clear();
+      isMyFutureLoading(true);
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+      // Step 1: Query all shared capsules where the current user is the recipient
+      QuerySnapshot sharedCapsulesSnapshot = await firestore
+          .collection('SharedCapsules')
+          .where('recipientId', isEqualTo: currentUserId)
+          .orderBy('shareDate', descending: true) // Sorting by shared date
           .get();
 
-      // Step 2: Convert snapshot to a sorted list of capsule IDs
-      List<String> capsuleIds = (snap.docs
-              .map((doc) =>
-                  SharedCapsule.fromJson(doc.data() as Map<String, dynamic>))
-              .toList()
-            ..sort((a, b) =>
-                b.shareDate.compareTo(a.shareDate))) // Sort by recent date
-          .map((capsule) => capsule.capsuleId)
-          .toList();
+      // Map<String, List<Map<String, dynamic>>> groupedData = {};
+      Set<String> senderIds =
+          {}; // To store unique sender IDs for batch fetching
 
-      if (capsuleIds.isEmpty) {
-        myFutureCapusles.value = [];
-        return;
+      // Step 2: Fetch capsule details and group by senderId
+      for (var doc in sharedCapsulesSnapshot.docs) {
+        String capsuleId = doc['capsuleId'];
+        String senderId = doc['senderId'];
+        String sharedDate = doc['shareDate'];
+
+        senderIds.add(senderId); // Collect sender IDs for fetching user details
+
+        // Fetch capsule details
+        DocumentSnapshot capsuleSnapshot =
+            await firestore.collection('Users_Capsules').doc(capsuleId).get();
+
+        if (capsuleSnapshot.exists) {
+          Map<String, dynamic> capsuleData =
+              capsuleSnapshot.data() as Map<String, dynamic>;
+
+          // Structure the mapped data
+          Map<String, dynamic> mappedData = {
+            "data": capsuleData,
+            "sharedDate": sharedDate,
+          };
+
+          // Group by senderId
+          if (myFuture.containsKey(senderId)) {
+            myFuture[senderId]!.add(mappedData);
+          } else {
+            myFuture[senderId] = [mappedData];
+          }
+        }
       }
 
-      // Step 3: Fetch capsules in batches using whereIn (Firestore allows max 10 IDs per query)
-      List<CapsuleModel> capsulesList = [];
-
-      for (int i = 0; i < capsuleIds.length; i += 10) {
-        List<String> batch = capsuleIds.sublist(
-            i, i + 10 > capsuleIds.length ? capsuleIds.length : i + 10);
-        QuerySnapshot capsuleSnap = await _firebaseFirestore
-            .collection("Users_Capsules")
-            .where(FieldPath.documentId, whereIn: batch)
-            .get();
-
-        capsulesList.addAll(capsuleSnap.docs.map((doc) =>
-            CapsuleModel.fromJson(doc.data() as Map<String, dynamic>)));
-      }
-
-      myFutureCapusles.value = capsuleIds
-          .map((id) =>
-              capsulesList.firstWhere((capsule) => capsule.capsuleId == id))
+      myFutureUserList.value = (await Future.wait(
+        senderIds.map((userId) => _userController.getUserById(userId: userId)),
+      ))
+          .whereType<UserModel>() // Remove null users
           .toList();
-
-      Vx.log(myFutureCapusles[0].title);
     } catch (e) {
-      Vx.log("Error in myFutureCapsule: $e");
+      Vx.log("Error in fetchSharedCapsulesWithUsers : $e ");
+    } finally {
+      isMyFutureLoading(false);
     }
   }
 
-  void getSortedSharedDate() async {
-    String? currentUserId = _userController.getUser?.uid;
-    if (currentUserId == null) return;
 
-    try {
-       QuerySnapshot snap = await _firebaseFirestore
-          .collection("SharedCapsules")
-          .where("recipientId", isEqualTo: currentUserId)
-          .get();
 
-      // Step 2: Convert snapshot to a sorted list of capsule IDs
-      List<DateTime> capsuleDates = (snap.docs
-              .map((doc) =>
-                  SharedCapsule.fromJson(doc.data() as Map<String, dynamic>))
-              .toList()
-            ..sort((a, b) =>
-                b.shareDate.compareTo(a.shareDate))) // Sort by recent date
-          .map((capsule) => capsule.shareDate)
-          .toList();
-sharedDate(capsuleDates);
-    } catch (e) {
-      Vx.log("Error in getSortedSharedDate $e");
+  Future<void> fetchSharedCapsulesWithUsersOPT() async {
+  String? currentUserId = _userController.getUser?.uid;
+  if (currentUserId == null) return;
+
+  try {
+    myFutureUserList.clear();
+    isMyFutureLoading(true);
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    // Step 1: Query all shared capsules where the current user is the recipient
+    QuerySnapshot sharedCapsulesSnapshot = await firestore
+        .collection('SharedCapsules')
+        .where('recipientId', isEqualTo: currentUserId)
+        .orderBy('shareDate', descending: true)
+        .get();
+
+    Set<String> senderIds = {}; // Collect sender IDs for batch fetching
+    List<String> capsuleIds = []; // Collect capsule IDs for batch fetching
+
+    // Step 2: Prepare senderIds and capsuleIds for batch fetching
+    for (var doc in sharedCapsulesSnapshot.docs) {
+      senderIds.add(doc['senderId']);
+      capsuleIds.add(doc['capsuleId']);
     }
+
+    // Fetch all capsules in a single batch request
+    List<DocumentSnapshot> capsuleSnapshots = await Future.wait(
+      capsuleIds.map((capsuleId) => firestore.collection('Users_Capsules').doc(capsuleId).get()),
+    );
+
+    // Process and map capsule data
+    for (int i = 0; i < sharedCapsulesSnapshot.docs.length; i++) {
+      var doc = sharedCapsulesSnapshot.docs[i];
+      String senderId = doc['senderId'];
+      String sharedDate = doc['shareDate'];
+
+      if (capsuleSnapshots[i].exists) {
+        Map<String, dynamic> capsuleData = capsuleSnapshots[i].data() as Map<String, dynamic>;
+
+        // Structure the mapped data
+        Map<String, dynamic> mappedData = {
+          "data": capsuleData,
+          "sharedDate": sharedDate,
+        };
+
+        // Group by senderId
+        myFuture.putIfAbsent(senderId, () => []).add(mappedData);
+      }
+    }
+
+    // Fetch all user details in parallel and filter out null values
+    myFutureUserList.value = (await Future.wait(
+      senderIds.map((userId) => _userController.getUserById(userId: userId)),
+    ))
+        .whereType<UserModel>()
+        .toList();
+  } catch (e) {
+    Vx.log("Error in fetchSharedCapsulesWithUsers : $e ");
+  } finally {
+    isMyFutureLoading(false);
   }
+}
+
 }

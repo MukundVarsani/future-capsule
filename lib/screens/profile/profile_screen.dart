@@ -5,6 +5,7 @@ import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
+import 'package:future_capsule/data/controllers/auth.controller.dart';
 import 'package:future_capsule/data/controllers/user.controller.dart';
 import 'package:future_capsule/data/models/user_modal.dart';
 import 'package:future_capsule/data/services/firebase_storage.dart';
@@ -27,6 +28,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final FirebaseStore _firebaseStore = FirebaseStore();
 
   final UserController _userController = Get.put(UserController());
+  final AuthController _authController = Get.put(AuthController());
 
   void _selectProfileImage() async {
     XFile? xFile =
@@ -73,6 +75,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+void logout()async{
+  await _authController.signOut();
+}
   @override
   void initState() {
     _selectFiles = SelectFiles();
@@ -228,7 +233,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 borderRadius: BorderRadius.circular(24),
                                 color: AppColors.kWhiteColor,
                               ),
-                              child: const Column(
+                              child: Column(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceAround,
                                 children: [
@@ -236,26 +241,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Column(
-                                        children: [
-                                          Icon(
-                                            Icons.chat,
-                                            size: 28,
-                                            color:
-                                                Color.fromRGBO(255, 111, 97, 1),
-                                          ),
-                                          SizedBox(
-                                            height: 5,
-                                          ),
-                                          Text(
-                                            "Chat",
-                                            style: TextStyle(
-                                                color:
-                                                    AppColors.kLightGreyColor),
-                                          ),
-                                        ],
+                                      InkWell(
+                                         onTap: logout,
+                                        child: const Column(
+                                          children: [
+                                             Icon(
+                                              Icons.logout,
+                                              size: 28,
+                                              color:
+                                                  Color.fromRGBO(255, 111, 97, 1),
+                                            ),
+                                             SizedBox(
+                                              height: 5,
+                                            ),
+                                            
+                                             
+                                               Text(
+                                                "log out",
+                                                style: TextStyle(
+                                                    color: AppColors
+                                                        .kLightGreyColor),
+                                              ),
+                                            
+                                          ],
+                                        ),
                                       ),
-                                      Column(
+                                      const Column(
                                         children: [
                                           Icon(Icons.dock,
                                               size: 28,
@@ -272,7 +283,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           ),
                                         ],
                                       ),
-                                      Column(
+                                      const Column(
                                         children: [
                                           Icon(
                                             Icons.location_on_outlined,
@@ -293,10 +304,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       ),
                                     ],
                                   ),
-                                  Expanded(
+                                  const Expanded(
                                       child: Divider(
                                           color: AppColors.kSecondryTextColor)),
-                                  Row(
+                                  const Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [

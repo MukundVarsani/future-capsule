@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
 import 'package:future_capsule/data/controllers/recipients.controller.dart';
+import 'package:future_capsule/data/models/capsule_modal.dart';
+import 'package:future_capsule/data/models/user_modal.dart';
+import 'package:future_capsule/screens/my_futures/my_future_capsule_view.dart';
 import 'package:future_capsule/screens/my_futures/my_future_tile.dart';
 import 'package:get/get.dart';
 import 'package:velocity_x/velocity_x.dart';
@@ -18,9 +21,13 @@ class _MyFutureCapuslesState extends State<MyFutureCapusles> {
       Get.put(RecipientController());
 
   @override
+  void initState() {
+    _recipientController.fetchSharedCapsulesWithUsersOPT();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    _recipientController.getMyFutureCapusle();
-    _recipientController.getSortedSharedDate();
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -48,15 +55,55 @@ class _MyFutureCapuslesState extends State<MyFutureCapusles> {
           ),
         ],
       ),
-      body: Obx(() => ListView.builder(
-          itemCount: _recipientController.myFutureCapusles.length,
-          itemBuilder: (context, index) {
-            return MyFutureTile(
-                capsule: _recipientController.myFutureCapusles[index],
-                lastDate:  _recipientController.sharedDate[index],
-                
-                );
-          })),
+      body: RefreshIndicator(
+        onRefresh: () => _recipientController.fetchSharedCapsulesWithUsersOPT(),
+        color: AppColors.kWarmCoralColor,
+        child: Obx(
+          () => _recipientController.isMyFutureLoading.value
+              ? const Center(
+                  child: CircularProgressIndicator.adaptive(
+                      valueColor:
+                          AlwaysStoppedAnimation(AppColors.kWarmCoralColor)),
+                )
+              : ListView.builder(
+                  itemCount: _recipientController.myFutureUserList.length,
+                  itemBuilder: (context, index) {
+                    UserModel user =
+                        _recipientController.myFutureUserList[index];
+
+                    CapsuleModel capsule = CapsuleModel.fromJson(
+                        _recipientController.myFuture[user.userId]![0]['data']
+                            as Map<String, dynamic>);
+
+                    List<CapsuleModel> capsules = _recipientController
+                        .myFuture[user.userId]!
+                        .map((cap) => CapsuleModel.fromJson(
+                            cap['data'] as Map<String, dynamic>))
+                        .toList();
+
+                    String date = _recipientController.myFuture[user.userId]![0]
+                        ['sharedDate'];
+
+                     List<String> dateList  = _recipientController.myFuture[user.userId]!.map((data)=> data['sharedDate'].toString()).toList();
+                    return GestureDetector(
+                      onTap: () {
+
+                        Vx.log("Clicled");
+                        Get.to(MyFutureCapsuleView(
+                          capsules: capsules,
+                          user: user,
+                          date: dateList,
+                        ));
+                      },
+                      child: MyFutureTile(
+                        user: user,
+                        lastDate: date.toDate()!,
+                        capsule: capsule,
+                      ),
+                    );
+                  }),
+        ),
+      ),
     );
   }
 }

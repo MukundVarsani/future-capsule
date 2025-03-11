@@ -43,15 +43,15 @@ class MySentCapsuleTile extends StatelessWidget {
                         progressIndicatorBuilder:
                             (context, url, downloadProgress) => Align(
                           alignment: Alignment
-                              .center, // Keep it centered inside the parent
+                              .center, 
                           child: SizedBox(
-                            height: 30, // Explicitly set smaller height
-                            width: 30, // Explicitly set smaller width
+                            height: 30, 
+                            width: 30, 
                             child: CircularProgressIndicator(
                               value: downloadProgress.progress,
                               valueColor: const AlwaysStoppedAnimation(
                                   AppColors.kWarmCoralColor),
-                              strokeWidth: 2, // Make it thinner
+                              strokeWidth: 2,
                             ),
                           ),
                         ),

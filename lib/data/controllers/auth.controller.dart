@@ -98,7 +98,7 @@ class AuthController extends GetxController {
   Future<void> signOut() async {
     try {
       await _firebaseAuth.signOut();
-     await _notificationService.removeFcmToken();
+      await _notificationService.removeFcmToken();
       _userController.setUser = null;
     } catch (e) {
       Vx.log("Error while signing out user : $e");
