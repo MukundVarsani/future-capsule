@@ -8,7 +8,8 @@ class InfoField extends StatefulWidget {
       required this.fieldName,
       required this.fieldValue,
       required this.isEditable,
-      this.onFieldValueChanged, required this.iconColor});
+      this.onFieldValueChanged,
+      required this.iconColor});
 
   final IconData leadingIcon;
   final Color iconColor;
@@ -42,7 +43,7 @@ class _InfoFieldState extends State<InfoField> {
                   ),
                   TextField(
                     controller: _controller,
-                    decoration:  const  InputDecoration(
+                    decoration: const InputDecoration(
                       focusedBorder: UnderlineInputBorder(
                         borderSide: BorderSide(
                             color: AppColors.kWarmCoralColor, width: 2.0),
@@ -57,8 +58,8 @@ class _InfoFieldState extends State<InfoField> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       GestureDetector(
-                        onTap: ()=> Navigator.pop(context),
-                        child:  const  Text(
+                        onTap: () => Navigator.pop(context),
+                        child: const Text(
                           "Cancel",
                           style: TextStyle(
                               color: AppColors.kWarmCoralColor,
@@ -72,11 +73,11 @@ class _InfoFieldState extends State<InfoField> {
                       GestureDetector(
                         onTap: () {
                           if (widget.onFieldValueChanged != null) {
-                        widget.onFieldValueChanged!(_controller.text);
-                      }
+                            widget.onFieldValueChanged!(_controller.text);
+                          }
                           Navigator.pop(context); // Close dialog
                         },
-                        child: const  Text(
+                        child: const Text(
                           "Save",
                           style: TextStyle(
                               color: AppColors.kWarmCoralColor,
@@ -115,7 +116,7 @@ class _InfoFieldState extends State<InfoField> {
                 children: [
                   Text(
                     widget.fieldName,
-                    style: const  TextStyle(
+                    style: const TextStyle(
                         color: Color.fromRGBO(0, 204, 255, 0.8),
                         fontSize: 12,
                         fontWeight: FontWeight.w800),
@@ -123,7 +124,7 @@ class _InfoFieldState extends State<InfoField> {
                   SizedBox(
                     width: MediaQuery.sizeOf(context).width - 130,
                     child: Text(widget.fieldValue,
-                        style: const  TextStyle(
+                        style: const TextStyle(
                             overflow: TextOverflow.ellipsis,
                             color: AppColors.dActiveColorSecondary,
                             fontSize: 16,
@@ -135,11 +136,8 @@ class _InfoFieldState extends State<InfoField> {
               if (widget.isEditable)
                 GestureDetector(
                   onTap: _editField,
-                  child: const  Icon(
-                    Icons.edit,
-                    size: 22,
-                    color: AppColors.kWarmCoralColor,
-                  ),
+                  child: const Icon(Icons.edit,
+                      size: 22, color: Color.fromRGBO(211, 47, 47, 1)),
                 ),
             ],
           ),

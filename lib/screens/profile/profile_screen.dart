@@ -111,7 +111,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             padding: const EdgeInsets.only(bottom: 18),
                             decoration: const BoxDecoration(
                               color: Color.fromRGBO(26, 188, 156, 1),
-                              // color: Color.fromRGBO(232, 67, 147, 1),
+                           
                               borderRadius: BorderRadius.only(
                                 bottomLeft: Radius.circular(36),
                                 bottomRight: Radius.circular(36),
@@ -179,7 +179,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             width: MediaQuery.sizeOf(context).width,
                             decoration: const BoxDecoration(
-                              color: Color.fromRGBO(28, 28, 28, 1),
+                              color: Color.fromRGBO(30, 30, 30, 1),
                               borderRadius: BorderRadius.only(
                                 bottomLeft: Radius.circular(36),
                                 bottomRight: Radius.circular(36),
@@ -239,7 +239,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               height: 250,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(24),
-                                color: const Color.fromRGBO(28, 28, 28, 1),
+                                color: const Color.fromRGBO(30, 30, 30, 1),
                               ),
                               child: Column(
                                 mainAxisAlignment:
@@ -257,7 +257,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               Icons.logout,
                                               size: 28,
                                               color: Color.fromRGBO(
-                                                  255, 111, 97, 1),
+                                                  211, 47, 47, 1),
                                             ),
                                             SizedBox(
                                               height: 5,
@@ -265,8 +265,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             Text(
                                               "log out",
                                               style: TextStyle(
-                                                  color: AppColors
-                                                      .kLightGreyColor),
+                                                  color: Color.fromRGBO(224, 224, 224, 1)),
                                             ),
                                           ],
                                         ),

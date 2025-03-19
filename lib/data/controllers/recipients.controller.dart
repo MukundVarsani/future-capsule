@@ -278,6 +278,69 @@ class RecipientController extends GetxController {
     }
   }
 
+
+//* my Future capsule stream
+Stream<Map<String, List<Map<String, dynamic>>>> fetchSharedCapsulesWithUsersOPTStream() async* {
+  String? currentUserId = _userController.getUser?.uid;
+  if (currentUserId == null) return;
+
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  await for (QuerySnapshot sharedCapsulesSnapshot in firestore
+      .collection('SharedCapsules')
+      .where('recipientId', isEqualTo: currentUserId)
+      .orderBy('shareDate', descending: true)
+      .snapshots()) {
+
+    Set<String> senderIds = {};
+    List<String> capsuleIds = [];
+
+    for (var doc in sharedCapsulesSnapshot.docs) {
+      senderIds.add(doc['senderId']);
+      capsuleIds.add(doc['capsuleId']);
+    }
+
+    List<DocumentSnapshot> capsuleSnapshots = await Future.wait(
+      capsuleIds.map((capsuleId) =>
+          firestore.collection('Users_Capsules').doc(capsuleId).get()),
+    );
+
+    Map<String, List<Map<String, dynamic>>> tempMyFuture = {};
+
+    for (int i = 0; i < sharedCapsulesSnapshot.docs.length; i++) {
+      var doc = sharedCapsulesSnapshot.docs[i];
+      String senderId = doc['senderId'];
+      String sharedDate = doc['shareDate'];
+
+      if (capsuleSnapshots[i].exists) {
+        Map<String, dynamic> capsuleData =
+            capsuleSnapshots[i].data() as Map<String, dynamic>;
+
+        Map<String, dynamic> mappedData = {
+          "data": capsuleData,
+          "sharedDate": sharedDate,
+        };
+
+        tempMyFuture.putIfAbsent(senderId, () => []).add(mappedData);
+      }
+    }
+
+    // Emit real-time updates to myFuture
+    myFuture.value = tempMyFuture;
+
+    // Fetch users in real time
+    myFutureUserList.value = (await Future.wait(
+      senderIds.map((userId) => _userController.getUserById(userId: userId)),
+    ))
+        .whereType<UserModel>()
+        .toList();
+
+    yield tempMyFuture; // Emit the new data
+  }
+}
+
+
+
 //* Update Capsule Status
   void updateCapsuleStatus({required String capsuleId}) async {
     try {

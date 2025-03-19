@@ -23,7 +23,10 @@ class _MyFutureCapsulesState extends State<MyFutureCapsules> {
   @override
   void initState() {
     super.initState();
-    _recipientController.fetchSharedCapsulesWithUsersOPT();
+    // Start listening to the stream
+    _recipientController.fetchSharedCapsulesWithUsersOPTStream().listen((data) {
+      setState(() {}); // Update UI whenever new data is received
+    });
   }
 
   @override
@@ -52,61 +55,57 @@ class _MyFutureCapsulesState extends State<MyFutureCapsules> {
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () => _recipientController.fetchSharedCapsulesWithUsersOPT(),
-        color: AppColors.dNeonCyan,
- 
-        child: Obx(
-          () {
-            if (_recipientController.isMyFutureLoading.value) {
-              // return UserTileShimmer();
-              return const Center(
-                child: CircularProgressIndicator.adaptive(
-                  valueColor: AlwaysStoppedAnimation(AppColors.kWarmCoralColor),
+      body: StreamBuilder<Map<String, List<Map<String, dynamic>>>>(
+        stream: _recipientController.fetchSharedCapsulesWithUsersOPTStream(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator.adaptive(
+                valueColor: AlwaysStoppedAnimation(AppColors.kWarmCoralColor),
+              ),
+            );
+          }
+
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(
+                child: Text("No capsules found",
+                    style: TextStyle(color: Colors.white)));
+          }
+
+          final myFuture = snapshot.data!;
+          final userList = _recipientController.myFutureUserList;
+
+          return ListView.builder(
+            itemCount: userList.length,
+            itemBuilder: (context, index) {
+              final UserModel user = userList[index];
+              final userCapsules = myFuture[user.userId] ?? [];
+
+              if (userCapsules.isEmpty) return const SizedBox.shrink();
+
+              final List<CapsuleModel> capsules = userCapsules
+                  .map((cap) => CapsuleModel.fromJson(
+                      cap['data'] as Map<String, dynamic>))
+                  .toList();
+
+              final List<String> dateList = userCapsules
+                  .map((data) => data['sharedDate'].toString())
+                  .toList();
+
+              return GestureDetector(
+                onTap: () {
+                  Get.to(() => MyFutureCapsuleView(
+                      capsules: capsules, user: user, date: dateList));
+                },
+                child: MyFutureTile(
+                  user: user,
+                  lastDate: dateList.first.toDate()!,
+                  capsule: capsules.first,
                 ),
               );
-            }
-
-            final userList = _recipientController.myFutureUserList;
-            if (userList.isEmpty) {
-              return const Center(
-                  child: Text("No capsules found",
-                      style: TextStyle(color: Colors.white)));
-            }
-
-            return ListView.builder(
-              itemCount: userList.length,
-              itemBuilder: (context, index) {
-                final UserModel user = userList[index];
-                final userCapsules =
-                    _recipientController.myFuture[user.userId] ?? [];
-
-                if (userCapsules.isEmpty) return const SizedBox.shrink();
-
-                final List<CapsuleModel> capsules = userCapsules
-                    .map((cap) => CapsuleModel.fromJson(
-                        cap['data'] as Map<String, dynamic>))
-                    .toList();
-
-                final List<String> dateList = userCapsules
-                    .map((data) => data['sharedDate'].toString())
-                    .toList();
-
-                return GestureDetector(
-                  onTap: () {
-                    Get.to(() => MyFutureCapsuleView(
-                        capsules: capsules, user: user, date: dateList));
-                  },
-                  child: MyFutureTile(
-                    user: user,
-                    lastDate: dateList.first.toDate()!,
-                    capsule: capsules.first,
-                  ),
-                );
-              },
-            );
-          },
-        ),
+            },
+          );
+        },
       ),
     );
   }
