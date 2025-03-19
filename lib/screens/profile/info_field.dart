@@ -8,9 +8,10 @@ class InfoField extends StatefulWidget {
       required this.fieldName,
       required this.fieldValue,
       required this.isEditable,
-      this.onFieldValueChanged});
+      this.onFieldValueChanged, required this.iconColor});
 
   final IconData leadingIcon;
+  final Color iconColor;
   final String fieldName;
   final String fieldValue;
   final bool isEditable;
@@ -99,11 +100,12 @@ class _InfoFieldState extends State<InfoField> {
           padding: const EdgeInsets.symmetric(horizontal: 12),
           // margin: const EdgeInsets.only(bottom: 8),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Icon(
                 widget.leadingIcon,
                 size: 28,
-                color: AppColors.kWarmCoralColor,
+                color: widget.iconColor,
               ),
               const SizedBox(
                 width: 28,
@@ -114,18 +116,18 @@ class _InfoFieldState extends State<InfoField> {
                   Text(
                     widget.fieldName,
                     style: const  TextStyle(
-                        color: AppColors.kLightBlackColor,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500),
+                        color: Color.fromRGBO(0, 204, 255, 0.8),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800),
                   ),
                   SizedBox(
                     width: MediaQuery.sizeOf(context).width - 130,
                     child: Text(widget.fieldValue,
                         style: const  TextStyle(
                             overflow: TextOverflow.ellipsis,
-                            color: AppColors.kLightGreyColor,
+                            color: AppColors.dActiveColorSecondary,
                             fontSize: 16,
-                            fontWeight: FontWeight.w600)),
+                            fontWeight: FontWeight.w400)),
                   ),
                 ],
               ),
@@ -144,9 +146,9 @@ class _InfoFieldState extends State<InfoField> {
         ),
         const Divider(
           color: Color.fromARGB(155, 203, 193, 193),
-          thickness: 0.5,
+          thickness: 0.3,
           indent: 64,
-          endIndent: 10,
+          endIndent: 18,
         ),
       ],
     );

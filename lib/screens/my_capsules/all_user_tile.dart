@@ -15,13 +15,15 @@ class AllUserTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    return Container(
-      padding: const EdgeInsets.all(8),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.bounceIn,
+      padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         color: isUserSelect
-            ? AppColors.kLightGreyColor
-            : AppColors.kLightGreyColor04,
+            ? const Color.fromRGBO(62, 62, 62, 1)
+            : const Color.fromRGBO(30, 30, 30, 1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -29,8 +31,9 @@ class AllUserTile extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: AppColors.kWarmCoralColor,
+             
               borderRadius: BorderRadius.circular(100),
+              boxShadow: const [BoxShadow(blurRadius: 5,spreadRadius: 1, color:  Color.fromRGBO(0, 255, 255, 0.5))]
             ),
             child: (imgURL.isNotEmptyAndNotNull)
                 ? ClipRRect(
@@ -70,7 +73,7 @@ class AllUserTile extends StatelessWidget {
           ),
           Text(
             name ?? "No name",
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.kWhiteColor),
           ),
           const Spacer(),
           if (isUserSelect)

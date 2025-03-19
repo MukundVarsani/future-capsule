@@ -1,22 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
+import 'package:velocity_x/velocity_x.dart';
 
 class AnimatedToggle extends StatelessWidget {
-  const AnimatedToggle({super.key, required this.isToggled, required this.onIcon, required this.offIcon});
+  const AnimatedToggle(
+      {super.key,
+      required this.isToggled,
+      required this.onIcon,
+      required this.offIcon,
+      this.backgroundColor = AppColors.kWarmCoralColor});
   final bool isToggled;
   final IconData onIcon;
   final IconData offIcon;
+  final Color backgroundColor;
 
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
-      width: 80,
-      height: 40,
+      width: 70,
+      height: 35,
       decoration: BoxDecoration(
-        color:
-            isToggled ? AppColors.kWarmCoralColor : AppColors.kLightGreyColor,
+        color: isToggled ? backgroundColor : AppColors.kLightBlackColor,
         borderRadius: BorderRadius.circular(20),
+        boxShadow: isToggled
+            ?  [
+                BoxShadow(
+                  color: backgroundColor.withOpacity(0.7), // Glow effect
+                  blurRadius: 10,
+                  spreadRadius: 3,
+                ),
+              ]
+            : [],
       ),
       child: Row(
         mainAxisAlignment:
@@ -25,23 +40,21 @@ class AnimatedToggle extends StatelessWidget {
           const SizedBox(width: 5),
           if (!isToggled)
             AnimatedContainer(
-              duration: const Duration(milliseconds: 500),
+              duration: const Duration(milliseconds: 1000),
               decoration: BoxDecoration(
-                  color: AppColors.kWhiteColor,
+                  color: AppColors.dActiveColorSecondary,
                   borderRadius: BorderRadius.circular(50)),
               padding: const EdgeInsets.all(4),
-              child:
-                  Icon(offIcon, color: AppColors.kLightGreyColor, size: 24),
+              child: Icon(offIcon, color: AppColors.kLightBlackColor, size: 20),
             ),
           if (isToggled)
             AnimatedContainer(
-              duration: const Duration(milliseconds: 500),
+              duration: const Duration(milliseconds: 1000),
               decoration: BoxDecoration(
                   color: AppColors.kWhiteColor,
                   borderRadius: BorderRadius.circular(50)),
               padding: const EdgeInsets.all(4),
-              child: Icon(onIcon,
-                  color: AppColors.kWarmCoralColor, size: 24),
+              child: Icon(onIcon, color: backgroundColor, size: 20),
             ),
           const SizedBox(width: 5), // Add space between icon and border
         ],

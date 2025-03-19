@@ -1,10 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
+import 'package:future_capsule/core/constants/methods.dart';
 import 'package:future_capsule/core/images/images.dart';
 import 'package:future_capsule/data/models/capsule_modal.dart';
 import 'package:future_capsule/data/models/user_modal.dart';
-import 'package:velocity_x/velocity_x.dart';
+
 
 class MyFutureTile extends StatelessWidget {
   const MyFutureTile(
@@ -20,12 +21,20 @@ class MyFutureTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 0).copyWith(top: 12),
-      constraints: const BoxConstraints(maxHeight: 85),
+      margin: const EdgeInsets.symmetric(horizontal: 12).copyWith(top: 12),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+      constraints: const BoxConstraints(maxHeight: 110),
+      decoration: BoxDecoration(
+          color: AppColors.dUserTileBackground,
+          borderRadius: BorderRadius.circular(12)),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.only(left: 12, right: 6),
+             margin: const EdgeInsets.only(right:  16),
+             decoration: BoxDecoration(
+              boxShadow: const [BoxShadow(color: AppColors.dNeonCyan, offset: Offset(0, 0), blurRadius: 8, spreadRadius:0.05)],
+              borderRadius: BorderRadius.circular(120),
+             ),
             child:
                 (user.profilePicture != null && user.profilePicture!.isNotEmpty)
                     ? ClipRRect(
@@ -45,7 +54,7 @@ class MyFutureTile extends StatelessWidget {
                               child: CircularProgressIndicator(
                                 value: downloadProgress.progress,
                                 valueColor: const AlwaysStoppedAnimation(
-                                    AppColors.kWarmCoralColor),
+                                    AppColors.dNeonCyan),
                                 strokeWidth: 2,
                               ),
                             ),
@@ -60,76 +69,44 @@ class MyFutureTile extends StatelessWidget {
                       ),
           ),
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Row(
-                   
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            user.name,
-                            style: const TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.w600),
-                          ),
-                          const SizedBox(
-                            height: 3,
-                          ),
-                          SizedBox(
-                            width: 200,
-                            child: Text(
-                              capsule.title,
-                              style: const TextStyle(
-                                  overflow: TextOverflow.ellipsis,
-                                  color: AppColors.kLightBlackColor,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400),
-                            ),
-                          ),
-                        ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+             
+                Text(
+                  user.name,
+                  style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.kWhiteColor),
+                ),
+                SizedBox(
+                  width: 200,
+                  child: Text(
+                    capsule.title,
+                    maxLines: 2,
+                    style: const TextStyle( 
+                        overflow: TextOverflow.ellipsis,
+                        color: AppColors.dNeonCyan,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400),
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      timeAgo(lastDate),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.dDateAndTimeColor
                       ),
-
-                      const Spacer(),
-                      (capsule.openingDate.isAfter(DateTime.now()))
-                          ? Image.asset(
-                              AppImages.lightCapsuleLock,
-                              height: 50,
-                              width: 50,
-                              fit: BoxFit.cover,
-                            )
-                          : Image.asset(
-                              AppImages.lightCapsuleUnLock,
-                              height: 40,
-                              width: 40,
-                              fit: BoxFit.cover,
-                            ),
-                    ],
-                  ),
-                  const Spacer(),
-                  Text(
-                    lastDate.timeAgo(),
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: Color.fromRGBO(0, 0, 0, 0.4),
                     ),
-                  ),
-                  const SizedBox(
-                    height: 3,
-                  ),
-                  const Divider(
-                    thickness: 0.3,
-                    height: 1,
-                    color: AppColors.kWarmCoralColor06,
-                  )
-                ],
-              ),
+                  ],
+                ),
+              ],
             ),
           ),
         ],

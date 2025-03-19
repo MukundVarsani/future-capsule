@@ -51,6 +51,10 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
   bool isVideoFile = false;
   bool isOtherFile = false;
 
+  
+  bool isTitleFocused = false;
+  bool isDesFocused = false;
+
   Future<void> _selectVideo(BuildContext context) async {
     xFile = await _files.selectVideo();
     if (xFile == null) return;
@@ -192,8 +196,9 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.dDeepBackground,
       appBar: AppBar(
-        backgroundColor: AppColors.kWarmCoralColor,
+        backgroundColor: AppColors.dDeepBackground,
         leading: IconButton(
             onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(
@@ -211,6 +216,7 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
       body: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: ListView(
+        
           shrinkWrap: true,
           children: [
             const SizedBox(height: 10),
@@ -222,8 +228,14 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
                 constraints: const BoxConstraints(minHeight: 200),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(18),
-                  border:
-                      Border.all(color: AppColors.kWarmCoralColor, width: 2),
+                  color: AppColors.dUserTileBackground,
+                  boxShadow: const [
+                    BoxShadow(
+                        color: Color.fromRGBO(0, 255, 255, 0.5), // Glow effect
+                        blurRadius: 8,
+                        spreadRadius: 1,
+                        offset: Offset(1, 2)),
+                  ],
                 ),
                 child: Stack(alignment: AlignmentDirectional.center, children: [
                   _buildMediaPreview(),
@@ -253,7 +265,7 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
             _privacyBuilder(),
             const SizedBox(height: 20),
             _previewButton(),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -337,13 +349,16 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
             height: 200,
             padding:
                 const EdgeInsets.symmetric(horizontal: 20).copyWith(top: 20),
+            decoration: BoxDecoration(
+                color: AppColors.dUserTileBackground,
+                borderRadius: BorderRadius.circular(12)),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 const Text(
                   "Select File",
                   style: TextStyle(
-                    color: AppColors.kPrimaryTextColor,
+                    color: AppColors.kWhiteColor,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
@@ -354,17 +369,17 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     CustomPicker(
-                      icon: Icons.image,
+                      icon: Icons.camera_alt_rounded ,
                       label: "Image",
                       onTap: () => _selectImage(context),
                     ),
                     CustomPicker(
-                      icon: Icons.video_file,
+                      icon: Icons.videocam,
                       label: "Video",
                       onTap: () => _selectVideo(context),
                     ),
                     CustomPicker(
-                      icon: Icons.file_upload,
+                      icon: Icons.file_present,
                       label: "File",
                       onTap: () {},
                     ),
@@ -385,52 +400,113 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
       children: [
         const Text(
           " Title",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.dActiveColorSecondary),
         ),
-        TextFormField(
-          maxLength: 20,
-          controller: titleController,
-          decoration: const InputDecoration(
-            hintText: "Capsule title",
-            hintStyle: TextStyle(color: AppColors.kLightGreyColor),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide:
-                  BorderSide(color: AppColors.kWarmCoralColor, width: 2.0),
-              borderRadius: BorderRadius.all(Radius.circular(12)),
+        const SizedBox(
+          height: 6,
+        ),
+        FocusScope(
+          child: Focus(
+            onFocusChange: (hasFocus) {
+              setState(() {
+                isTitleFocused = hasFocus;
+              });
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color.fromRGBO(10, 15, 31, 1), // Background color
+                borderRadius: BorderRadius.circular(12), // Rounded corners
+                boxShadow: isTitleFocused
+                    ? const [
+                        BoxShadow(
+                            color:
+                                Color.fromRGBO(0, 255, 255, 0.5), // Glow effect
+                            blurRadius: 8,
+                            spreadRadius: 1,
+                            offset: Offset(1, 2)),
+                      ]
+                    : [],
+              ),
+              child: TextFormField(
+                style: const TextStyle(color: Colors.white), // Text color
+                cursorColor: Colors.blueAccent,
+                controller: titleController,
+                decoration: const InputDecoration(
+                  hintText: "Capsule title",
+                  hintStyle: TextStyle(color: Colors.grey),
+                  border: InputBorder.none, // No border
+                ),
+              ),
             ),
           ),
+        ),
+        const SizedBox(
+          height: 12,
         ),
       ],
     );
   }
 
   Widget _buildDescriptionField() {
-    return Column(
+    return  Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const SizedBox(
+          height: 4,
+        ),
         const Text(
           " Description",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.dActiveColorSecondary,
+          ),
         ),
-        TextFormField(
-          maxLines: 2,
-          controller: descriptionController,
-          decoration: const InputDecoration(
-            hintText: "Decribe capsule",
-            hintStyle: TextStyle(color: AppColors.kLightGreyColor),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide:
-                  BorderSide(color: AppColors.kWarmCoralColor, width: 2.0),
-              borderRadius: BorderRadius.all(Radius.circular(12)),
+        const SizedBox(
+          height: 6,
+        ),
+        FocusScope(
+          child: Focus(
+            onFocusChange: (hasFocus) {
+              setState(() {
+                isDesFocused = hasFocus;
+              });
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color.fromRGBO(10, 15, 31, 1),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: isDesFocused
+                    ? const [
+                        BoxShadow(
+                            color:
+                                Color.fromRGBO(0, 255, 255, 0.5), // Glow effect
+                            blurRadius: 8,
+                            spreadRadius: 1,
+                            offset: Offset(1, 2)),
+                      ]
+                    : [],
+              ),
+              child: TextFormField(
+                style: const TextStyle(color: Colors.white), // Text color
+                cursorColor: Colors.blueAccent, // Cursor color
+                controller: descriptionController,
+                decoration: const InputDecoration(
+                  hintText: "Decribe capsule",
+                  hintStyle: TextStyle(color: Colors.grey),
+                  border: InputBorder.none, // No border
+                ),
+              ),
             ),
           ),
-        )
+        ),
       ],
     );
   }
@@ -546,8 +622,8 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
               "Revealing Your Capsule In",
               style: TextStyle(
                   fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.kPrimaryTextColor),
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.dActiveColorSecondary),
             ),
             const SizedBox(
               height: 8,
@@ -556,23 +632,31 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
               duration: openDate,
               slideDirection: SlideDirection.down,
               separatorStyle: const TextStyle(
-                  color: AppColors.kWarmCoralColor, fontSize: 20),
+                color: AppColors.dNeonCyan,
+                fontSize: 20,
+              ),
               separatorType: SeparatorType.symbol,
               separator: ':',
               decoration: BoxDecoration(
-                color: AppColors.kWarmCoralColor,
-                borderRadius: BorderRadius.circular(8),
-              ),
+                  color: AppColors.dUserTileBackground,
+                  borderRadius: BorderRadius.circular(100),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color.fromRGBO(0, 255, 255, 0.5), // Glow effect
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                      offset: Offset(1, 2),
+                    ),
+                  ]),
+              padding: const EdgeInsets.all(8),
+              separatorPadding: const EdgeInsets.all(6),
               style: const TextStyle(
-                color: AppColors.kWhiteColor,
-                fontSize: 24,
+                color: AppColors.dNeonCyan,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
               showZeroValue: true,
               slideAnimationCurve: Curves.bounceInOut,
-              onChanged: (w) {
-                // Vx.log(w);
-              },
               onDone: () {
                 Vx.log("Completed");
               },
@@ -584,79 +668,79 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
           constraints: const BoxConstraints(
               maxHeight: 55, minHeight: 45, minWidth: 80, maxWidth: 80),
           child: AppButton(
+            backgroundColor: AppColors.kAmberColor,
             child: const Text(
               "Set",
-              style: TextStyle(color: AppColors.kWhiteColor),
+              style: TextStyle(
+                  color: AppColors.kWhiteColor,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16),
             ),
             onPressed: () => _selectDateTime(context),
           ),
         ),
       ],
     );
-  }
+    }
 
   Widget _privacyBuilder() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
+        Row(
           children: [
             const Text(
-              "Is Capsule private?",
+              "Capsule Privacy",
               style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.kPrimaryTextColor),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.kWhiteColor),
             ),
-            const SizedBox(
-              height: 8,
-            ),
+            const Spacer(),
             GestureDetector(
-              onTap: () {
-                if (mounted) {
-                  setState(() {
-                    isCapsuleToggled = !isCapsuleToggled;
-                  });
-                }
-              },
-              child: AnimatedToggle(
-                isToggled: isCapsuleToggled,
-                onIcon: Icons.lock,
-                offIcon: Icons.lock_open,
-              ),
-            ),
+                onTap: () {
+                  if (mounted) {
+                    setState(() {
+                      isCapsuleToggled = !isCapsuleToggled;
+                    });
+                  }
+                },
+                child: AnimatedToggle(
+                  isToggled: isCapsuleToggled,
+                  onIcon: Icons.lock,
+                  offIcon: Icons.lock_open,
+                  backgroundColor: const Color.fromRGBO(26, 189, 156, 1),
+                ))
           ],
         ),
-        const Spacer(),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        const SizedBox(
+          height: 14,
+        ),
+        Row(
           children: [
             const Text(
-              "Want Time private?",
+              "Time Privacy",
               style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.kPrimaryTextColor),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.kWhiteColor),
             ),
-            const SizedBox(
-              height: 8,
-            ),
+            const Spacer(),
             GestureDetector(
-              onTap: () {
-                if (mounted) {
-                  setState(() {
-                    isTimeToggled = !isTimeToggled;
-                  });
-                }
-              },
-              child: AnimatedToggle(
-                isToggled: isTimeToggled,
-                onIcon: Icons.check,
-                offIcon: Icons.close,
-              ),
-            ),
+                onTap: () {
+                  if (mounted) {
+                    setState(() {
+                      isTimeToggled = !isTimeToggled;
+                    });
+                  }
+                },
+                child: AnimatedToggle(
+                  isToggled: isTimeToggled,
+                  onIcon: Icons.check,
+                  offIcon: Icons.close,
+                  backgroundColor: const Color.fromRGBO(142, 68, 173, 1),
+                ))
           ],
-        ),
+        )
       ],
     );
   }
@@ -666,6 +750,7 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
       width: double.infinity,
       height: 50,
       child: AppButton(
+          backgroundColor: const Color.fromRGBO(53, 153, 219, 1),
           onPressed: () async {
             FocusManager.instance.primaryFocus?.unfocus();
             if (titleController.text.isEmpty) {

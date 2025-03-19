@@ -19,4 +19,27 @@ class AppColors {
   static const Color kWhiteColor = Color.fromRGBO(255, 255, 255, 1);
   static const Color kBlackColor = Color.fromRGBO(0, 0, 0, 1);
   static const Color kLightBlackColor = Color.fromARGB(204, 79, 75, 75);
+
+
+
+  //^ New Dark Theme colors
+  
+  static const dSoftGrey = Color.fromRGBO(204, 204, 204, 1);
+  //* AppBar Title color
+  static const dNeonCyan = Color.fromRGBO(0, 255, 255, 1);
+  static const dDeepBackground = Color.fromRGBO(18, 18, 18, 1);
+  //* Gunmetal Gray
+  static const dUserTileBackground = Color.fromRGBO(44, 44, 44, 1);
+  static const dDateAndTimeColor = Color.fromRGBO(111, 127, 143, 1);
+
+//---------------- MY FUTURE CARD COLOR-------------------------------------
+  static const kdMyFutureCapsuleCardBackground = Color.fromRGBO(26, 26, 26, 1);
+
+//---------------- DARK BOTTOM NAVIGATION BAR COLORS-------------------------------------
+  static const dActiveColorPrimary = Color.fromRGBO(0, 204, 255, 1);
+  static const dInActiveColorPrimary = Color.fromRGBO(176, 176, 176, 1);
+  static const dActiveColorSecondary = Color.fromRGBO(234, 234, 234, 1);
+  static const dNavigationBackground = Color.fromRGBO(32, 32, 32, 1);
 }
+
+

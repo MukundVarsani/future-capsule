@@ -75,9 +75,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-void logout()async{
-  await _authController.signOut();
-}
+  void logout() async {
+    await _authController.signOut();
+  }
+
   @override
   void initState() {
     _selectFiles = SelectFiles();
@@ -88,7 +89,7 @@ void logout()async{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: AppColors.kScreenBackgroundColor,
+        backgroundColor: AppColors.dDeepBackground,
         body: (_currentUserId != null)
             ? StreamBuilder<UserModel?>(
                 stream: getUserStream(),
@@ -109,7 +110,8 @@ void logout()async{
                             height: 480,
                             padding: const EdgeInsets.only(bottom: 18),
                             decoration: const BoxDecoration(
-                              color: Color.fromRGBO(255, 111, 97, 1),
+                              color: Color.fromRGBO(26, 188, 156, 1),
+                              // color: Color.fromRGBO(232, 67, 147, 1),
                               borderRadius: BorderRadius.only(
                                 bottomLeft: Radius.circular(36),
                                 bottomRight: Radius.circular(36),
@@ -124,13 +126,13 @@ void logout()async{
                                     Text(
                                       "125",
                                       style: TextStyle(
-                                          fontWeight: FontWeight.bold,
+                                          fontWeight: FontWeight.w600,
                                           fontSize: 22,
                                           color: Colors.white),
                                     ),
                                     Text("FOLLOWERS",
                                         style: TextStyle(
-                                            fontWeight: FontWeight.w400,
+                                            fontWeight: FontWeight.w800,
                                             fontSize: 12,
                                             color: Colors.white)),
                                   ],
@@ -147,7 +149,7 @@ void logout()async{
                                     ),
                                     Text("FOLLOWING",
                                         style: TextStyle(
-                                            fontWeight: FontWeight.w400,
+                                            fontWeight: FontWeight.w800,
                                             fontSize: 12,
                                             color: Colors.white)),
                                   ],
@@ -164,7 +166,7 @@ void logout()async{
                                     ),
                                     Text("LIKES",
                                         style: TextStyle(
-                                            fontWeight: FontWeight.w400,
+                                            fontWeight: FontWeight.w800,
                                             fontSize: 12,
                                             color: Colors.white)),
                                   ],
@@ -177,7 +179,7 @@ void logout()async{
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             width: MediaQuery.sizeOf(context).width,
                             decoration: const BoxDecoration(
-                              color: AppColors.kWhiteColor,
+                              color: Color.fromRGBO(28, 28, 28, 1),
                               borderRadius: BorderRadius.only(
                                 bottomLeft: Radius.circular(36),
                                 bottomRight: Radius.circular(36),
@@ -192,6 +194,8 @@ void logout()async{
                                 _buildProfileImage(userData?.profilePicture),
                                 InfoField(
                                   fieldName: "Name",
+                                  iconColor:
+                                      const Color.fromRGBO(153, 113, 238, 1),
                                   fieldValue: userData?.name ?? "User",
                                   isEditable: true,
                                   leadingIcon: Icons.person_outline,
@@ -200,6 +204,8 @@ void logout()async{
                                 ),
                                 InfoField(
                                   fieldName: "Bio",
+                                  iconColor:
+                                      const Color.fromRGBO(99, 197, 103, 1),
                                   fieldValue: userData?.bio ?? "write your bio",
                                   isEditable: true,
                                   leadingIcon: Icons.error_outline,
@@ -208,6 +214,8 @@ void logout()async{
                                 ),
                                 InfoField(
                                   fieldName: "Email",
+                                  iconColor:
+                                      const Color.fromRGBO(26, 188, 156, 1),
                                   fieldValue:
                                       userData?.email ?? "yourmail@gmail.com",
                                   isEditable: false,
@@ -231,7 +239,7 @@ void logout()async{
                               height: 250,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(24),
-                                color: AppColors.kWhiteColor,
+                                color: const Color.fromRGBO(28, 28, 28, 1),
                               ),
                               child: Column(
                                 mainAxisAlignment:
@@ -242,27 +250,24 @@ void logout()async{
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       InkWell(
-                                         onTap: logout,
+                                        onTap: logout,
                                         child: const Column(
                                           children: [
-                                             Icon(
+                                            Icon(
                                               Icons.logout,
                                               size: 28,
-                                              color:
-                                                  Color.fromRGBO(255, 111, 97, 1),
+                                              color: Color.fromRGBO(
+                                                  255, 111, 97, 1),
                                             ),
-                                             SizedBox(
+                                            SizedBox(
                                               height: 5,
                                             ),
-                                            
-                                             
-                                               Text(
-                                                "log out",
-                                                style: TextStyle(
-                                                    color: AppColors
-                                                        .kLightGreyColor),
-                                              ),
-                                            
+                                            Text(
+                                              "log out",
+                                              style: TextStyle(
+                                                  color: AppColors
+                                                      .kLightGreyColor),
+                                            ),
                                           ],
                                         ),
                                       ),
@@ -331,25 +336,6 @@ void logout()async{
                                       Column(
                                         children: [
                                           Icon(
-                                            Icons.settings,
-                                            size: 28,
-                                            color: Color.fromRGBO(
-                                                153, 113, 238, 1),
-                                          ),
-                                          SizedBox(
-                                            height: 5,
-                                          ),
-                                          Text(
-                                            "Settings",
-                                            style: TextStyle(
-                                                color:
-                                                    AppColors.kLightGreyColor),
-                                          ),
-                                        ],
-                                      ),
-                                      Column(
-                                        children: [
-                                          Icon(
                                             Icons.notifications,
                                             size: 28,
                                             color:
@@ -360,6 +346,25 @@ void logout()async{
                                           ),
                                           Text(
                                             "Notifications",
+                                            style: TextStyle(
+                                                color:
+                                                    AppColors.kLightGreyColor),
+                                          ),
+                                        ],
+                                      ),
+                                      Column(
+                                        children: [
+                                          Icon(
+                                            Icons.settings,
+                                            size: 28,
+                                            color: Color.fromRGBO(
+                                                153, 113, 238, 1),
+                                          ),
+                                          SizedBox(
+                                            height: 5,
+                                          ),
+                                          Text(
+                                            "Settings",
                                             style: TextStyle(
                                                 color:
                                                     AppColors.kLightGreyColor),
@@ -453,7 +458,11 @@ void logout()async{
           margin: const EdgeInsets.only(bottom: 20),
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(100),
-              border: Border.all(color: AppColors.kWarmCoralColor, width: 2)),
+               boxShadow: const[ BoxShadow(
+              color: Color.fromRGBO(153, 113, 238, 0.6),
+              blurRadius: 8,
+              spreadRadius: 0.5)]
+             ),
           height: 130,
           width: 130,
           child: ClipRRect(
@@ -488,9 +497,10 @@ void logout()async{
           child: GestureDetector(
             onTap: _selectProfileImage,
             child: const CircleAvatar(
-              backgroundColor: AppColors.kWarmCoralColor,
+              backgroundColor: Color.fromRGBO(153, 113, 238, 1),
               radius: 25,
-              child: Icon(Icons.camera_alt_outlined, color: Colors.white),
+              child:
+                  Icon(Icons.camera_alt_outlined, color: AppColors.kWhiteColor),
             ),
           ),
         ),

@@ -4,9 +4,8 @@ import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
 import 'package:future_capsule/data/models/capsule_modal.dart';
 import 'package:future_capsule/data/models/user_modal.dart';
-import 'package:future_capsule/screens/my_futures/my_future_users_capsules_tiles.dart';
+import 'package:future_capsule/screens/my_futures/my_future_users_capsules_card.dart';
 import 'package:get/get.dart';
-import 'package:velocity_x/velocity_x.dart';
 
 class MyFutureCapsuleView extends StatelessWidget {
   const MyFutureCapsuleView(
@@ -26,17 +25,25 @@ class MyFutureCapsuleView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: isDark ? Colors.black : const  Color.fromRGBO(46, 46, 46, 1),
+      backgroundColor: isDark
+          ? AppColors.dDeepBackground
+          : const Color.fromRGBO(46, 46, 46, 1),
       body: SafeArea(
         child: Container(
-          decoration:  BoxDecoration(color:  isDark ? Colors.black : const  Color.fromRGBO(46, 46, 46, 1)),
+          decoration: BoxDecoration(
+              color: isDark
+                  ? AppColors.dDeepBackground
+                  : const Color.fromRGBO(46, 46, 46, 1)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration:  BoxDecoration(color:  isDark ? Colors.black : const  Color.fromRGBO(46, 46, 46, 1)),
+                decoration: BoxDecoration(
+                    color: isDark
+                        ? AppColors.dDeepBackground
+                        : const Color.fromRGBO(46, 46, 46, 1)),
                 child: Row(
                   children: [
                     IconButton(
@@ -48,11 +55,10 @@ class MyFutureCapsuleView extends StatelessWidget {
                     ),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(100),
-                      child: 
-                      (user.profilePicture != null &&
+                      child:  
+                       (user.profilePicture != null &&
                               user.profilePicture!.isNotEmpty)
-                          ? 
-                          ClipRRect(
+                          ? ClipRRect(
                               borderRadius: BorderRadius.circular(100),
                               child: CachedNetworkImage(
                                 imageUrl: user.profilePicture!,
@@ -78,11 +84,9 @@ class MyFutureCapsuleView extends StatelessWidget {
                                     const Icon(Icons.error),
                               ),
                             )
-                          : 
-                          Image.asset(
+                          : Image.asset(
                               AppImages.profile,
                               height: 54,
-     
                             ),
                     ),
                     const SizedBox(
@@ -110,14 +114,14 @@ class MyFutureCapsuleView extends StatelessWidget {
                         const SizedBox(height: 12),
                     itemBuilder: (context, index) => Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: MyFutureUsersCapsulesTiles(
+                          child: MyFutureUsersCapsulesCard(
                             capsule: capsules[index],
                             date: date[index],
                           ),
                         )),
               ),
               const SizedBox(
-                height: 60,
+                height: 12,
               ),
             ],
           ),

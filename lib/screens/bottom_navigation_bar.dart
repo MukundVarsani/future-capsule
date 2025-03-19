@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/screens/create_capsule/create_capsule_screen.dart';
 import 'package:future_capsule/screens/my_capsules/my_capusles_screen.dart';
-import 'package:future_capsule/screens/my_futures/my_future_capsule_view.dart';
 import 'package:future_capsule/screens/my_futures/my_future_capusles.dart';
 import 'package:future_capsule/screens/my_sent_capsules/my_sent_capsule_screen.dart';
 import 'package:future_capsule/screens/profile/profile_screen.dart';
@@ -29,21 +29,18 @@ class _BottomBarState extends State<BottomBar> {
       screens: _buildScreens(),
       items: _navBarsItems(),
       handleAndroidBackButtonPress: false,
-      resizeToAvoidBottomInset:
-          true, 
+      resizeToAvoidBottomInset: true,
       stateManagement: true, // Default is true.
       hideNavigationBarWhenKeyboardAppears: true,
       padding: const EdgeInsets.only(top: 12, bottom: 8),
-      backgroundColor: Colors.red,
+      backgroundColor: AppColors.dNavigationBackground,
       isVisible: true,
       animationSettings: const NavBarAnimationSettings(
         navBarItemAnimation: ItemAnimationSettings(
-          // Navigation Bar's items animation properties.
           duration: Duration(milliseconds: 200),
           curve: Curves.ease,
         ),
         screenTransitionAnimation: ScreenTransitionAnimationSettings(
-          // Screen transition animation on change of selected tab.
           animateTabTransition: true,
           duration: Duration(milliseconds: 200),
           screenTransitionAnimationType: ScreenTransitionAnimationType.fadeIn,
@@ -59,7 +56,7 @@ class _BottomBarState extends State<BottomBar> {
     return const [
       MySentCapuslesScreen(),
       // MyFutureCapsuleView(),
-      MyFutureCapusles(),
+      MyFutureCapsules(),
       CreateCapsuleScreen(),
       MyCapuslesScreen(),
       ProfileScreen(),
@@ -71,16 +68,18 @@ class _BottomBarState extends State<BottomBar> {
       PersistentBottomNavBarItem(
         icon: const Icon(CupertinoIcons.home),
         title: ("Home"),
-        activeColorPrimary: Colors.white,
-        inactiveColorPrimary: Colors.white70,
+        textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+        activeColorPrimary: AppColors.dActiveColorPrimary,
+        inactiveColorPrimary: AppColors.dInActiveColorPrimary,
         scrollController: _scrollController,
       ),
       PersistentBottomNavBarItem(
         icon:
             const Icon(CupertinoIcons.rectangle_fill_on_rectangle_angled_fill),
         title: ("Future"),
-        activeColorPrimary: Colors.white,
-        inactiveColorPrimary: Colors.white70,
+        textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+        activeColorPrimary: AppColors.dActiveColorPrimary,
+        inactiveColorPrimary: AppColors.dInActiveColorPrimary,
         scrollController: _scrollController,
       ),
       PersistentBottomNavBarItem(
@@ -88,26 +87,32 @@ class _BottomBarState extends State<BottomBar> {
         icon: const Icon(
           CupertinoIcons.create,
           size: 30,
+          color: Color.fromRGBO(32, 32, 32, 1),
         ),
         title: ("Create"),
-        iconSize: 348,
-        activeColorPrimary: Colors.white,
-        activeColorSecondary: Colors.red,
-        inactiveColorPrimary: Colors.white70,
+        iconSize: 48,
+        textStyle: const TextStyle(
+            fontWeight: FontWeight.w700, fontSize: 12, color: Colors.white),
+        activeColorPrimary: AppColors.dActiveColorPrimary,
+        activeColorSecondary: AppColors.dActiveColorSecondary,
+        inactiveColorPrimary: AppColors.dInActiveColorPrimary,
         scrollController: _scrollController,
       ),
       PersistentBottomNavBarItem(
-        icon: const Icon(CupertinoIcons.macwindow),
+        icon: const Icon(CupertinoIcons.macwindow,),
         title: ("My capusles"),
-        activeColorPrimary: Colors.white,
-        inactiveColorPrimary: Colors.white70,
+        textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+        activeColorPrimary: AppColors.dActiveColorPrimary,
+        inactiveColorPrimary: AppColors.dInActiveColorPrimary,
+        
         scrollController: _scrollController,
       ),
       PersistentBottomNavBarItem(
         icon: const Icon(CupertinoIcons.person),
         title: ("Settings"),
-        activeColorPrimary: Colors.white,
-        inactiveColorPrimary: Colors.white70,
+        textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+        activeColorPrimary: AppColors.dActiveColorPrimary,
+        inactiveColorPrimary: AppColors.dInActiveColorPrimary,
         scrollController: _scrollController,
       ),
     ];

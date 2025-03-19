@@ -18,8 +18,8 @@ class CustomPicker extends StatelessWidget {
     Color? iconColor, 
     Color? textColor, 
   })  : backgroundColor = backgroundColor ?? AppColors.kWarmCoralColor,
-        iconColor = iconColor ?? AppColors.kWhiteColor,
-        textColor = textColor ?? AppColors.kBlackColor;
+        iconColor = iconColor ?? const Color.fromRGBO(0, 255, 204,1),
+        textColor = textColor ?? AppColors.dActiveColorSecondary;
 
   @override
   Widget build(BuildContext context) {
@@ -30,21 +30,16 @@ class CustomPicker extends StatelessWidget {
           onTap: onTap,
           child: Container(
             padding: const EdgeInsets.all(8),
-            margin: const EdgeInsets.only(bottom: 6),
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              borderRadius: BorderRadius.circular(18),
-            ),
             child: Icon(
               icon,
               color: iconColor,
-              size: 40,
+              size: 32,
             ),
           ),
         ),
         Text(
           label,
-          style: TextStyle(color: textColor),
+          style: TextStyle(color: textColor, fontWeight: FontWeight.w600, fontSize: 16),
         ),
       ],
     );

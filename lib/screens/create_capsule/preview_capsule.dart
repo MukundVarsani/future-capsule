@@ -147,23 +147,22 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.dDeepBackground,
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
           },
-          icon:  const  Icon(
+          icon: const Icon(
             Icons.arrow_back,
             color: AppColors.kWhiteColor,
           ),
         ),
-        backgroundColor: AppColors.kWarmCoralColor,
-        title: const  Text(
+        backgroundColor: AppColors.dDeepBackground,
+        title: const Text(
           "Craft a Future Capsule",
           style: TextStyle(
-              color: AppColors.kWhiteColor,
-              fontWeight: FontWeight.bold,
-              fontSize: 24),
+              color: AppColors.dNeonCyan, fontWeight: FontWeight.w600),
         ),
       ),
       body: Padding(
@@ -192,22 +191,44 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("Title", style: TextStyle(fontSize: 18)),
-        TextFormField(
-          readOnly: true,
-          initialValue: title,
-          decoration: const  InputDecoration(
-            hintText: "Capsule title",
-            hintStyle: TextStyle(color: AppColors.kLightGreyColor),
-            border:  OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide:
-                  BorderSide(color: AppColors.kWarmCoralColor, width: 2.0),
-              borderRadius:  BorderRadius.all(Radius.circular(12)),
+        const Text(
+          "Title",
+          style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.dActiveColorSecondary),
+        ),
+        const SizedBox(
+          height: 6,
+        ),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          decoration: BoxDecoration(
+            color: const Color.fromRGBO(10, 15, 31, 1), // Background color
+            borderRadius: BorderRadius.circular(12), // Rounded corners
+            boxShadow: const [
+              BoxShadow(
+                  color: Color.fromRGBO(0, 255, 255, 0.5), // Glow effect
+                  blurRadius: 8,
+                  spreadRadius: 1,
+                  offset: Offset(1, 2)),
+            ],
+          ),
+          child: TextFormField(
+            style: const TextStyle(color: Colors.white), // Text color
+            cursorColor: Colors.blueAccent,
+            readOnly: true,
+            initialValue: title,
+            decoration: const InputDecoration(
+              hintText: "Capsule title",
+              hintStyle: TextStyle(color: Colors.grey),
+              border: InputBorder.none, // No border
             ),
           ),
+        ),
+        const SizedBox(
+          height: 12,
         ),
       ],
     );
@@ -215,10 +236,17 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
 
   Widget _buildFilePreview(File? fileBytes, bool isCapsulePrivate) {
     return Container(
-      constraints: const BoxConstraints(maxHeight: 200),
+      constraints: const BoxConstraints(minHeight: 200),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.kWarmCoralColor, width: 2),
+        color: AppColors.dUserTileBackground,
+        boxShadow: const [
+          BoxShadow(
+              color: Color.fromRGBO(0, 255, 255, 0.5), // Glow effect
+              blurRadius: 8,
+              spreadRadius: 1,
+              offset: Offset(1, 2)),
+        ],
       ),
       child: Stack(
         alignment: AlignmentDirectional.center,
@@ -237,18 +265,18 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
               filterQuality: FilterQuality.high,
               fit: BoxFit.fill,
             ),
-          if (isCapsulePrivate)
+
             Container(
-              height: double.infinity,
+              constraints: const BoxConstraints(minHeight: 200),
               width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(18),
-                color: AppColors.kTealGreenColor07,
+                color: const Color.fromRGBO(26, 189, 156, 0.65),
               ),
-              child:  const Icon(
+              child: const Icon(
                 Icons.lock,
                 size: 50,
-                color: AppColors.kWarmCoralColor,
+                color: Color.fromRGBO(142, 68, 173, 1),
               ),
             ),
         ],
@@ -260,24 +288,48 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("Description", style: TextStyle(fontSize: 18)),
-        TextFormField(
-          maxLines: 4,
-          minLines: 3,
-          readOnly: true,
-          initialValue: description,
-          decoration:  const InputDecoration(
-            hintText: "Describe capsule",
-            hintStyle: TextStyle(color: AppColors.kLightGreyColor),
-            border:  OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide:
-                  BorderSide(color: AppColors.kWarmCoralColor, width: 2.0),
-              borderRadius:  BorderRadius.all(Radius.circular(12)),
+        const SizedBox(
+          height: 4,
+        ),
+        const Text(
+          "Description",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.dActiveColorSecondary,
+          ),
+        ),
+        const SizedBox(
+          height: 6,
+        ),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          decoration: BoxDecoration(
+              color: const Color.fromRGBO(10, 15, 31, 1),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: const [
+                BoxShadow(
+                    color: Color.fromRGBO(0, 255, 255, 0.5), // Glow effect
+                    blurRadius: 8,
+                    spreadRadius: 1,
+                    offset: Offset(1, 2)),
+              ]),
+          child: TextFormField(
+            style: const TextStyle(color: Colors.white), // Text color
+            cursorColor: Colors.blueAccent, // Cursor color
+            maxLines: 4,
+            minLines: 3,
+            readOnly: true,
+            decoration: const InputDecoration(
+              hintText: "Decribe capsule",
+              hintStyle: TextStyle(color: Colors.grey),
+              border: InputBorder.none, // No border
             ),
           ),
+        ),
+        const SizedBox(
+          height: 6,
         ),
       ],
     );
@@ -286,41 +338,50 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
   Widget _buildDateTimePreview() {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-             const  Text(
+            const Text(
               "Revealing Your Capsule In",
               style: TextStyle(
                   fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.kPrimaryTextColor),
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.dActiveColorSecondary),
             ),
             const SizedBox(
-              height: 8,
+              height: 12,
             ),
             SlideCountdownSeparated(
               duration: openDate,
               slideDirection: SlideDirection.down,
-              separatorStyle:
-                  const  TextStyle(color: AppColors.kWarmCoralColor, fontSize: 20),
+              separatorStyle: const TextStyle(
+                color: AppColors.dNeonCyan,
+                fontSize: 20,
+              ),
               separatorType: SeparatorType.symbol,
               separator: ':',
               decoration: BoxDecoration(
-                color: AppColors.kWarmCoralColor,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              style: const  TextStyle(
+                  color: AppColors.dUserTileBackground,
+                  borderRadius: BorderRadius.circular(100),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color.fromRGBO(0, 255, 255, 0.5), // Glow effect
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                      offset: Offset(1, 2),
+                    ),
+                  ]),
+              padding: const EdgeInsets.all(8),
+              separatorPadding: const EdgeInsets.all(6),
+              style: const TextStyle(
                 color: AppColors.kWhiteColor,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
               showZeroValue: true,
               slideAnimationCurve: Curves.bounceInOut,
-              onChanged: (w) {
-                // Vx.log(w);
-              },
             ),
           ],
         ),
@@ -329,50 +390,47 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
   }
 
   Widget _privacyBuilder() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
+        Row(
           children: [
-            const  Text(
-              "Is Capsule private?",
+            const Text(
+              "Capsule Privacy",
               style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.kPrimaryTextColor),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.kWhiteColor),
             ),
-            const SizedBox(
-              height: 8,
-            ),
+            const Spacer(),
             AnimatedToggle(
               isToggled: widget.isCapsulePrivate,
               onIcon: Icons.lock,
               offIcon: Icons.lock_open,
-            ),
+              backgroundColor: const Color.fromRGBO(26, 189, 156, 1),
+            )
           ],
         ),
-        const Spacer(),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        const SizedBox(
+          height: 14,
+        ),
+        Row(
           children: [
-           const   Text(
-              "Want Time private?",
+            const Text(
+              "Time Privacy",
               style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: AppColors.kPrimaryTextColor,
-              ),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.kWhiteColor),
             ),
-            const SizedBox(
-              height: 8,
-            ),
+            const Spacer(),
             AnimatedToggle(
               isToggled: widget.isTimePrivate,
               onIcon: Icons.check,
               offIcon: Icons.close,
-            ),
+              backgroundColor: const Color.fromRGBO(142, 68, 173, 1),
+            )
           ],
-        ),
+        )
       ],
     );
   }
@@ -385,15 +443,16 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
           constraints: const BoxConstraints(
               maxWidth: 150, minWidth: 70, maxHeight: 55, minHeight: 50),
           child: AppButton(
+            backgroundColor: const Color.fromRGBO(53, 153, 219, 1),
             onPressed: () => Navigator.of(context).pop(),
             radius: 24,
-            child: const  Center(
+            child: const Center(
               child: Text(
                 "Edit",
                 style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
                   color: AppColors.kWhiteColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -403,27 +462,29 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
           constraints: const BoxConstraints(
               maxWidth: 150, minWidth: 70, maxHeight: 55, minHeight: 50),
           child: AppButton(
+            backgroundColor: const Color.fromRGBO(53, 153, 219, 1),
             onPressed: saveCapsule,
             radius: 24,
             child: Center(
-                child: Obx(() => _capsuleController.isCapsuleLoading.value
-                    ? const  CircularProgressIndicator.adaptive(
+              child: Obx(
+                () => _capsuleController.isCapsuleLoading.value
+                    ? const CircularProgressIndicator.adaptive(
                         valueColor:
                             AlwaysStoppedAnimation(AppColors.kWhiteColor),
                       )
-                    : const  Text(
+                    : const Text(
                         "Create",
                         style: TextStyle(
                           color: AppColors.kWhiteColor,
                           fontSize: 16,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
                         ),
-                      ))),
+                      ),
+              ),
+            ),
           ),
         ),
       ],
     );
   }
-
-
 }

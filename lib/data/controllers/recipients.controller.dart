@@ -22,9 +22,6 @@ class RecipientController extends GetxController {
   RxList<CapsuleModel> recipientsCapsules = <CapsuleModel>[].obs;
   RxList<String> recipientUserIds = <String>[].obs;
   RxList<DateTime> recipientUserSendDate = <DateTime>[].obs;
-  RxList<UserModel> recipientUser = <UserModel>[].obs;
-
-  var recipientCapsulesMap = <String, List<CapsuleModel>>{}.obs;
 
   var isRecipientLoading = false.obs;
   var isCapsuleSending = false.obs;
@@ -132,15 +129,17 @@ class RecipientController extends GetxController {
       appBar(text: 'Capsule sent to ${availableRecipientIds.length} users.');
 
       await _capsuleController.getUserCapsule();
-      getCapsulesSentToUser();
-      getUsersYouSentCapsulesTo();
-
+     
       for (int recipientId in availableRecipientIds) {
         String userName = availableRecipients[recipientId].name;
-        NotificationService.sendNotification(
-            userId: availableRecipients[recipientId].userId,
-            userName: userName,
-            capsuleTitle: capsule.title);
+
+        if (availableRecipients[recipientId].fcmToken != null &&
+            availableRecipients[recipientId].fcmToken!.isNotEmpty) {
+          NotificationService.sendNotification(
+              userId: availableRecipients[recipientId].userId,
+              userName: userName,
+              capsuleTitle: capsule.title);
+        }
       }
     } catch (e) {
       Vx.log("Error while sending capsule $e");
@@ -150,93 +149,93 @@ class RecipientController extends GetxController {
     }
   }
 
-//* Get recipients sorted by last capsule sent
-  Future<void> getUsersYouSentCapsulesTo() async {
-    String? currentUserId = _userController.getUser?.uid;
-    if (currentUserId == null) return;
+// //* Get recipients sorted by last capsule sent
+//   Future<void> getUsersYouSentCapsulesTo() async {
+//     String? currentUserId = _userController.getUser?.uid;
+//     if (currentUserId == null) return;
 
-    try {
-      isCapsuleLoading(true);
-      await getRecipientIds();
+//     try {
+//       isCapsuleLoading(true);
+//       await getRecipientIds();
 
-      recipientUser.value = (await Future.wait(
-        recipientUserIds
-            .map((userId) => _userController.getUserById(userId: userId)),
-      ))
-          .whereType<UserModel>() // Remove null users
-          .toList();
-    } catch (e) {
-      Vx.log("Error getting users you sent capsules to: $e");
-    } finally {
-      isCapsuleLoading(false);
-    }
-  }
+//       recipientUser.value = (await Future.wait(
+//         recipientUserIds
+//             .map((userId) => _userController.getUserById(userId: userId)),
+//       ))
+//           .whereType<UserModel>() // Remove null users
+//           .toList();
+//     } catch (e) {
+//       Vx.log("Error getting users you sent capsules to: $e");
+//     } finally {
+//       isCapsuleLoading(false);
+//     }
+//   }
 
-//* Get recipients Id sorted by last capsule sent
-  Future<void> getRecipientIds() async {
-    String? currentUserId = _userController.getUser?.uid;
-    if (currentUserId == null) return;
+// //* Get recipients Id sorted by last capsule sent
+//   Future<void> getRecipientIds() async {
+//     String? currentUserId = _userController.getUser?.uid;
+//     if (currentUserId == null) return;
 
-    QuerySnapshot snap = await _firebaseFirestore
-        .collection("SharedCapsules")
-        .where(
-          "senderId",
-          isEqualTo: currentUserId,
-        )
-        .get();
+//     QuerySnapshot snap = await _firebaseFirestore
+//         .collection("SharedCapsules")
+//         .where(
+//           "senderId",
+//           isEqualTo: currentUserId,
+//         )
+//         .get();
 
-    List<SharedCapsule> data = snap.docs.map((doc) {
-      return SharedCapsule.fromJson(doc.data() as Map<String, dynamic>);
-    }).toList();
+//     List<SharedCapsule> data = snap.docs.map((doc) {
+//       return SharedCapsule.fromJson(doc.data() as Map<String, dynamic>);
+//     }).toList();
 
-    data.sort((a, b) => b.shareDate.compareTo(a.shareDate));
+//     data.sort((a, b) => b.shareDate.compareTo(a.shareDate));
 
-    recipientUserIds.value =
-        data.map((capsule) => capsule.recipientId).toSet().toList();
-    recipientUserSendDate.value =
-        data.map((capsule) => capsule.shareDate).toSet().toList();
+//     recipientUserIds.value =
+//         data.map((capsule) => capsule.recipientId).toSet().toList();
+//     recipientUserSendDate.value =
+//         data.map((capsule) => capsule.shareDate).toSet().toList();
 
-    await getCapsulesSentToUser();
-  }
+//     await getCapsulesSentToUser();
+//   }
 
-//* Get all User capusles that they have sent
-  Future<void> getCapsulesSentToUser() async {
-    String? currentUserId = _userController.getUser?.uid;
-    if (currentUserId == null) return;
-    if (recipientUserIds.value.isEmpty) return;
-    try {
-      QuerySnapshot snap = await _firebaseFirestore
-          .collection("SharedCapsules")
-          .where("senderId", isEqualTo: currentUserId)
-          .get();
+// //* Get all User capusles that they have sent
+//   Future<void> getCapsulesSentToUser() async {
+//     String? currentUserId = _userController.getUser?.uid;
+//     if (currentUserId == null) return;
+//     if (recipientUserIds.value.isEmpty) return;
+//     try {
+//       QuerySnapshot snap = await _firebaseFirestore
+//           .collection("SharedCapsules")
+//           .where("senderId", isEqualTo: currentUserId)
+//           .get();
 
-      List<String> capsuleIds = (snap.docs
-              .map((doc) =>
-                  SharedCapsule.fromJson(doc.data() as Map<String, dynamic>))
-              .toList()
-            ..sort((a, b) => b.shareDate.compareTo(a.shareDate)))
-          .map((capsule) => capsule.capsuleId)
-          .toList();
+//       List<String> capsuleIds = (snap.docs
+//               .map((doc) =>
+//                   SharedCapsule.fromJson(doc.data() as Map<String, dynamic>))
+//               .toList()
+//             ..sort((a, b) => b.shareDate.compareTo(a.shareDate)))
+//           .map((capsule) => capsule.capsuleId)
+//           .toList();
 
-      CollectionReference collectionReference =
-          _firebaseFirestore.collection('Users_Capsules');
+//       CollectionReference collectionReference =
+//           _firebaseFirestore.collection('Users_Capsules');
 
-      QuerySnapshot querySnapshot = await collectionReference
-          .where(FieldPath.documentId, whereIn: capsuleIds)
-          .get();
+//       QuerySnapshot querySnapshot = await collectionReference
+//           .where(FieldPath.documentId, whereIn: capsuleIds)
+//           .get();
 
-      List<CapsuleModel> capsules = querySnapshot.docs.map((m) {
-        return CapsuleModel.fromJson(m.data() as Map<String, dynamic>);
-      }).toList();
+//       List<CapsuleModel> capsules = querySnapshot.docs.map((m) {
+//         return CapsuleModel.fromJson(m.data() as Map<String, dynamic>);
+//       }).toList();
 
-      for (var userId in recipientUserIds) {
-        recipientCapsulesMap[userId] =
-            capsules.where((c) => c.recipients.contains(userId)).toList();
-      }
-    } catch (e) {
-      Vx.log("Error getting capsules sent to user: $e");
-    }
-  }
+//       for (var userId in recipientUserIds) {
+//         recipientCapsulesMap[userId] =
+//             capsules.where((c) => c.recipients.contains(userId)).toList();
+//       }
+//     } catch (e) {
+//       Vx.log("Error getting capsules sent to user: $e");
+//     }
+//   }
 
   Future<void> fetchSharedCapsulesWithUsers() async {
     String? currentUserId = _userController.getUser?.uid;
@@ -301,69 +300,82 @@ class RecipientController extends GetxController {
     }
   }
 
-
-
   Future<void> fetchSharedCapsulesWithUsersOPT() async {
-  String? currentUserId = _userController.getUser?.uid;
-  if (currentUserId == null) return;
+    String? currentUserId = _userController.getUser?.uid;
+    if (currentUserId == null) return;
 
-  try {
-    myFutureUserList.clear();
-    isMyFutureLoading(true);
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    try {
+      myFutureUserList.clear();
+      myFuture.clear();
+      isMyFutureLoading(true);
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    // Step 1: Query all shared capsules where the current user is the recipient
-    QuerySnapshot sharedCapsulesSnapshot = await firestore
-        .collection('SharedCapsules')
-        .where('recipientId', isEqualTo: currentUserId)
-        .orderBy('shareDate', descending: true)
-        .get();
+      // Step 1: Query all shared capsules where the current user is the recipient
+      QuerySnapshot sharedCapsulesSnapshot = await firestore
+          .collection('SharedCapsules')
+          .where('recipientId', isEqualTo: currentUserId)
+          .orderBy('shareDate', descending: true)
+          .get();
 
-    Set<String> senderIds = {}; // Collect sender IDs for batch fetching
-    List<String> capsuleIds = []; // Collect capsule IDs for batch fetching
+      Set<String> senderIds = {}; // Collect sender IDs for batch fetching
+      List<String> capsuleIds = []; // Collect capsule IDs for batch fetching
 
-    // Step 2: Prepare senderIds and capsuleIds for batch fetching
-    for (var doc in sharedCapsulesSnapshot.docs) {
-      senderIds.add(doc['senderId']);
-      capsuleIds.add(doc['capsuleId']);
-    }
-
-    // Fetch all capsules in a single batch request
-    List<DocumentSnapshot> capsuleSnapshots = await Future.wait(
-      capsuleIds.map((capsuleId) => firestore.collection('Users_Capsules').doc(capsuleId).get()),
-    );
-
-    // Process and map capsule data
-    for (int i = 0; i < sharedCapsulesSnapshot.docs.length; i++) {
-      var doc = sharedCapsulesSnapshot.docs[i];
-      String senderId = doc['senderId'];
-      String sharedDate = doc['shareDate'];
-
-      if (capsuleSnapshots[i].exists) {
-        Map<String, dynamic> capsuleData = capsuleSnapshots[i].data() as Map<String, dynamic>;
-
-        // Structure the mapped data
-        Map<String, dynamic> mappedData = {
-          "data": capsuleData,
-          "sharedDate": sharedDate,
-        };
-
-        // Group by senderId
-        myFuture.putIfAbsent(senderId, () => []).add(mappedData);
+      // Step 2: Prepare senderIds and capsuleIds for batch fetching
+      for (var doc in sharedCapsulesSnapshot.docs) {
+        senderIds.add(doc['senderId']);
+        capsuleIds.add(doc['capsuleId']);
       }
+
+      // Fetch all capsules in a single batch request
+      List<DocumentSnapshot> capsuleSnapshots = await Future.wait(
+        capsuleIds.map((capsuleId) =>
+            firestore.collection('Users_Capsules').doc(capsuleId).get()),
+      );
+
+      // Process and map capsule data
+      for (int i = 0; i < sharedCapsulesSnapshot.docs.length; i++) {
+        var doc = sharedCapsulesSnapshot.docs[i];
+        String senderId = doc['senderId'];
+        String sharedDate = doc['shareDate'];
+
+        if (capsuleSnapshots[i].exists) {
+          Map<String, dynamic> capsuleData =
+              capsuleSnapshots[i].data() as Map<String, dynamic>;
+
+          // Structure the mapped data
+          Map<String, dynamic> mappedData = {
+            "data": capsuleData,
+            "sharedDate": sharedDate,
+          };
+
+          // Group by senderId
+          myFuture.putIfAbsent(senderId, () => []).add(mappedData);
+        }
+      }
+
+      // Fetch all user details in parallel and filter out null values
+      myFutureUserList.value = (await Future.wait(
+        senderIds.map((userId) => _userController.getUserById(userId: userId)),
+      ))
+          .whereType<UserModel>()
+          .toList();
+    } catch (e) {
+      Vx.log("Error in fetchSharedCapsulesWithUsers : $e ");
+    } finally {
+      isMyFutureLoading(false);
     }
-
-    // Fetch all user details in parallel and filter out null values
-    myFutureUserList.value = (await Future.wait(
-      senderIds.map((userId) => _userController.getUserById(userId: userId)),
-    ))
-        .whereType<UserModel>()
-        .toList();
-  } catch (e) {
-    Vx.log("Error in fetchSharedCapsulesWithUsers : $e ");
-  } finally {
-    isMyFutureLoading(false);
   }
-}
 
+//* Update Capsule Status
+  void updateCapsuleStatus({required String capsuleId}) async {
+    try {
+      await _firebaseFirestore
+          .collection("Users_Capsules")
+          .doc(capsuleId)
+          .update({"status": "opened"});
+      Vx.log("Status updated");
+    } catch (e) {
+      Vx.log("Error in updateCapsuleStatus : $e");
+    }
+  }
 }

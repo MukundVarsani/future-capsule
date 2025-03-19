@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 
 class AppButton extends StatelessWidget {
- const AppButton({
+  const AppButton({
     super.key,
     required this.child,
     required this.onPressed,
@@ -22,8 +22,9 @@ class AppButton extends StatelessWidget {
         onPressed: onPressed,
         style: TextButton.styleFrom(
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(radius)),
-          backgroundColor:backgroundColor,
+            borderRadius: BorderRadius.circular(radius),
+          ),
+          backgroundColor: backgroundColor,
           elevation: 0,
           padding: const EdgeInsets.all(10),
         ),

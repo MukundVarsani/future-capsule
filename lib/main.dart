@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:future_capsule/core/theme/theme.dart';
 import 'package:future_capsule/data/controllers/capsule.controller.dart';
 import 'package:future_capsule/data/services/notification_service.dart';
 import 'package:future_capsule/screens/auth/sign_in/sign_in_screen.dart';
@@ -33,8 +34,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'Flutter Demo',
+        // theme : kLightTheme,
+        // darkTheme: kDarkTheme,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
       home: _getLandingPage(_auth),

@@ -4,7 +4,6 @@ import 'package:future_capsule/data/controllers/user.controller.dart';
 import 'package:future_capsule/data/models/capsule_modal.dart';
 import 'package:future_capsule/data/models/user_modal.dart';
 
-
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
 import 'package:velocity_x/velocity_x.dart';
@@ -15,20 +14,24 @@ class CapsuleController extends GetxController {
 
   factory CapsuleController() => _instance;
 
-    final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
-    final Uuid _uuid = const Uuid();
-    final UserController _userController = Get.put(UserController());
+  final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
+  final Uuid _uuid = const Uuid();
+  final UserController _userController = Get.put(UserController());
 
 //*  Capsule variable
 
   var capsules = <CapsuleModel>[].obs;
   var sentCapsules = <CapsuleModel>[].obs;
   var capsuleSentUsers = <UserModel>[].obs;
+  var mySentCapsules = <CapsuleModel>[].obs;
+  RxMap<String, List<UserModel>> capsuleRecipientsMap =
+      <String, List<UserModel>>{}.obs;
+
   var isCapsuleLoading = false.obs;
   var isCapsuleDeleting = false.obs;
   var isRecipientLoading = false.obs;
   var isAvailableUserLoading = false.obs;
-
+  var isMyCapsuleSentLoading = false.obs;
 
 //^  Capsule Methods
 
@@ -104,7 +107,7 @@ class CapsuleController extends GetxController {
 
       final querySnapshot =
           await reference.where('creatorId', isEqualTo: currentUserId).get();
-      
+
       List<CapsuleModel> usersCapsules = querySnapshot.docs
           .map((doc) =>
               CapsuleModel.fromJson(doc.data() as Map<String, dynamic>))
@@ -120,7 +123,7 @@ class CapsuleController extends GetxController {
       isCapsuleLoading(false);
     }
   }
-    
+
   void editCapsule(Map<String, dynamic> updateData) async {
     String? creatorId = _userController.getUser?.uid;
 
@@ -188,5 +191,56 @@ class CapsuleController extends GetxController {
     }
   }
 
+  void getMySentCapusles() async {
+    String? creatorId = _userController.getUser?.uid;
+    if (creatorId == null) return;
+    try {
+      isMyCapsuleSentLoading(true);
+      QuerySnapshot capsuleSnap = await _firebaseFirestore
+          .collection('Users_Capsules')
+          .where('creatorId', isEqualTo: creatorId)
+          .get();
 
+      if (capsuleSnap.docs.isEmpty) return;
+      List<CapsuleModel> capsules = [];
+      capsuleRecipientsMap.value = {};
+
+      for (var doc in capsuleSnap.docs) {
+        CapsuleModel capsule =
+            CapsuleModel.fromJson(doc.data() as Map<String, dynamic>);
+
+        if (capsule.recipients.isNotEmpty) {
+          // Fetch user details for each recipient
+          List<UserModel> recipients =
+              await _fetchUsersByIds(capsule.recipients);
+
+          // Store the capsule & its mapped recipients
+          capsules.add(capsule);
+          capsuleRecipientsMap[capsule.capsuleId] = recipients;
+        }
+      }
+
+      mySentCapsules.value = capsules;
+    } catch (e) {
+      Vx.log("Error in getMySentCapusles : $e");
+    } finally {
+      isMyCapsuleSentLoading(false);
+    }
+  }
+
+  Future<List<UserModel>> _fetchUsersByIds(List<String?> userIds) async {
+    try {
+      QuerySnapshot userSnap = await _firebaseFirestore
+          .collection('Future_Capsule_Users')
+          .where(FieldPath.documentId, whereIn: userIds)
+          .get();
+
+      return userSnap.docs
+          .map((doc) => UserModel.fromJson(doc.data() as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      Vx.log("Error fetching user details: $e");
+      return [];
+    }
+  }
 }

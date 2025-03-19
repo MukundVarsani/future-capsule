@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:future_capsule/core/constants/colors.dart';
 import 'package:get/get.dart';
 
 
@@ -13,14 +14,16 @@ import 'package:get/get.dart';
     SnackBar(
       behavior: SnackBarBehavior.floating,
       showCloseIcon: true,
+      closeIconColor: AppColors.kWhiteColor,
       duration:  duration,
+      margin: EdgeInsets.only(bottom: MediaQuery.sizeOf(context).height * 0.05),
       content: Text(
         text,
 
         style:  TextStyle(
           color: textColor,
           fontSize: 16,
-          fontWeight: FontWeight.w400
+          fontWeight: FontWeight.w600
         ),
       ),
       backgroundColor: color,
@@ -49,3 +52,5 @@ appBar(
     snackPosition: SnackPosition.BOTTOM,
   );
 }
+
+

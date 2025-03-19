@@ -4,7 +4,6 @@ import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
 import 'package:future_capsule/data/models/user_modal.dart';
 
-
 class MySentCapsuleTile extends StatelessWidget {
   const MySentCapsuleTile(
       {super.key,
@@ -20,8 +19,6 @@ class MySentCapsuleTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 6),
       constraints: const BoxConstraints(maxHeight: 90),
@@ -42,11 +39,10 @@ class MySentCapsuleTile extends StatelessWidget {
                         fit: BoxFit.cover,
                         progressIndicatorBuilder:
                             (context, url, downloadProgress) => Align(
-                          alignment: Alignment
-                              .center, 
+                          alignment: Alignment.center,
                           child: SizedBox(
-                            height: 30, 
-                            width: 30, 
+                            height: 30,
+                            width: 30,
                             child: CircularProgressIndicator(
                               value: downloadProgress.progress,
                               valueColor: const AlwaysStoppedAnimation(
@@ -78,6 +74,8 @@ class MySentCapsuleTile extends StatelessWidget {
                         fontSize: 20, fontWeight: FontWeight.w600),
                   ),
                   Text.rich(
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     TextSpan(
                       text: "Last capsule : ",
                       style: const TextStyle(
@@ -91,8 +89,7 @@ class MySentCapsuleTile extends StatelessWidget {
                     ),
                   ),
                   Row(
-                    mainAxisAlignment:
-                        MainAxisAlignment.end, 
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(createDate,
                           style: const TextStyle(
