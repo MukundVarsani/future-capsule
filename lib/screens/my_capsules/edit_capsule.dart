@@ -186,10 +186,10 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
 
   @override
   void dispose() {
+    _resetData();
     _compressFile.dispose();
     descriptionController.dispose();
     titleController.dispose();
-    _resetData();
     super.dispose();
   }
 

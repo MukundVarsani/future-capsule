@@ -86,7 +86,7 @@ class CapsuleController extends GetxController {
           .doc(capsuleId)
           .set(capsuleModel.toJson());
 
-      await getUserCapsule();
+      // await getUserCapsule();
     } catch (e) {
       Vx.log("Error while creating capsule: $e");
       rethrow;
@@ -95,35 +95,55 @@ class CapsuleController extends GetxController {
     }
   }
 
-  Future<void> getUserCapsule() async {
+  // Future<void> getUserCapsule() async {
+  //   CollectionReference reference =
+  //       _firebaseFirestore.collection("Users_Capsules");
+
+  //   String? currentUserId = _userController.getUser?.uid;
+  //   if (currentUserId == null) return;
+
+  //   try {
+  //     isCapsuleLoading(true);
+
+  //     final querySnapshot =
+  //         await reference.where('creatorId', isEqualTo: currentUserId).get();
+
+  //     List<CapsuleModel> usersCapsules = querySnapshot.docs
+  //         .map((doc) =>
+  //             CapsuleModel.fromJson(doc.data() as Map<String, dynamic>))
+  //         .where((capsule) => capsule
+  //             .recipients.isEmpty) // ✅ Filter out capsules without recipients
+  //         .toList();
+
+  //     capsules(usersCapsules);
+  //   } catch (e) {
+  //     Vx.log("Error while getting User Created capsule: $e");
+  //     appBar(text: "Error in getting Capsule : $e");
+  //   } finally {
+  //     isCapsuleLoading(false);
+  //   }
+  // }
+
+  //* Capsule Stream
+  Stream<List<CapsuleModel>> getUserCapsuleStream() {
     CollectionReference reference =
         _firebaseFirestore.collection("Users_Capsules");
 
     String? currentUserId = _userController.getUser?.uid;
-    if (currentUserId == null) return;
+    if (currentUserId == null) return const Stream.empty();
 
-    try {
-      isCapsuleLoading(true);
-
-      final querySnapshot =
-          await reference.where('creatorId', isEqualTo: currentUserId).get();
-
-      List<CapsuleModel> usersCapsules = querySnapshot.docs
-          .map((doc) =>
-              CapsuleModel.fromJson(doc.data() as Map<String, dynamic>))
-          .where((capsule) => capsule
-              .recipients.isEmpty) // ✅ Filter out capsules without recipients
-          .toList();
-
-      capsules(usersCapsules);
-    } catch (e) {
-      Vx.log("Error while getting User Created capsule: $e");
-      appBar(text: "Error in getting Capsule : $e");
-    } finally {
-      isCapsuleLoading(false);
-    }
+    return reference
+        .where('creatorId', isEqualTo: currentUserId)
+        .snapshots() // ✅ Real-time updates
+        .map((querySnapshot) => querySnapshot.docs
+            .map((doc) =>
+                CapsuleModel.fromJson(doc.data() as Map<String, dynamic>))
+            .where((capsule) =>
+                capsule.recipients.isEmpty) // ✅ Filter condition
+            .toList());
   }
 
+  
   void editCapsule(Map<String, dynamic> updateData) async {
     String? creatorId = _userController.getUser?.uid;
 
@@ -158,7 +178,7 @@ class CapsuleController extends GetxController {
           .doc(updateData['capsule_Id'])
           .update(updateData);
 
-      await getUserCapsule();
+      // await getUserCapsule();
       Get.back();
       Get.back();
       appBar(text: "Capsule Updated");
@@ -181,7 +201,7 @@ class CapsuleController extends GetxController {
           .doc(capsuleId)
           .delete();
 
-      await getUserCapsule();
+      // await getUserCapsule();
       Get.back();
       appBar(text: "Capsule deleted Successfully");
     } catch (e) {

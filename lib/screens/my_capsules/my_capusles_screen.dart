@@ -7,6 +7,7 @@ import 'package:future_capsule/screens/my_capsules/my_capsules_preview.dart';
 import 'package:get/get.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
+
 class MyCapuslesScreen extends StatefulWidget {
   const MyCapuslesScreen({super.key});
 
@@ -22,14 +23,17 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
 
   @override
   void initState() {
-    getUserCapsules();
+    // getUserCapsules();
     super.initState();
   }
 
-  void getUserCapsules() async {
-    await _capsuleController.getUserCapsule();
-    _filterCapsules = _capsuleController.capsules;
-    // if (mounted) setState(() {});
+  // void getUserCapsules() async {
+  //   await _capsuleController.getUserCapsule();
+  //   _filterCapsules = _capsuleController.capsules;
+  // }
+
+  Stream<List<CapsuleModel>> capsuleStream() {
+    return _capsuleController.getUserCapsuleStream();
   }
 
   void showFilterDialog() {
@@ -168,65 +172,112 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.dDeepBackground,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
         backgroundColor: AppColors.dDeepBackground,
-        title: const Row(
-          children: [
-            Text(
-              "Capsules Storage",
-              style: TextStyle(
-                  color: AppColors.dNeonCyan, fontWeight: FontWeight.w600),
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          backgroundColor: AppColors.dDeepBackground,
+          title: const Row(
+            children: [
+              Text(
+                "Capsules Storage",
+                style: TextStyle(
+                    color: AppColors.dNeonCyan, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+          actions: [
+            IconButton(
+              onPressed: showFilterDialog,
+              icon: const Icon(
+                Icons.filter_alt_rounded,
+                color: AppColors.kWhiteColor,
+              ),
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            onPressed: showFilterDialog,
-            icon: const Icon(
-              Icons.filter_alt_rounded,
-              color: AppColors.kWhiteColor,
-            ),
-          ),
-        ],
-      ),
-      body: RefreshIndicator.adaptive(
-        color: AppColors.kWarmCoralColor,
-        onRefresh: () async => getUserCapsules(),
-        child: Obx(
-          () {
-            final capsules = _capsuleController.capsules;
-            _filterCapsules = _capsuleController.capsules;
+        // body: RefreshIndicator.adaptive(
+        //   color: AppColors.kWarmCoralColor,
+        //   onRefresh: () async => getUserCapsules(),
+        //   child: Obx(
+        //     () {
+        //       final capsules = _capsuleController.capsules;
+        //       _filterCapsules = _capsuleController.capsules;
 
-            if (_capsuleController.isCapsuleLoading.value) {
+        //       if (_capsuleController.isCapsuleLoading.value) {
+        //         return const Center(
+        //           child: CircularProgressIndicator.adaptive(
+        //               valueColor:
+        //                   AlwaysStoppedAnimation(AppColors.kWarmCoralColor)),
+        //         );
+        //       }
+
+        //       if (capsules.isEmpty) {
+        //         return const Center(
+        //             child: Text(
+        //           "No capsules available",
+        //           style: TextStyle(
+        //               color: AppColors.kWhiteColor,
+        //               fontWeight: FontWeight.w600,
+        //               fontSize: 18),
+        //         )); // Handle empty state
+        //       }
+        //       return ListView.builder(
+        //         padding: const EdgeInsets.only(bottom: 80),
+        //         itemCount: _filterCapsules.length,
+        //         itemBuilder: (context, index) {
+        //           CapsuleModel capsule = _filterCapsules[index];
+
+        //           return GestureDetector(
+        //               onTap: () => _navigateToCapsulePreview(context, capsule),
+        //               child: CapsuleCard(
+        //                 capsule: capsule,
+        //               ));
+        //         },
+        //       );
+        //     },
+        //   ),
+        // ),
+
+        body: StreamBuilder(
+          stream: capsuleStream(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
-                child: CircularProgressIndicator.adaptive(
-                    valueColor:
-                        AlwaysStoppedAnimation(AppColors.kWarmCoralColor)),
+                  child: CircularProgressIndicator()); // Loading state
+            }
+
+            if (snapshot.hasError) {
+              return Text(
+                "Error: ${snapshot.error}",
+                style: const TextStyle(color: AppColors.kWhiteColor),
               );
             }
 
+            var capsules = snapshot.data ?? [];
+
             if (capsules.isEmpty) {
               return const Center(
-                  child: Text("No capsules available", style: TextStyle(color: AppColors.kWhiteColor, fontWeight: FontWeight.w600, fontSize: 18),)); // Handle empty state
+                  child: Text(
+                "No Capsules Found",
+                style: TextStyle(color: AppColors.kWhiteColor),
+              ));
             }
+
             return ListView.builder(
               padding: const EdgeInsets.only(bottom: 80),
-                itemCount: _filterCapsules.length,
-                itemBuilder: (context, index) {
-                  CapsuleModel capsule = _filterCapsules[index];
+              itemCount: capsules.length,
+              itemBuilder: (context, index) {
+                CapsuleModel capsule = capsules[index];
 
-                  return GestureDetector(
-                      onTap: () => _navigateToCapsulePreview(context, capsule),
-                      child: CapsuleCard(
-                        capsule: capsule,
-                      ));
-                });
+                return GestureDetector(
+                    onTap: () => _navigateToCapsulePreview(context, capsule),
+                    child: CapsuleCard(
+                      capsule: capsule,
+                    ));
+              },
+            );
           },
-        ),
-      ),
-    );
+        ));
   }
 
   void _navigateToCapsulePreview(BuildContext context, CapsuleModel capsule) {

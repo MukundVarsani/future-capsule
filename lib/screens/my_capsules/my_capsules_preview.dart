@@ -320,6 +320,7 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
             maxLines: 4,
             minLines: 3,
             readOnly: true,
+            initialValue: description,
             decoration: const InputDecoration(
               hintText: "Decribe capsule",
               hintStyle: TextStyle(color: Colors.grey),

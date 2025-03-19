@@ -18,7 +18,6 @@ class BottomBar extends StatefulWidget {
 class _BottomBarState extends State<BottomBar> {
   final PersistentTabController _controller =
       PersistentTabController(initialIndex: 0);
-  final ScrollController _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +70,6 @@ class _BottomBarState extends State<BottomBar> {
         textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
         activeColorPrimary: AppColors.dActiveColorPrimary,
         inactiveColorPrimary: AppColors.dInActiveColorPrimary,
-        scrollController: _scrollController,
       ),
       PersistentBottomNavBarItem(
         icon:
@@ -80,7 +78,6 @@ class _BottomBarState extends State<BottomBar> {
         textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
         activeColorPrimary: AppColors.dActiveColorPrimary,
         inactiveColorPrimary: AppColors.dInActiveColorPrimary,
-        scrollController: _scrollController,
       ),
       PersistentBottomNavBarItem(
         contentPadding: 12,
@@ -96,16 +93,15 @@ class _BottomBarState extends State<BottomBar> {
         activeColorPrimary: AppColors.dActiveColorPrimary,
         activeColorSecondary: AppColors.dActiveColorSecondary,
         inactiveColorPrimary: AppColors.dInActiveColorPrimary,
-        scrollController: _scrollController,
       ),
       PersistentBottomNavBarItem(
-        icon: const Icon(CupertinoIcons.macwindow,),
+        icon: const Icon(
+          CupertinoIcons.macwindow,
+        ),
         title: ("My capusles"),
         textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
         activeColorPrimary: AppColors.dActiveColorPrimary,
         inactiveColorPrimary: AppColors.dInActiveColorPrimary,
-        
-        scrollController: _scrollController,
       ),
       PersistentBottomNavBarItem(
         icon: const Icon(CupertinoIcons.person),
@@ -113,7 +109,6 @@ class _BottomBarState extends State<BottomBar> {
         textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
         activeColorPrimary: AppColors.dActiveColorPrimary,
         inactiveColorPrimary: AppColors.dInActiveColorPrimary,
-        scrollController: _scrollController,
       ),
     ];
   }
