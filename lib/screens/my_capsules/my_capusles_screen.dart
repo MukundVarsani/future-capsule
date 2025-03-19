@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
+import 'package:future_capsule/core/widgets/shimmer_effect/capsule_storage_shimmer.dart';
 import 'package:future_capsule/data/controllers/capsule.controller.dart';
 import 'package:future_capsule/data/models/capsule_modal.dart';
 import 'package:future_capsule/screens/my_capsules/capsule_card.dart';
 import 'package:future_capsule/screens/my_capsules/my_capsules_preview.dart';
 import 'package:get/get.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
-
 
 class MyCapuslesScreen extends StatefulWidget {
   const MyCapuslesScreen({super.key});
@@ -20,17 +20,6 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
 
   final List<CapsuleModel> _userCapsules = [];
   List<CapsuleModel> _filterCapsules = [];
-
-  @override
-  void initState() {
-    // getUserCapsules();
-    super.initState();
-  }
-
-  // void getUserCapsules() async {
-  //   await _capsuleController.getUserCapsule();
-  //   _filterCapsules = _capsuleController.capsules;
-  // }
 
   Stream<List<CapsuleModel>> capsuleStream() {
     return _capsuleController.getUserCapsuleStream();
@@ -195,55 +184,12 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
             ),
           ],
         ),
-        // body: RefreshIndicator.adaptive(
-        //   color: AppColors.kWarmCoralColor,
-        //   onRefresh: () async => getUserCapsules(),
-        //   child: Obx(
-        //     () {
-        //       final capsules = _capsuleController.capsules;
-        //       _filterCapsules = _capsuleController.capsules;
-
-        //       if (_capsuleController.isCapsuleLoading.value) {
-        //         return const Center(
-        //           child: CircularProgressIndicator.adaptive(
-        //               valueColor:
-        //                   AlwaysStoppedAnimation(AppColors.kWarmCoralColor)),
-        //         );
-        //       }
-
-        //       if (capsules.isEmpty) {
-        //         return const Center(
-        //             child: Text(
-        //           "No capsules available",
-        //           style: TextStyle(
-        //               color: AppColors.kWhiteColor,
-        //               fontWeight: FontWeight.w600,
-        //               fontSize: 18),
-        //         )); // Handle empty state
-        //       }
-        //       return ListView.builder(
-        //         padding: const EdgeInsets.only(bottom: 80),
-        //         itemCount: _filterCapsules.length,
-        //         itemBuilder: (context, index) {
-        //           CapsuleModel capsule = _filterCapsules[index];
-
-        //           return GestureDetector(
-        //               onTap: () => _navigateToCapsulePreview(context, capsule),
-        //               child: CapsuleCard(
-        //                 capsule: capsule,
-        //               ));
-        //         },
-        //       );
-        //     },
-        //   ),
-        // ),
-
-        body: StreamBuilder(
+        body:
+        StreamBuilder(
           stream: capsuleStream(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                  child: CircularProgressIndicator()); // Loading state
+              return const CapsuleStorageShimmer(); // Loading state
             }
 
             if (snapshot.hasError) {

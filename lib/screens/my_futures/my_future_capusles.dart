@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
+import 'package:future_capsule/core/widgets/shimmer_effect/user_tile_shimmer.dart';
 import 'package:future_capsule/data/controllers/recipients.controller.dart';
 import 'package:future_capsule/data/models/capsule_modal.dart';
 import 'package:future_capsule/data/models/user_modal.dart';
@@ -59,11 +60,8 @@ class _MyFutureCapsulesState extends State<MyFutureCapsules> {
         stream: _recipientController.fetchSharedCapsulesWithUsersOPTStream(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator.adaptive(
-                valueColor: AlwaysStoppedAnimation(AppColors.kWarmCoralColor),
-              ),
-            );
+            return ListView.builder(
+                itemCount: 5, itemBuilder: (c, i) => const UserTileShimmer());
           }
 
           if (!snapshot.hasData || snapshot.data!.isEmpty) {

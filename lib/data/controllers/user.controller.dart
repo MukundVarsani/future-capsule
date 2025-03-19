@@ -27,7 +27,6 @@ class UserController extends GetxController {
   @override
   void onInit() {
     _currentUser(_firebaseAuth.currentUser);
-    // Vx.log("User controller Initialize");
     super.onInit();
   }
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
-import 'package:velocity_x/velocity_x.dart';
+
 
 class AnimatedToggle extends StatelessWidget {
   const AnimatedToggle(
@@ -26,6 +26,7 @@ class AnimatedToggle extends StatelessWidget {
         boxShadow: isToggled
             ?  [
                 BoxShadow(
+                  // ignore: deprecated_member_use
                   color: backgroundColor.withOpacity(0.7), // Glow effect
                   blurRadius: 10,
                   spreadRadius: 3,
@@ -56,7 +57,7 @@ class AnimatedToggle extends StatelessWidget {
               padding: const EdgeInsets.all(4),
               child: Icon(onIcon, color: backgroundColor, size: 20),
             ),
-          const SizedBox(width: 5), // Add space between icon and border
+          const SizedBox(width: 5), 
         ],
       ),
     );

@@ -19,9 +19,6 @@ class CapsuleController extends GetxController {
   final UserController _userController = Get.put(UserController());
 
 //*  Capsule variable
-
-  var capsules = <CapsuleModel>[].obs;
-  var sentCapsules = <CapsuleModel>[].obs;
   var capsuleSentUsers = <UserModel>[].obs;
   var mySentCapsules = <CapsuleModel>[].obs;
   RxMap<String, List<UserModel>> capsuleRecipientsMap =
@@ -29,12 +26,11 @@ class CapsuleController extends GetxController {
 
   var isCapsuleLoading = false.obs;
   var isCapsuleDeleting = false.obs;
-  var isRecipientLoading = false.obs;
-  var isAvailableUserLoading = false.obs;
   var isMyCapsuleSentLoading = false.obs;
 
 //^  Capsule Methods
 
+//* Extract Media ID from Medial URL
   String _extractMediaIdFromUrl(String url) {
     // Define a regular expression to extract the value
     final regex = RegExp(r'capsule_media%2F[^%]*%2F([^;%]*)%2F');
@@ -46,6 +42,7 @@ class CapsuleController extends GetxController {
     return match != null ? match.group(1) ?? '' : '';
   }
 
+//* Create a Capsule
   void createCapsule(Map<String, dynamic> capsuleData) async {
     String? creatorId = _userController.getUser?.uid;
 
@@ -95,36 +92,7 @@ class CapsuleController extends GetxController {
     }
   }
 
-  // Future<void> getUserCapsule() async {
-  //   CollectionReference reference =
-  //       _firebaseFirestore.collection("Users_Capsules");
-
-  //   String? currentUserId = _userController.getUser?.uid;
-  //   if (currentUserId == null) return;
-
-  //   try {
-  //     isCapsuleLoading(true);
-
-  //     final querySnapshot =
-  //         await reference.where('creatorId', isEqualTo: currentUserId).get();
-
-  //     List<CapsuleModel> usersCapsules = querySnapshot.docs
-  //         .map((doc) =>
-  //             CapsuleModel.fromJson(doc.data() as Map<String, dynamic>))
-  //         .where((capsule) => capsule
-  //             .recipients.isEmpty) // ✅ Filter out capsules without recipients
-  //         .toList();
-
-  //     capsules(usersCapsules);
-  //   } catch (e) {
-  //     Vx.log("Error while getting User Created capsule: $e");
-  //     appBar(text: "Error in getting Capsule : $e");
-  //   } finally {
-  //     isCapsuleLoading(false);
-  //   }
-  // }
-
-  //* Capsule Stream
+//* Update My capsule Store which is not sent to anyone
   Stream<List<CapsuleModel>> getUserCapsuleStream() {
     CollectionReference reference =
         _firebaseFirestore.collection("Users_Capsules");
@@ -138,12 +106,12 @@ class CapsuleController extends GetxController {
         .map((querySnapshot) => querySnapshot.docs
             .map((doc) =>
                 CapsuleModel.fromJson(doc.data() as Map<String, dynamic>))
-            .where((capsule) =>
-                capsule.recipients.isEmpty) // ✅ Filter condition
+            .where(
+                (capsule) => capsule.recipients.isEmpty) // ✅ Filter condition
             .toList());
   }
 
-  
+//* Update My capsule
   void editCapsule(Map<String, dynamic> updateData) async {
     String? creatorId = _userController.getUser?.uid;
 
@@ -190,6 +158,7 @@ class CapsuleController extends GetxController {
     }
   }
 
+//* Delete MY capsule
   void deleteCapsule({required String capsuleId}) async {
     String? creatorId = _userController.getUser?.uid;
     if (creatorId == null) return;
@@ -211,43 +180,7 @@ class CapsuleController extends GetxController {
     }
   }
 
-  void getMySentCapusles() async {
-    String? creatorId = _userController.getUser?.uid;
-    if (creatorId == null) return;
-    try {
-      isMyCapsuleSentLoading(true);
-      QuerySnapshot capsuleSnap = await _firebaseFirestore
-          .collection('Users_Capsules')
-          .where('creatorId', isEqualTo: creatorId)
-          .get();
-
-      if (capsuleSnap.docs.isEmpty) return;
-      List<CapsuleModel> capsules = [];
-      capsuleRecipientsMap.value = {};
-
-      for (var doc in capsuleSnap.docs) {
-        CapsuleModel capsule =
-            CapsuleModel.fromJson(doc.data() as Map<String, dynamic>);
-
-        if (capsule.recipients.isNotEmpty) {
-          // Fetch user details for each recipient
-          List<UserModel> recipients =
-              await _fetchUsersByIds(capsule.recipients);
-
-          // Store the capsule & its mapped recipients
-          capsules.add(capsule);
-          capsuleRecipientsMap[capsule.capsuleId] = recipients;
-        }
-      }
-
-      mySentCapsules.value = capsules;
-    } catch (e) {
-      Vx.log("Error in getMySentCapusles : $e");
-    } finally {
-      isMyCapsuleSentLoading(false);
-    }
-  }
-
+//* Fetch list of Usermodal Bu IDs
   Future<List<UserModel>> _fetchUsersByIds(List<String?> userIds) async {
     try {
       QuerySnapshot userSnap = await _firebaseFirestore
@@ -264,49 +197,47 @@ class CapsuleController extends GetxController {
     }
   }
 
-//* stream getMySentCapusles
-void listenToMySentCapsules() {
-  String? creatorId = _userController.getUser?.uid;
-  if (creatorId == null) return;
+//* Get  My Sent Capusles Stream
+  void listenToMySentCapsules() {
+    String? creatorId = _userController.getUser?.uid;
+    if (creatorId == null) return;
 
-  isMyCapsuleSentLoading(true);
+    try {
+      _firebaseFirestore
+          .collection('Users_Capsules')
+          .where('creatorId', isEqualTo: creatorId)
+          .snapshots() // Real-time updates
+          .listen((capsuleSnap) async {
+        isMyCapsuleSentLoading(true);
+        if (capsuleSnap.docs.isEmpty) {
+          mySentCapsules.clear();
+          capsuleRecipientsMap.clear();
+          return;
+        }
 
-  _firebaseFirestore
-      .collection('Users_Capsules')
-      .where('creatorId', isEqualTo: creatorId)
-      .snapshots() // Real-time updates
-      .listen((capsuleSnap) async {
-    if (capsuleSnap.docs.isEmpty) {
-      mySentCapsules.clear();
-      capsuleRecipientsMap.clear();
-      return;
+        List<CapsuleModel> capsules = [];
+        Map<String, List<UserModel>> tempRecipientsMap = {};
+
+        for (var doc in capsuleSnap.docs) {
+          CapsuleModel capsule = CapsuleModel.fromJson(doc.data());
+
+          if (capsule.recipients.isNotEmpty) {
+            List<UserModel> recipients =
+                await _fetchUsersByIds(capsule.recipients);
+
+            capsules.add(capsule);
+            tempRecipientsMap[capsule.capsuleId] = recipients;
+          }
+        }
+
+        mySentCapsules.assignAll(capsules);
+        capsuleRecipientsMap.assignAll(tempRecipientsMap);
+        isMyCapsuleSentLoading(false);
+      });
+    } catch (e) {
+      Vx.log("Error in listenToMySentCapsules: $e");
+    } finally {
+      isMyCapsuleSentLoading(false);
     }
-
-    List<CapsuleModel> capsules = [];
-    Map<String, List<UserModel>> tempRecipientsMap = {};
-
-    for (var doc in capsuleSnap.docs) {
-      CapsuleModel capsule =
-          CapsuleModel.fromJson(doc.data());
-
-      if (capsule.recipients.isNotEmpty) {
-        // Fetch user details for each recipient in real-time
-        List<UserModel> recipients = await _fetchUsersByIds(capsule.recipients);
-
-        capsules.add(capsule);
-        tempRecipientsMap[capsule.capsuleId] = recipients;
-      }
-    }
-
-    mySentCapsules.assignAll(capsules);
-    capsuleRecipientsMap.assignAll(tempRecipientsMap);
-
-    isMyCapsuleSentLoading(false);
-  }, onError: (e) {
-    Vx.log("Error in listenToMySentCapsules: $e");
-    isMyCapsuleSentLoading(false);
-  });
-}
-
-
+  }
 }
