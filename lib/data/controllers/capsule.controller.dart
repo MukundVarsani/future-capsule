@@ -263,4 +263,50 @@ class CapsuleController extends GetxController {
       return [];
     }
   }
+
+//* stream getMySentCapusles
+void listenToMySentCapsules() {
+  String? creatorId = _userController.getUser?.uid;
+  if (creatorId == null) return;
+
+  isMyCapsuleSentLoading(true);
+
+  _firebaseFirestore
+      .collection('Users_Capsules')
+      .where('creatorId', isEqualTo: creatorId)
+      .snapshots() // Real-time updates
+      .listen((capsuleSnap) async {
+    if (capsuleSnap.docs.isEmpty) {
+      mySentCapsules.clear();
+      capsuleRecipientsMap.clear();
+      return;
+    }
+
+    List<CapsuleModel> capsules = [];
+    Map<String, List<UserModel>> tempRecipientsMap = {};
+
+    for (var doc in capsuleSnap.docs) {
+      CapsuleModel capsule =
+          CapsuleModel.fromJson(doc.data());
+
+      if (capsule.recipients.isNotEmpty) {
+        // Fetch user details for each recipient in real-time
+        List<UserModel> recipients = await _fetchUsersByIds(capsule.recipients);
+
+        capsules.add(capsule);
+        tempRecipientsMap[capsule.capsuleId] = recipients;
+      }
+    }
+
+    mySentCapsules.assignAll(capsules);
+    capsuleRecipientsMap.assignAll(tempRecipientsMap);
+
+    isMyCapsuleSentLoading(false);
+  }, onError: (e) {
+    Vx.log("Error in listenToMySentCapsules: $e");
+    isMyCapsuleSentLoading(false);
+  });
+}
+
+
 }

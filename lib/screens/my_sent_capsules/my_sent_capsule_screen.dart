@@ -21,12 +21,103 @@ class _MyCapuslesScreenState extends State<MySentCapuslesScreen> {
   final CapsuleController _capsuleController = Get.put(CapsuleController());
   @override
   void initState() {
-    _capsuleController.getMySentCapusles();
+    // _capsuleController.getMySentCapusles();
+    _capsuleController.listenToMySentCapsules(); // Real-time Firestore stream
     super.initState();
   }
 
   @override
-  Widget build(BuildContext context) {
+  // Widget build(BuildContext context) {
+  //   return Scaffold(
+  //     backgroundColor: AppColors.dDeepBackground,
+  //     appBar: AppBar(
+  //       backgroundColor: AppColors.dDeepBackground,
+  //       automaticallyImplyLeading: false,
+  //       title: Row(
+  //         children: [
+  //           const Text(
+  //             "Sent Capsule",
+  //             style: TextStyle(
+  //                 color: AppColors.kWhiteColor, fontWeight: FontWeight.w500),
+  //           ),
+  //           Image.asset(
+  //             AppImages.capsules,
+  //             height: 40,
+  //           ),
+  //         ],
+  //       ),
+  //       actions: [
+  //         IconButton(
+  //           onPressed: () {},
+  //           icon: const Icon(
+  //             Icons.filter_alt_rounded,
+  //             color: AppColors.kWhiteColor,
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //     body: Obx(
+  //       () => _capsuleController.isMyCapsuleSentLoading.value
+  //           ? const Center(child: CircularProgressIndicator.adaptive())
+  //           : SingleChildScrollView(
+  //               child: Column(
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 children: [
+  //                   CarouselSlider(
+  //                     options: CarouselOptions(
+  //                       enlargeCenterPage: true,
+  //                       height: 300,
+  //                       enableInfiniteScroll: false,
+  //                     ),
+  //                     items: [
+  //                       ..._capsuleController.mySentCapsules
+  //                           .take(3)
+  //                           .map((CapsuleModel capsule) {
+  //                         return GestureDetector(
+  //                           onTap: () {
+  //                             Vx.log(capsule.title);
+  //                           },
+  //                           child: carasolItem(
+  //                               image: (capsule.media[0].thumbnail != null &&
+  //                                       capsule.media[0].thumbnail!.isNotEmpty)
+  //                                   ? capsule.media[0].thumbnail!
+  //                                   : capsule.media[0].url,
+  //                               title: capsule.title,
+  //                               cId: capsule.capsuleId,
+  //                               status: capsule.status,
+  //                               date: capsule.openingDate),
+  //                         );
+  //                       })
+  //                     ],
+  //                   ),
+  //                   const SizedBox(
+  //                     height: 24,
+  //                   ),
+  //                   ..._capsuleController.mySentCapsules
+  //                       .skip(3)
+  //                       .map((CapsuleModel capsule) {
+  //                     return capsuleCard(
+  //                         image: (capsule.media[0].thumbnail != null &&
+  //                                 capsule.media[0].thumbnail!.isNotEmpty)
+  //                             ? capsule.media[0].thumbnail!
+  //                             : capsule.media[0].url,
+  //                         title: capsule.title,
+  //                         status: capsule.status,
+  //                         date: capsule.openingDate,
+  //                         cId: capsule.capsuleId);
+  //                   }),
+  //                   SizedBox(
+  //                     height: MediaQuery.sizeOf(context).height * 0.083,
+  //                   )
+  //                 ],
+  //               ),
+  //             ),
+  //     ),
+  //   );
+  // }
+
+
+ Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.dDeepBackground,
       appBar: AppBar(
@@ -68,26 +159,24 @@ class _MyCapuslesScreenState extends State<MySentCapuslesScreen> {
                         height: 300,
                         enableInfiniteScroll: false,
                       ),
-                      items: [
-                        ..._capsuleController.mySentCapsules
-                            .take(3)
-                            .map((CapsuleModel capsule) {
-                          return GestureDetector(
-                            onTap: () {
-                              Vx.log(capsule.title);
-                            },
-                            child: carasolItem(
-                                image: (capsule.media[0].thumbnail != null &&
-                                        capsule.media[0].thumbnail!.isNotEmpty)
-                                    ? capsule.media[0].thumbnail!
-                                    : capsule.media[0].url,
-                                title: capsule.title,
-                                cId: capsule.capsuleId,
-                                status: capsule.status,
-                                date: capsule.openingDate),
-                          );
-                        })
-                      ],
+                      items: _capsuleController.mySentCapsules
+                          .take(3)
+                          .map((CapsuleModel capsule) {
+                        return GestureDetector(
+                          onTap: () {
+                            Vx.log(capsule.title);
+                          },
+                          child: carasolItem(
+                              image: (capsule.media[0].thumbnail != null &&
+                                      capsule.media[0].thumbnail!.isNotEmpty)
+                                  ? capsule.media[0].thumbnail!
+                                  : capsule.media[0].url,
+                              title: capsule.title,
+                              cId: capsule.capsuleId,
+                              status: capsule.status,
+                              date: capsule.openingDate),
+                        );
+                      }).toList(),
                     ),
                     const SizedBox(
                       height: 24,
@@ -114,7 +203,6 @@ class _MyCapuslesScreenState extends State<MySentCapuslesScreen> {
       ),
     );
   }
-
   Widget carasolItem(
       {required String image,
       required String title,
@@ -340,4 +428,5 @@ class _MyCapuslesScreenState extends State<MySentCapuslesScreen> {
           : "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
     }).toList();
   }
+
 }
