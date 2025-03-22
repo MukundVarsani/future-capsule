@@ -16,6 +16,7 @@ class NotificationService {
   void init() {
     initializeLocalNotifications();
     setupForegroundNotificationHandler();
+    requestPermission();
   }
 
   void initializeLocalNotifications() {
@@ -68,7 +69,6 @@ class NotificationService {
 
     try {
       String? token = await FirebaseMessaging.instance.getToken();
-
       await _firebaseFirestore
           .collection("Future_Capsule_Users")
           .doc(currentUserId)

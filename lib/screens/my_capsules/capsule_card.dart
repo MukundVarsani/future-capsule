@@ -32,6 +32,7 @@ class CapsuleCard extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: CachedNetworkImage(
+                cacheKey: capsule.capsuleId,
                 imageUrl: (capsule.media.isNotEmpty &&
                         capsule.media[0].thumbnail != null &&
                         capsule.media[0].thumbnail!.isNotEmpty)

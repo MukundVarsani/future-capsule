@@ -3,6 +3,7 @@ import 'package:future_capsule/core/widgets/snack_bar.dart';
 import 'package:future_capsule/data/controllers/user.controller.dart';
 import 'package:future_capsule/data/models/capsule_modal.dart';
 import 'package:future_capsule/data/models/user_modal.dart';
+import 'package:future_capsule/data/services/firebase_storage.dart';
 
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
@@ -16,6 +17,7 @@ class CapsuleController extends GetxController {
 
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
   final Uuid _uuid = const Uuid();
+  final FirebaseStore cloud_firestore = FirebaseStore();
   final UserController _userController = Get.put(UserController());
 
 //*  Capsule variable
@@ -141,6 +143,10 @@ class CapsuleController extends GetxController {
             []
       };
 
+//       updateData['media'] = [{
+// "thumbnail" :
+//       }];
+
       await _firebaseFirestore
           .collection("Users_Capsules")
           .doc(updateData['capsule_Id'])
@@ -159,18 +165,23 @@ class CapsuleController extends GetxController {
   }
 
 //* Delete MY capsule
-  void deleteCapsule({required String capsuleId}) async {
+  void deleteCapsule({required String capsuleId,required String mediaId}) async {
     String? creatorId = _userController.getUser?.uid;
     if (creatorId == null) return;
 
     try {
       isCapsuleDeleting(true);
-      await FirebaseFirestore.instance
-          .collection("Users_Capsules")
-          .doc(capsuleId)
-          .delete();
+  
+      await Future.wait([
+        FirebaseFirestore.instance
+            .collection("Users_Capsules")
+            .doc(capsuleId)
+            .delete(),
 
-      // await getUserCapsule();
+        cloud_firestore.deleteFileFromCloud(
+            filePath: "capsule_media", userId: creatorId, isProfile: false,mediaId: mediaId)
+      ]);
+
       Get.back();
       appBar(text: "Capsule deleted Successfully");
     } catch (e) {
@@ -180,7 +191,7 @@ class CapsuleController extends GetxController {
     }
   }
 
-//* Fetch list of Usermodal Bu IDs
+//* Fetch list of Usermodal By IDs
   Future<List<UserModel>> _fetchUsersByIds(List<String?> userIds) async {
     try {
       QuerySnapshot userSnap = await _firebaseFirestore
@@ -238,6 +249,26 @@ class CapsuleController extends GetxController {
       Vx.log("Error in listenToMySentCapsules: $e");
     } finally {
       isMyCapsuleSentLoading(false);
+    }
+  }
+
+//* Get sent date by capsule id
+
+  Future<DateTime?> getSentDateByCapsuleId({required String capsuleId}) async {
+    try {
+      DocumentSnapshot querySnapshot = await _firebaseFirestore
+          .collection("SharedCapsules")
+          .where('capsuleId', isEqualTo: capsuleId)
+          .limit(1) // Ensures only one document is fetched
+          .get()
+          .then((snapshot) => snapshot.docs.first); // Get the first document
+
+      DateTime shareDate = DateTime.parse(querySnapshot['shareDate']);
+
+      return shareDate;
+    } catch (e) {
+      Vx.log("Error in getSentDateByCapsuleId $e");
+      return null;
     }
   }
 }

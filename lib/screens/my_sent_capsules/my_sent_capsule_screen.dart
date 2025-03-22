@@ -6,6 +6,7 @@ import 'package:future_capsule/core/images/images.dart';
 import 'package:future_capsule/core/widgets/shimmer_effect/my_sent_capsule_shimmer.dart';
 import 'package:future_capsule/data/controllers/capsule.controller.dart';
 import 'package:future_capsule/data/models/capsule_modal.dart';
+import 'package:future_capsule/screens/my_sent_capsules/my_sent_capsule_details.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:velocity_x/velocity_x.dart';
@@ -75,15 +76,18 @@ class _MyCapuslesScreenState extends State<MySentCapuslesScreen> {
                           onTap: () {
                             Vx.log(capsule.title);
                           },
-                          child: carasolItem(
-                              image: (capsule.media[0].thumbnail != null &&
-                                      capsule.media[0].thumbnail!.isNotEmpty)
-                                  ? capsule.media[0].thumbnail!
-                                  : capsule.media[0].url,
-                              title: capsule.title,
-                              cId: capsule.capsuleId,
-                              status: capsule.status,
-                              date: capsule.openingDate),
+                          child: GestureDetector(
+                            onTap: () => _navigateToDetailScreen(capsule),
+                            child: carasolItem(
+                                image: (capsule.media[0].thumbnail != null &&
+                                        capsule.media[0].thumbnail!.isNotEmpty)
+                                    ? capsule.media[0].thumbnail!
+                                    : capsule.media[0].url,
+                                title: capsule.title,
+                                cId: capsule.capsuleId,
+                                status: capsule.status,
+                                date: capsule.openingDate),
+                          ),
                         );
                       }).toList(),
                     ),
@@ -93,15 +97,18 @@ class _MyCapuslesScreenState extends State<MySentCapuslesScreen> {
                     ..._capsuleController.mySentCapsules
                         .skip(3)
                         .map((CapsuleModel capsule) {
-                      return capsuleCard(
-                          image: (capsule.media[0].thumbnail != null &&
-                                  capsule.media[0].thumbnail!.isNotEmpty)
-                              ? capsule.media[0].thumbnail!
-                              : capsule.media[0].url,
-                          title: capsule.title,
-                          status: capsule.status,
-                          date: capsule.openingDate,
-                          cId: capsule.capsuleId);
+                      return GestureDetector(
+                        onTap: () => _navigateToDetailScreen(capsule),
+                        child: capsuleCard(
+                            image: (capsule.media[0].thumbnail != null &&
+                                    capsule.media[0].thumbnail!.isNotEmpty)
+                                ? capsule.media[0].thumbnail!
+                                : capsule.media[0].url,
+                            title: capsule.title,
+                            status: capsule.status,
+                            date: capsule.openingDate,
+                            cId: capsule.capsuleId),
+                      );
                     }),
                     SizedBox(
                       height: MediaQuery.sizeOf(context).height * 0.083,
@@ -128,6 +135,7 @@ class _MyCapuslesScreenState extends State<MySentCapuslesScreen> {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(18),
             child: CachedNetworkImage(
+              cacheKey: cId,
               imageUrl: image,
               fit: BoxFit.cover,
             ),
@@ -240,6 +248,7 @@ class _MyCapuslesScreenState extends State<MySentCapuslesScreen> {
                       bottomLeft: const Radius.circular(0),
                       bottomRight: const Radius.circular(0)),
                   child: CachedNetworkImage(
+                    cacheKey: cId,
                     imageUrl: image,
                     fit: BoxFit.cover,
                   ),
@@ -337,5 +346,20 @@ class _MyCapuslesScreenState extends State<MySentCapuslesScreen> {
           ? user.profilePicture!
           : "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
     }).toList();
+  }
+
+  void _navigateToDetailScreen(CapsuleModel capsule) async{
+
+
+
+     DateTime? date = await _capsuleController.getSentDateByCapsuleId(capsuleId: capsule.capsuleId);
+     if(date == null) return;
+
+    Get.to(MySentCapsuleDetails(
+      capsule: capsule,
+      shareDate: date,
+      recipientsUsers:
+          _capsuleController.capsuleRecipientsMap[capsule.capsuleId]!,
+    ));
   }
 }

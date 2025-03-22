@@ -61,6 +61,7 @@ class MyFutureCapsuleView extends StatelessWidget {
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(100),
                               child: CachedNetworkImage(
+                                cacheKey: user.userId,
                                 imageUrl: user.profilePicture!,
                                 filterQuality: FilterQuality.high,
                                 height: 54,

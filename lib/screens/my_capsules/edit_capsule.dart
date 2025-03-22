@@ -6,6 +6,7 @@ import 'package:future_capsule/core/widgets/app_button.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
 import 'package:future_capsule/data/controllers/capsule.controller.dart';
 import 'package:future_capsule/data/models/capsule_modal.dart';
+import 'package:future_capsule/data/services/firebase_storage.dart';
 import 'package:future_capsule/features/compress_file.dart';
 import 'package:future_capsule/features/select_files.dart';
 import 'package:future_capsule/screens/create_capsule/custom_picker.dart';
@@ -36,10 +37,9 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
   late final CompressFile _compressFile;
   VideoPlayerController? _controller;
 
-  // File? _file;
   XFile? xFile;
   String? media;
-
+  final FirebaseStore _firebaseStore = FirebaseStore();
   late Duration openDate;
   DateTime? _selectedDate;
 
@@ -51,7 +51,6 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
   bool isVideoFile = false;
   bool isOtherFile = false;
 
-  
   bool isTitleFocused = false;
   bool isDesFocused = false;
 
@@ -119,8 +118,8 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
     titleController.clear();
     descriptionController.clear();
     // _file = null;
-    _controller?.dispose();
-    _controller = null;
+    // _controller?.dispose();
+    // _controller = null;
     isCapsuleToggled = true;
     isTimeToggled = true;
     isMediaLoading = false;
@@ -131,19 +130,82 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
     _selectedDate = DateTime.now();
   }
 
-  void _updateCapsule() {
+  Future<String?> uploadThumbNailImage() async {
+    if (xFile == null) return null;
+    return await _firebaseStore.uploadImageToCloud(
+        filePath: "capsule_media",
+        file: File(xFile!.path),
+        isProfile: false,
+        mediaId: widget.capsuleModel.capsuleId,
+        fileName: "thumbnail");
+  }
+
+  Future<String?> uploadCapsuleFile() async {
+    if (xFile == null) return null;
+    File mediaFile = File(xFile!.path);
+    return await _firebaseStore.uploadImageToCloud(
+      filePath: "capsule_media",
+      file: mediaFile,
+      mediaId: widget.capsuleModel.capsuleId,
+      isProfile: false,
+      fileName: "${widget.capsuleModel.capsuleId}-data",
+    );
+  }
+
+  String getExtensionType() {
+    if (xFile == null) return "null";
+    String extension = xFile!.path.split('.').last.toLowerCase();
+
+    const Map<String, String> mimeTypes = {
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png',
+      'gif': 'image/gif',
+      'bmp': 'image/bmp',
+      'webp': 'image/webp',
+      'pdf': 'application/pdf',
+      'txt': 'text/plain',
+      'html': 'text/html',
+      'json': 'application/json',
+      'mp3': 'audio/mpeg',
+      'wav': 'audio/wav',
+      'mp4': 'video/mp4',
+      'avi': 'video/x-msvideo',
+      'mov': 'video/quicktime',
+      'zip': 'application/zip',
+      'rar': 'application/x-rar-compressed',
+    };
+    return mimeTypes[extension] ?? 'application/octet-stream';
+  }
+
+  void _updateCapsule() async {
     FocusManager.instance.primaryFocus?.unfocus();
 
+    String? mediaURL;
+    String? thumbnailUrl;
+    
     if (titleController.text.isEmpty) {
       appSnackBar(context: context, text: "Capsule title is required");
       return;
     }
 
     if (xFile == null && media == null) {
-      // if (_file == null && xFile == null && media == null) {
       appSnackBar(context: context, text: "Capsule file is required");
       return;
     }
+
+    if (isVideoFile) {
+      List<String?> result = await Future.wait([
+        uploadThumbNailImage(),
+        uploadCapsuleFile(),
+      ]);
+      thumbnailUrl = result[0];
+      mediaURL = result[1];
+    } else {
+      mediaURL = await uploadCapsuleFile();
+    }
+
+    String type = getExtensionType();
 
     Map<String, dynamic> updatedData = {
       "capsule_Id": widget.capsuleModel.capsuleId,
@@ -154,7 +216,10 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
       'privacy': {
         "isCapsulePrivate": isCapsuleToggled,
         'isTimePrivate': isTimeToggled,
-      }
+      },
+      "type": type,
+      'media': mediaURL,
+      'thumbnail': thumbnailUrl,
     };
     _capsuleController.editCapsule(updatedData);
   }
@@ -186,7 +251,7 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
 
   @override
   void dispose() {
-    _resetData();
+    // _resetData();
     _compressFile.dispose();
     descriptionController.dispose();
     titleController.dispose();
@@ -213,61 +278,58 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
               fontSize: 24),
         ),
       ),
-      body: Container(
+      body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: ListView(
-        
-          shrinkWrap: true,
-          children: [
-            const SizedBox(height: 10),
-            _buildTextField(),
-            const SizedBox(height: 10),
-            GestureDetector(
-              onTap: _showSelectFileDialodBox,
-              child: Container(
-                constraints: const BoxConstraints(minHeight: 200),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
-                  color: AppColors.dUserTileBackground,
-                  boxShadow: const [
-                    BoxShadow(
-                        color: Color.fromRGBO(0, 255, 255, 0.5), // Glow effect
-                        blurRadius: 8,
-                        spreadRadius: 1,
-                        offset: Offset(1, 2)),
-                  ],
-                ),
-                child: Stack(alignment: AlignmentDirectional.center, children: [
-                  _buildMediaPreview(),
-                  if (isMediaLoading)
-                    const Center(
-                        child: CircularProgressIndicator.adaptive(
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                          AppColors.kWarmCoralColor),
-                    )),
-                  if (!isImageFile && !isVideoFile && !isOtherFile)
-                    Positioned(
-                      bottom: 20,
-                      left: MediaQuery.sizeOf(context).width / 2 - 20,
-                      child: const Icon(
-                        Icons.upload_outlined,
-                        size: 40,
-                      ),
-                    ),
-                ]),
+        shrinkWrap: true,
+        children: [
+          const SizedBox(height: 10),
+          _buildTextField(),
+          const SizedBox(height: 10),
+          GestureDetector(
+            onTap: _showSelectFileDialodBox,
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 200),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                color: AppColors.dUserTileBackground,
+                boxShadow: const [
+                  BoxShadow(
+                      color: Color.fromRGBO(0, 255, 255, 0.5), // Glow effect
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                      offset: Offset(1, 2)),
+                ],
               ),
+              child: Stack(alignment: AlignmentDirectional.center, children: [
+                _buildMediaPreview(),
+                if (isMediaLoading)
+                  const Center(
+                      child: CircularProgressIndicator.adaptive(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.kWarmCoralColor),
+                  )),
+                if (!isImageFile && !isVideoFile && !isOtherFile)
+                  Positioned(
+                    bottom: 20,
+                    left: MediaQuery.sizeOf(context).width / 2 - 20,
+                    child: const Icon(
+                      Icons.upload_outlined,
+                      size: 40,
+                    ),
+                  ),
+              ]),
             ),
-            const SizedBox(height: 10),
-            _buildDescriptionField(),
-            const SizedBox(height: 20),
-            _dateAndTimeBuilder(),
-            const SizedBox(height: 20),
-            _privacyBuilder(),
-            const SizedBox(height: 20),
-            _previewButton(),
-            const SizedBox(height: 20),
-          ],
-        ),
+          ),
+          const SizedBox(height: 10),
+          _buildDescriptionField(),
+          const SizedBox(height: 20),
+          _dateAndTimeBuilder(),
+          const SizedBox(height: 20),
+          _privacyBuilder(),
+          const SizedBox(height: 20),
+          _previewButton(),
+          const SizedBox(height: 20),
+        ],
       ),
     );
   }
@@ -369,7 +431,7 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     CustomPicker(
-                      icon: Icons.camera_alt_rounded ,
+                      icon: Icons.camera_alt_rounded,
                       label: "Image",
                       onTap: () => _selectImage(context),
                     ),
@@ -453,7 +515,7 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
   }
 
   Widget _buildDescriptionField() {
-    return  Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(
@@ -681,7 +743,7 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
         ),
       ],
     );
-    }
+  }
 
   Widget _privacyBuilder() {
     return Column(

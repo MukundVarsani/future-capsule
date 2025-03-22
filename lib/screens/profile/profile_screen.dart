@@ -111,7 +111,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             padding: const EdgeInsets.only(bottom: 18),
                             decoration: const BoxDecoration(
                               color: Color.fromRGBO(26, 188, 156, 1),
-                           
                               borderRadius: BorderRadius.only(
                                 bottomLeft: Radius.circular(36),
                                 bottomRight: Radius.circular(36),
@@ -265,7 +264,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             Text(
                                               "log out",
                                               style: TextStyle(
-                                                  color: Color.fromRGBO(224, 224, 224, 1)),
+                                                  color: Color.fromRGBO(
+                                                      224, 224, 224, 1)),
                                             ),
                                           ],
                                         ),
@@ -457,11 +457,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           margin: const EdgeInsets.only(bottom: 20),
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(100),
-               boxShadow: const[ BoxShadow(
-              color: Color.fromRGBO(153, 113, 238, 0.6),
-              blurRadius: 8,
-              spreadRadius: 0.5)]
-             ),
+              boxShadow: userProfile?.isNotEmpty == true
+                  ? [
+                      const BoxShadow(
+                          color: Color.fromRGBO(153, 113, 238, 0.6),
+                          blurRadius: 8,
+                          spreadRadius: 0.5)
+                    ]
+                  : []),
           height: 130,
           width: 130,
           child: ClipRRect(
@@ -474,12 +477,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     fit: BoxFit.cover,
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                  (loadingProgress.expectedTotalBytes ?? 1)
-                              : null,
+                      return Container(
+                        color: AppColors.dDeepBackground,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                                Color.fromRGBO(153, 113, 238, 1)),
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    (loadingProgress.expectedTotalBytes ?? 1)
+                                : null,
+                          ),
                         ),
                       );
                     },

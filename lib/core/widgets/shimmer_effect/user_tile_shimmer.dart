@@ -12,6 +12,7 @@ class UserTileShimmer extends StatelessWidget {
       child: Container(
         constraints: const BoxConstraints(maxHeight: 90),
           margin: const EdgeInsets.only(top: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

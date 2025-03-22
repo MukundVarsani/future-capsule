@@ -1,9 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:future_capsule/core/theme/theme.dart';
 import 'package:future_capsule/data/controllers/capsule.controller.dart';
 import 'package:future_capsule/data/services/notification_service.dart';
+import 'package:future_capsule/screens/auth/sign_in/login_screen.dart';
 import 'package:future_capsule/screens/auth/sign_in/sign_in_screen.dart';
 import 'package:future_capsule/screens/auth/verification/verification_screen.dart';
 import 'package:future_capsule/screens/bottom_navigation_bar.dart';
@@ -26,7 +26,6 @@ void main() async {
   runApp(MyApp());
 }
 
-
 class MyApp extends StatelessWidget {
   MyApp({super.key});
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -34,11 +33,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'Flutter Demo',
-        // theme : kLightTheme,
-        // darkTheme: kDarkTheme,
+      // theme : kLightTheme,
+      // darkTheme: kDarkTheme,
+
       theme: ThemeData(
         useMaterial3: true,
       ),
+
       home: _getLandingPage(_auth),
     );
   }
@@ -57,7 +58,7 @@ Widget _getLandingPage(FirebaseAuth auth) {
           return const BottomBar();
         }
       } else {
-        return const SignInScreen();
+        return const LoginScreen();
       }
     },
   );

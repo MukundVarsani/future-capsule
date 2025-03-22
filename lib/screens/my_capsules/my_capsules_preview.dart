@@ -1,5 +1,6 @@
 // ignore_for_file: invalid_use_of_protected_member
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
@@ -69,8 +70,8 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
     }
   }
 
-  void deleteCapsule(String capsuleId) async {
-    _capsuleController.deleteCapsule(capsuleId: capsuleId);
+  void deleteCapsule(String capsuleId, String mediaId) async {
+    _capsuleController.deleteCapsule(capsuleId: capsuleId, mediaId: mediaId);
   }
 
   void _sendCapsule() {
@@ -104,35 +105,34 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
               color: AppColors.dNeonCyan, fontWeight: FontWeight.w600),
         ),
       ),
-      body: Padding(
+      body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: ListView(
-          children: [
-            const SizedBox(height: 10),
-            _buildTitleField(userCapsule.title),
-            const SizedBox(height: 12),
-            _buildFilePreview(
-                userCapsule.media[0].url, userCapsule.privacy.isCapsulePrivate),
-            const SizedBox(height: 12),
-            _buildDescriptionField(userCapsule.description ?? ".."),
-            const SizedBox(height: 18),
-            _buildDateTimePreview(),
-            const SizedBox(height: 18),
-            _privacyBuilder(),
-            const SizedBox(height: 18),
-            _buildActionButtons(context),
-            const SizedBox(height: 18),
-            AppButton(
-                backgroundColor: const Color.fromRGBO(53, 153, 219, 1),
-                onPressed: _openBottomBar,
-                child: const Text("Send",
-                    style: TextStyle(
-                        color: AppColors.kWhiteColor,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 20))),
-            const SizedBox(height: 10),
-          ],
-        ),
+        children: [
+          const SizedBox(height: 10),
+          _buildTitleField(userCapsule.title),
+          const SizedBox(height: 12),
+          // _buildFilePreview(
+          //     userCapsule.media[0].url, userCapsule.privacy.isCapsulePrivate),
+          _buildMediaPreview(),
+          const SizedBox(height: 12),
+          _buildDescriptionField(userCapsule.description ?? ".."),
+          const SizedBox(height: 18),
+          _buildDateTimePreview(),
+          const SizedBox(height: 18),
+          _privacyBuilder(),
+          const SizedBox(height: 18),
+          _buildActionButtons(context),
+          const SizedBox(height: 18),
+          AppButton(
+              backgroundColor: const Color.fromRGBO(53, 153, 219, 1),
+              onPressed: _openBottomBar,
+              child: const Text("Send",
+                  style: TextStyle(
+                      color: AppColors.kWhiteColor,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 20))),
+          const SizedBox(height: 10),
+        ],
       ),
     );
   }
@@ -195,7 +195,7 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: AspectRatio(
-              aspectRatio: _controller!.value.aspectRatio,
+              aspectRatio: _controller!.value.aspectRatio * 2,
               child: VideoPlayer(_controller!),
             ),
           ),
@@ -279,6 +279,105 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
         valueColor: AlwaysStoppedAnimation<Color>(
             Colors.grey), // Buffered portion color
         backgroundColor: AppColors.kWarmCoralColor, // Background color
+      ),
+    );
+  }
+
+  Widget _buildMediaPreview() {
+    bool isPlaying = _controller?.value.isPlaying ?? false;
+    return Center(
+      child: Container(
+        height: 300,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: (isVideoFile &&
+                _controller != null &&
+                _controller!.value.isInitialized)
+            ? SizedBox(
+                height: 300,
+                child: Stack(
+                  alignment: AlignmentDirectional.center,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: AspectRatio(
+                        aspectRatio: _controller!.value.aspectRatio,
+                        child: VideoPlayer(_controller!),
+                      ),
+                    ),
+                    Center(
+                      child: IconButton(
+                        onPressed: () {
+                          if (_controller == null) return;
+                          if (mounted) {
+                            setState(
+                              () {
+                                if (isPlaying) {
+                                  _controller!.pause();
+                                } else {
+                                  _controller!.play();
+                                }
+                              },
+                            );
+                          }
+                        },
+                        icon: Container(
+                          padding: const EdgeInsets.all(5),
+                          decoration: BoxDecoration(
+                              color: AppColors.kWarmCoralColor06,
+                              borderRadius: BorderRadius.circular(50)),
+                          child: Icon(
+                            isPlaying ? Icons.pause : Icons.play_arrow,
+                            size: 40,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : Stack(
+                alignment: Alignment.center,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(18),
+                    child: IntrinsicWidth(
+                      child: IntrinsicHeight(
+                        child: CachedNetworkImage(
+                          cacheKey: widget.capsule.capsuleId,
+                          fit: BoxFit.fill,
+                          imageUrl: (widget.capsule.media[0].thumbnail !=
+                                      null &&
+                                  widget.capsule.media[0].thumbnail!.isNotEmpty)
+                              ? widget.capsule.media[0].thumbnail!
+                              : widget.capsule.media[0].url,
+                        ),
+                      ),
+                    ),
+                  ),
+                  (_controller != null && !_controller!.value.isInitialized)
+                      ? Positioned.fill(
+                          child: ClipRRect(
+                            borderRadius:
+                                BorderRadius.circular(18), // Match image border
+                            child: Container(
+                              color: const Color.fromRGBO(32, 32, 32, 0.6),
+                            ),
+                          ),
+                        )
+                      : const SizedBox(),
+                  (_controller != null && !_controller!.value.isInitialized)
+                      ? const Center(
+                          child: CircularProgressIndicator.adaptive(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                AppColors.kWhiteColor),
+                          ),
+                        )
+                      : const SizedBox(),
+                ],
+              ),
       ),
     );
   }
@@ -469,7 +568,8 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
               maxWidth: 150, minWidth: 70, maxHeight: 55, minHeight: 50),
           child: AppButton(
             backgroundColor: const Color.fromRGBO(53, 153, 219, 1),
-            onPressed: () => deleteCapsule(userCapsule.capsuleId),
+            onPressed: () => deleteCapsule(
+                userCapsule.capsuleId, userCapsule.media[0].mediaId),
             radius: 24,
             child: Center(
                 child: Obx(
@@ -558,7 +658,6 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
                                     } else {
                                       _recipientController.addRecipient(index);
                                     }
-                                   
                                   },
                                   child: Obx(() => AllUserTile(
                                         isUserSelect: _recipientController

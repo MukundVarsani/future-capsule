@@ -36,7 +36,7 @@ class AuthController extends GetxController {
       final User? user = credential.user;
       if (user == null) return;
       _userController.setUser = user;
-      _notificationService.setFcmToken();
+      _notificationService.requestPermission();
     } on FirebaseAuthException catch (e) {
       String error = e.code;
       if (error == "invalid-credential") {

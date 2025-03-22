@@ -14,7 +14,6 @@ class AllUserTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       curve: Curves.bounceIn,
@@ -31,14 +30,18 @@ class AllUserTile extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-             
-              borderRadius: BorderRadius.circular(100),
-              boxShadow: const [BoxShadow(blurRadius: 5,spreadRadius: 1, color:  Color.fromRGBO(0, 255, 255, 0.5))]
-            ),
+                borderRadius: BorderRadius.circular(100),
+                boxShadow: const [
+                  BoxShadow(
+                      blurRadius: 5,
+                      spreadRadius: 1,
+                      color: Color.fromRGBO(0, 255, 255, 0.5))
+                ]),
             child: (imgURL.isNotEmptyAndNotNull)
                 ? ClipRRect(
-                     borderRadius: BorderRadius.circular(100),
-                  child: CachedNetworkImage(
+                    borderRadius: BorderRadius.circular(100),
+                    child: CachedNetworkImage(
+                      cacheKey: name,
                       imageUrl: imgURL!,
                       filterQuality: FilterQuality.high,
                       height: 60,
@@ -46,8 +49,7 @@ class AllUserTile extends StatelessWidget {
                       fit: BoxFit.cover,
                       progressIndicatorBuilder:
                           (context, url, downloadProgress) => Align(
-                        alignment: Alignment
-                            .center,
+                        alignment: Alignment.center,
                         child: SizedBox(
                           height: 30, // Explicitly set smaller height
                           width: 30, // Explicitly set smaller width
@@ -62,7 +64,7 @@ class AllUserTile extends StatelessWidget {
                       errorWidget: (context, url, error) =>
                           const Icon(Icons.error),
                     ),
-                )
+                  )
                 : Image.asset(
                     AppImages.profile,
                     height: 60,
@@ -73,7 +75,10 @@ class AllUserTile extends StatelessWidget {
           ),
           Text(
             name ?? "No name",
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.kWhiteColor),
+            style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: AppColors.kWhiteColor),
           ),
           const Spacer(),
           if (isUserSelect)

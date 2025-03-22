@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
-import 'package:future_capsule/data/controllers/capsule.controller.dart';
 import 'package:future_capsule/data/controllers/user.controller.dart';
 import 'package:future_capsule/data/models/capsule_modal.dart';
 import 'package:future_capsule/data/models/shared_capsule_modal.dart';
@@ -9,6 +8,8 @@ import 'package:future_capsule/data/services/notification_service.dart';
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
 import 'package:velocity_x/velocity_x.dart';
+
+
 
 class RecipientController extends GetxController {
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
@@ -217,4 +218,5 @@ Stream<Map<String, List<Map<String, dynamic>>>> fetchSharedCapsulesWithUsersOPTS
       Vx.log("Error in updateCapsuleStatus : $e");
     }
   }
+
 }

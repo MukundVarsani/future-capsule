@@ -53,6 +53,7 @@ class _MyFutureUsersCapsulesCardState extends State<MyFutureUsersCapsulesCard> {
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: CachedNetworkImage(
+                      cacheKey: widget.capsule.capsuleId,
                       imageUrl: (widget.capsule.media.isNotEmpty &&
                               widget.capsule.media[0].thumbnail != null &&
                               widget.capsule.media[0].thumbnail!.isNotEmpty)

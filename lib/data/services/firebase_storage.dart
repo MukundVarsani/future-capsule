@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/config/firebase_auth_service.dart';
 import 'package:uuid/uuid.dart';
+import 'package:velocity_x/velocity_x.dart';
 
 class FirebaseStore {
   static final FirebaseStore _instance = FirebaseStore._internal();
@@ -14,8 +15,8 @@ class FirebaseStore {
   User? user = FirebaseAuthService.getCurrentUser();
 
   // Private constructor to prevent direct initialization
-  FirebaseStore._internal(){
-     FirebaseAuth.instance.authStateChanges().listen((User? currentUser) {
+  FirebaseStore._internal() {
+    FirebaseAuth.instance.authStateChanges().listen((User? currentUser) {
       user = currentUser;
     });
   }
@@ -43,7 +44,7 @@ class FirebaseStore {
           .ref("Future_capsule")
           .child(filePath)
           .child(user!.uid);
-    
+
       if (!isProfile) {
         ref = ref.child(mediaId).child(fileName);
       }
@@ -53,11 +54,37 @@ class FirebaseStore {
 
       // Get the download URL
       final String downloadUrl = await snapshot.ref.getDownloadURL();
-      
+
       return downloadUrl;
     } catch (e) {
-      debugPrint("Error: $e");
+      Vx.log("Error in uploadImageToCloud : $e");
       return null;
+    }
+  }
+
+  Future<void> deleteFileFromCloud({
+    required String filePath,
+    required String userId,
+    required bool isProfile,
+    required String mediaId,
+  }) async {
+    try {
+      Reference ref = FirebaseStorage.instance
+          .ref("Future_capsule")
+          .child(filePath)
+          .child(userId);
+
+      if (!isProfile) {
+        ref = ref.child(mediaId).child('$mediaId-data');
+      }
+
+      await ref.delete();
+    } on FirebaseException catch (e) {
+      if (e.code == 'object-not-found') {
+        Vx.log("File does not exist at the given path.");
+      } else {
+        Vx.log("Error deleting file: ${e.message}");
+      }
     }
   }
 }

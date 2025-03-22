@@ -140,51 +140,50 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
               color: AppColors.dNeonCyan, fontWeight: FontWeight.w600),
         ),
       ),
-      body: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: ListView(
-          shrinkWrap: true,
-          children: [
-            const SizedBox(height: 10),
-            _buildTextField(),
-            const SizedBox(height: 10),
-            GestureDetector(
-              onTap: _showSelectFileDialodBox,
-              child: Container(
-                constraints: const BoxConstraints(minHeight: 200),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
-                  color: AppColors.dUserTileBackground,
-                  boxShadow: const [
-                    BoxShadow(
-                        color: Color.fromRGBO(0, 255, 255, 0.5), // Glow effect
-                        blurRadius: 8,
-                        spreadRadius: 1,
-                        offset: Offset(1, 2)),
-                  ],
-                ),
-                child: Stack(alignment: AlignmentDirectional.center, children: [
-                  _buildMediaPreview(),
-                  if (isMediaLoading)
-                    const Center(
-                        child: CircularProgressIndicator.adaptive(
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                          AppColors.kWarmCoralColor),
-                    )),
-                ]),
+      body: ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+        shrinkWrap: true,
+        children: [
+          const SizedBox(height: 10),
+          _buildTextField(),
+          const SizedBox(height: 10),
+          GestureDetector(
+            onTap: _showSelectFileDialodBox,
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 200),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                color: AppColors.dUserTileBackground,
+                boxShadow: const [
+                  BoxShadow(
+                      color: Color.fromRGBO(0, 255, 255, 0.5), // Glow effect
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                      offset: Offset(1, 2)),
+                ],
               ),
+              child: Stack(alignment: AlignmentDirectional.center, children: [
+                _buildMediaPreview(),
+                if (isMediaLoading)
+                  const Center(
+                      child: CircularProgressIndicator.adaptive(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.kWarmCoralColor),
+                  )),
+              ]),
             ),
-            const SizedBox(height: 10),
-            _buildDescriptionField(),
-            const SizedBox(height: 20),
-            _dateAndTimeBuilder(),
-            const SizedBox(height: 20),
-            _privacyBuilder(),
-            const SizedBox(height: 20),
-            _previewButton(),
-            const SizedBox(height: 20),
-          ],
-        ),
+          ),
+          const SizedBox(height: 10),
+          _buildDescriptionField(),
+          const SizedBox(height: 20),
+          _dateAndTimeBuilder(),
+          const SizedBox(height: 20),
+          _privacyBuilder(),
+          const SizedBox(height: 20),
+          _previewButton(),
+          const SizedBox(height: 20),
+          SizedBox(height: MediaQuery.sizeOf(context).height * 0.08,)
+        ],
       ),
     );
   }
@@ -421,6 +420,8 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
                 style: const TextStyle(color: Colors.white), // Text color
                 cursorColor: Colors.blueAccent, // Cursor color
                 controller: descriptionController,
+                keyboardType: TextInputType.multiline,
+                maxLines: 2,
                 decoration: const InputDecoration(
                   hintText: "Decribe capsule",
                   hintStyle: TextStyle(color: Colors.grey),

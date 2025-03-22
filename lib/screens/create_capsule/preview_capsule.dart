@@ -165,24 +165,22 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
               color: AppColors.dNeonCyan, fontWeight: FontWeight.w600),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: ListView(
-          children: [
-            const SizedBox(height: 20),
-            _buildTitleField(widget.capsuleName),
-            const SizedBox(height: 10),
-            _buildFilePreview(widget.file, widget.isCapsulePrivate),
-            const SizedBox(height: 10),
-            _buildDescriptionField(widget.capsuleDescription),
-            const SizedBox(height: 30),
-            _buildDateTimePreview(),
-            const SizedBox(height: 24),
-            _privacyBuilder(),
-            const SizedBox(height: 24),
-            _buildActionButtons(context),
-          ],
-        ),
+      body: ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+        children: [
+          const SizedBox(height: 20),
+          _buildTitleField(widget.capsuleName),
+          const SizedBox(height: 10),
+          _buildFilePreview(widget.file, widget.isCapsulePrivate),
+          const SizedBox(height: 10),
+          _buildDescriptionField(widget.capsuleDescription),
+          const SizedBox(height: 30),
+          _buildDateTimePreview(),
+          const SizedBox(height: 24),
+          _privacyBuilder(),
+          const SizedBox(height: 24),
+          _buildActionButtons(context),
+        ],
       ),
     );
   }
@@ -321,6 +319,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
             maxLines: 4,
             minLines: 3,
             readOnly: true,
+            initialValue: description,
             decoration: const InputDecoration(
               hintText: "Decribe capsule",
               hintStyle: TextStyle(color: Colors.grey),

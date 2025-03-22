@@ -8,6 +8,8 @@ import 'package:future_capsule/screens/my_sent_capsules/my_sent_capsule_screen.d
 import 'package:future_capsule/screens/profile/profile_screen.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
+import 'my_sent_capsules/my_sent_capsule_details.dart';
+
 class BottomBar extends StatefulWidget {
   const BottomBar({super.key});
 
@@ -53,8 +55,9 @@ class _BottomBarState extends State<BottomBar> {
 
   List<Widget> _buildScreens() {
     return const [
+      // MySentCapsuleDetails(),
       MySentCapuslesScreen(),
-      // MyFutureCapsuleView(),
+
       MyFutureCapsules(),
       CreateCapsuleScreen(),
       MyCapuslesScreen(),
