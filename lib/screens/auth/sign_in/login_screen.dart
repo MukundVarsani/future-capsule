@@ -4,6 +4,8 @@ import 'package:future_capsule/core/images/images.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
 import 'package:future_capsule/data/controllers/auth.controller.dart';
+import 'package:future_capsule/screens/auth/sign_up/sign_up_page.dart';
+import 'package:future_capsule/screens/auth/sign_up/sign_up_screen.dart';
 import 'package:get/get.dart';
 import 'package:velocity_x/velocity_x.dart';
 
@@ -79,8 +81,10 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Email Field
                   TextFormField(
+                    style: const TextStyle(
+                      color: Color.fromRGBO(53, 153, 219, 1),
+                    ),
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
@@ -88,6 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       labelStyle: const TextStyle(
                         color: Color.fromRGBO(53, 153, 219, 1),
                       ),
+                      prefixIconColor: const Color.fromRGBO(53, 153, 219, 1),
                       prefixIcon: const Icon(Icons.email),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -124,12 +129,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextFormField(
                     controller: _passwordController,
                     obscureText: isVisible,
+                    style: const TextStyle(
+                      color: Color.fromRGBO(53, 153, 219, 1),
+                    ),
                     decoration: InputDecoration(
                       labelText: "Password",
                       labelStyle: const TextStyle(
                         color: Color.fromRGBO(53, 153, 219, 1),
                       ),
                       prefixIcon: const Icon(Icons.lock),
+                      prefixIconColor: const Color.fromRGBO(53, 153, 219, 1),
                       suffixIcon: IconButton(
                         onPressed: () {
                           setState(() {
@@ -190,7 +199,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Already have an account? Login
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -202,12 +210,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          // Navigator.pushReplacement(
-                          //   context,
-                          //   MaterialPageRoute(
-                          //     builder: (_) => const SignUpScreen(),
-                          //   ),
-                          // );
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const SignUpPage(),
+                            ),
+                          );
                         },
                         child: const Text(
                           "Sign up",
