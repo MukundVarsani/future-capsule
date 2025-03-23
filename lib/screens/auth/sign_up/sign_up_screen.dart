@@ -51,10 +51,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-  }
+
 
   @override
   Widget build(BuildContext context) {

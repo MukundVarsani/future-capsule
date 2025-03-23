@@ -33,9 +33,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'Flutter Demo',
-      // theme : kLightTheme,
-      // darkTheme: kDarkTheme,
-
       theme: ThemeData(
         useMaterial3: true,
       ),

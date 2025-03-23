@@ -13,4 +13,5 @@ class AppImages {
   static const darkCapsuleLock =  'assets/images/dark_capsule_lock.png';
   static const lightCapsuleUnLock =  'assets/images/light_capsule_un_lock.png';
   static const loginPageImage =  'assets/images/login_page.png';
+  static const signUpPageImage =  'assets/images/sign_up_image.png';
 }
