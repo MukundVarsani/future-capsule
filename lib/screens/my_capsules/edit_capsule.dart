@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
@@ -30,18 +31,20 @@ class EditCapsuleScreen extends StatefulWidget {
 
 class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
   final SelectFiles _files = SelectFiles();
+  final CapsuleController _capsuleController = Get.put(CapsuleController());
+  final FirebaseStore _firebaseStore = FirebaseStore();
+  VideoPlayerController? _controller;
 
   final TextEditingController titleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
-  final CapsuleController _capsuleController = Get.put(CapsuleController());
   late final CompressFile _compressFile;
-  VideoPlayerController? _controller;
 
   XFile? xFile;
   String? media;
-  final FirebaseStore _firebaseStore = FirebaseStore();
+  File? thumbnailFile;
   late Duration openDate;
   DateTime? _selectedDate;
+  bool isVideoCompressed = false;
 
   bool isCapsuleToggled = true;
   bool isTimeToggled = true;
@@ -53,40 +56,38 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
 
   bool isTitleFocused = false;
   bool isDesFocused = false;
+  bool isCapsuleUpdating = false;
 
   Future<void> _selectVideo(BuildContext context) async {
-    xFile = await _files.selectVideo();
-    if (xFile == null) return;
-    Navigator.of(context).pop();
+    try {
+      xFile = await _files.selectVideo();
 
-    File? thumbnailFile =
-        await CompressFile.getThumbnailfromVideo(filePath: xFile!.path);
-
-    // _file = thumbnailFile;
-    if (thumbnailFile == null) return;
-
-    xFile = XFile(thumbnailFile.path);
-    if (mounted) {
+      if (xFile == null) return;
+      Navigator.of(context).pop();
       setState(() {
         isMediaLoading = true;
       });
-    }
 
-    isImageFile = false;
-    isVideoFile = true;
-    isOtherFile = false;
-
-    _controller?.dispose();
-    _controller = VideoPlayerController.file(File(xFile!.path))
-      ..initialize().then((_) {});
-
-    await compressVideo(xFile!.path);
-    if (mounted) {
+      _controller?.dispose();
+      _controller = VideoPlayerController.file(File(xFile!.path));
+      await _controller?.initialize();
       setState(() {
+        isImageFile = false;
+        isVideoFile = true;
+        isOtherFile = false;
         isMediaLoading = false;
       });
+      isVideoCompressed = false;
+      await compressVideo(xFile!.path);
+      thumbnailFile =
+          await CompressFile.getThumbnailfromVideo(filePath: xFile!.path);
+
+      setState(() {
+        isVideoCompressed = true;
+      });
+    } catch (e) {
+      Vx.log("Error in _selectVideo in edit screen : $e");
     }
-    FocusManager.instance.primaryFocus?.unfocus();
   }
 
   Future<void> compressVideo(String path) async {
@@ -103,11 +104,9 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
 
     if (mounted) {
       setState(() {
-        isMediaLoading = true;
         isImageFile = true;
         isVideoFile = false;
         isOtherFile = false;
-        isMediaLoading = false;
       });
     }
 
@@ -117,9 +116,6 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
   void _resetData() {
     titleController.clear();
     descriptionController.clear();
-    // _file = null;
-    // _controller?.dispose();
-    // _controller = null;
     isCapsuleToggled = true;
     isTimeToggled = true;
     isMediaLoading = false;
@@ -127,17 +123,19 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
     isVideoFile = false;
     isOtherFile = false;
     openDate = const Duration(hours: 1);
+    _compressFile.dispose();
     _selectedDate = DateTime.now();
   }
 
   Future<String?> uploadThumbNailImage() async {
     if (xFile == null) return null;
-    return await _firebaseStore.uploadImageToCloud(
+    String? thumbnailUrl = await _firebaseStore.uploadImageToCloud(
         filePath: "capsule_media",
-        file: File(xFile!.path),
+        file: thumbnailFile!,
         isProfile: false,
-        mediaId: widget.capsuleModel.capsuleId,
+        mediaId: widget.capsuleModel.media[0].mediaId,
         fileName: "thumbnail");
+    return thumbnailUrl;
   }
 
   Future<String?> uploadCapsuleFile() async {
@@ -146,14 +144,14 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
     return await _firebaseStore.uploadImageToCloud(
       filePath: "capsule_media",
       file: mediaFile,
-      mediaId: widget.capsuleModel.capsuleId,
+      mediaId: widget.capsuleModel.media[0].mediaId,
       isProfile: false,
-      fileName: "${widget.capsuleModel.capsuleId}-data",
+      fileName: "${widget.capsuleModel.media[0].mediaId}-data",
     );
   }
 
-  String getExtensionType() {
-    if (xFile == null) return "null";
+  String? getExtensionType() {
+    if (xFile == null) return null;
     String extension = xFile!.path.split('.').last.toLowerCase();
 
     const Map<String, String> mimeTypes = {
@@ -180,10 +178,9 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
 
   void _updateCapsule() async {
     FocusManager.instance.primaryFocus?.unfocus();
-
     String? mediaURL;
     String? thumbnailUrl;
-    
+
     if (titleController.text.isEmpty) {
       appSnackBar(context: context, text: "Capsule title is required");
       return;
@@ -194,6 +191,12 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
       return;
     }
 
+    if (!isVideoCompressed) {
+      Vx.log("Video is not compressed");
+      return;
+    }
+
+    _capsuleController.isCapsuleLoading(true);
     if (isVideoFile) {
       List<String?> result = await Future.wait([
         uploadThumbNailImage(),
@@ -205,10 +208,10 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
       mediaURL = await uploadCapsuleFile();
     }
 
-    String type = getExtensionType();
+    String? type = getExtensionType();
 
     Map<String, dynamic> updatedData = {
-      "capsule_Id": widget.capsuleModel.capsuleId,
+      "capsuleId": widget.capsuleModel.capsuleId,
       "title": titleController.text,
       'description': descriptionController.text,
       'openingDate': _selectedDate?.toIso8601String() ??
@@ -217,25 +220,30 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
         "isCapsulePrivate": isCapsuleToggled,
         'isTimePrivate': isTimeToggled,
       },
-      "type": type,
-      'media': mediaURL,
-      'thumbnail': thumbnailUrl,
+      'media': [
+        {
+          'mediaId': widget.capsuleModel.media[0].mediaId,
+          'type': type ?? widget.capsuleModel.media[0].type,
+          'url': mediaURL ?? widget.capsuleModel.media[0].url,
+          'thumbnail': thumbnailUrl ?? widget.capsuleModel.media[0].thumbnail,
+        }
+      ]
     };
-    _capsuleController.editCapsule(updatedData);
+    await _capsuleController.editCapsule(updatedData);
+
+    _capsuleController.isCapsuleLoading(false);
   }
 
   @override
   void initState() {
     _compressFile = CompressFile();
     titleController.text = widget.capsuleModel.title;
-    media = widget.capsuleModel.media[0].url;
+    media = widget.capsuleModel.media[0].thumbnail ??
+        widget.capsuleModel.media[0].url;
     descriptionController.text = widget.capsuleModel.description ?? "";
     openDate = widget.capsuleModel.openingDate.difference(DateTime.now());
     isCapsuleToggled = widget.capsuleModel.privacy.isCapsulePrivate;
     isTimeToggled = widget.capsuleModel.privacy.isTimePrivate;
-
-    // Vx.log("Opendate : $openDate");
-    // Vx.log(widget.capsuleModel.openingDate);
 
     if (widget.capsuleModel.media[0].type.contains("video")) {
       isImageFile = false;
@@ -251,10 +259,8 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
 
   @override
   void dispose() {
-    // _resetData();
-    _compressFile.dispose();
-    descriptionController.dispose();
-    titleController.dispose();
+    _resetData();
+
     super.dispose();
   }
 
@@ -302,21 +308,6 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
               ),
               child: Stack(alignment: AlignmentDirectional.center, children: [
                 _buildMediaPreview(),
-                if (isMediaLoading)
-                  const Center(
-                      child: CircularProgressIndicator.adaptive(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                        AppColors.kWarmCoralColor),
-                  )),
-                if (!isImageFile && !isVideoFile && !isOtherFile)
-                  Positioned(
-                    bottom: 20,
-                    left: MediaQuery.sizeOf(context).width / 2 - 20,
-                    child: const Icon(
-                      Icons.upload_outlined,
-                      size: 40,
-                    ),
-                  ),
               ]),
             ),
           ),
@@ -586,8 +577,6 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
     //* If image_file and user select new image
     //*
     if (isImageFile && xFile != null) {
-      // else if (isImageFile && _file != null) {
-
       Vx.log("User select Image file");
       return Center(
         child: ClipRRect(
@@ -607,8 +596,9 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
       return Center(
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: Image.network(
-            media!,
+          child: CachedNetworkImage(
+            cacheKey: widget.capsuleModel.media[0].mediaId,
+            imageUrl: media!,
             height: 200,
             filterQuality: FilterQuality.high,
             fit: BoxFit.fill,
@@ -663,12 +653,10 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
       );
     }
 
-    return Center(
+    return const Center(
       child: SizedBox(
         height: 200,
-        child: Image.asset(
-          AppImages.openCapsule,
-        ),
+        child: Icon(Icons.error),
       ),
     );
   }

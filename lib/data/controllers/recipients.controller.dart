@@ -9,20 +9,16 @@ import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
 import 'package:velocity_x/velocity_x.dart';
 
-
-
 class RecipientController extends GetxController {
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
   final Uuid _uuid = const Uuid();
   final UserController _userController = Get.put(UserController());
-
 
   var availableRecipientIds = <int>[].obs;
   RxList<UserModel> availableRecipients = <UserModel>[].obs;
 
   var isRecipientLoading = false.obs;
   var isCapsuleSending = false.obs;
-
 
   //^ My Future Capsule Variable
   RxList<UserModel> myFutureUserList = <UserModel>[].obs;
@@ -116,7 +112,13 @@ class RecipientController extends GetxController {
             .doc(capsule.capsuleId);
 
         await capsuleRef.update({
-          "recipients": FieldValue.arrayUnion([recipientId])
+          "testRecipients": FieldValue.arrayUnion([
+            {
+              "recipientId": recipientId,
+              "status": capsule.status,
+              "createdAt": DateTime.now().toIso8601String(),
+            }
+          ])
         });
       }
 
@@ -124,8 +126,6 @@ class RecipientController extends GetxController {
 
       appBar(text: 'Capsule sent to ${availableRecipientIds.length} users.');
 
-      // await _capsuleController.getUserCapsule();
-     
       for (int recipientId in availableRecipientIds) {
         String userName = availableRecipients[recipientId].name;
 
@@ -146,65 +146,64 @@ class RecipientController extends GetxController {
   }
 
 //* my Future capsules stream
-Stream<Map<String, List<Map<String, dynamic>>>> fetchSharedCapsulesWithUsersOPTStream() async* {
-  String? currentUserId = _userController.getUser?.uid;
-  if (currentUserId == null) return;
+  Stream<Map<String, List<Map<String, dynamic>>>>
+      fetchSharedCapsulesWithUsersOPTStream() async* {
+    String? currentUserId = _userController.getUser?.uid;
+    if (currentUserId == null) return;
 
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  await for (QuerySnapshot sharedCapsulesSnapshot in firestore
-      .collection('SharedCapsules')
-      .where('recipientId', isEqualTo: currentUserId)
-      .orderBy('shareDate', descending: true)
-      .snapshots()) {
+    await for (QuerySnapshot sharedCapsulesSnapshot in firestore
+        .collection('SharedCapsules')
+        .where('recipientId', isEqualTo: currentUserId)
+        .orderBy('shareDate', descending: true)
+        .snapshots()) {
+      Set<String> senderIds = {};
+      List<String> capsuleIds = [];
 
-    Set<String> senderIds = {};
-    List<String> capsuleIds = [];
-
-    for (var doc in sharedCapsulesSnapshot.docs) {
-      senderIds.add(doc['senderId']);
-      capsuleIds.add(doc['capsuleId']);
-    }
-
-    List<DocumentSnapshot> capsuleSnapshots = await Future.wait(
-      capsuleIds.map((capsuleId) =>
-          firestore.collection('Users_Capsules').doc(capsuleId).get()),
-    );
-
-    Map<String, List<Map<String, dynamic>>> tempMyFuture = {};
-
-    for (int i = 0; i < sharedCapsulesSnapshot.docs.length; i++) {
-      var doc = sharedCapsulesSnapshot.docs[i];
-      String senderId = doc['senderId'];
-      String sharedDate = doc['shareDate'];
-
-      if (capsuleSnapshots[i].exists) {
-        Map<String, dynamic> capsuleData =
-            capsuleSnapshots[i].data() as Map<String, dynamic>;
-
-        Map<String, dynamic> mappedData = {
-          "data": capsuleData,
-          "sharedDate": sharedDate,
-        };
-
-        tempMyFuture.putIfAbsent(senderId, () => []).add(mappedData);
+      for (var doc in sharedCapsulesSnapshot.docs) {
+        senderIds.add(doc['senderId']);
+        capsuleIds.add(doc['capsuleId']);
       }
+
+      List<DocumentSnapshot> capsuleSnapshots = await Future.wait(
+        capsuleIds.map((capsuleId) =>
+            firestore.collection('Users_Capsules').doc(capsuleId).get()),
+      );
+
+      Map<String, List<Map<String, dynamic>>> tempMyFuture = {};
+
+      for (int i = 0; i < sharedCapsulesSnapshot.docs.length; i++) {
+        var doc = sharedCapsulesSnapshot.docs[i];
+        String senderId = doc['senderId'];
+        String sharedDate = doc['shareDate'];
+
+        if (capsuleSnapshots[i].exists) {
+          Map<String, dynamic> capsuleData =
+              capsuleSnapshots[i].data() as Map<String, dynamic>;
+
+          Map<String, dynamic> mappedData = {
+            "data": capsuleData,
+            "sharedDate": sharedDate,
+          };
+
+          tempMyFuture.putIfAbsent(senderId, () => []).add(mappedData);
+        }
+      }
+
+      // Emit real-time updates to myFuture
+      myFuture.value = tempMyFuture;
+
+      // Fetch users in real time
+      myFutureUserList.value = (await Future.wait(
+        senderIds.map((userId) => _userController.getUserById(userId: userId)),
+      ))
+          .whereType<UserModel>()
+          .toList();
+
+      yield tempMyFuture; // Emit the new data
     }
-
-    // Emit real-time updates to myFuture
-    myFuture.value = tempMyFuture;
-
-    // Fetch users in real time
-    myFutureUserList.value = (await Future.wait(
-      senderIds.map((userId) => _userController.getUserById(userId: userId)),
-    ))
-        .whereType<UserModel>()
-        .toList();
-
-    yield tempMyFuture; // Emit the new data
   }
-}
-
 
 //* Update Capsule Status
   void updateCapsuleStatus({required String capsuleId}) async {
@@ -218,5 +217,4 @@ Stream<Map<String, List<Map<String, dynamic>>>> fetchSharedCapsulesWithUsersOPTS
       Vx.log("Error in updateCapsuleStatus : $e");
     }
   }
-
 }

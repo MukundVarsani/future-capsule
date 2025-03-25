@@ -19,9 +19,8 @@ class MySentCapsuleShimmer extends StatelessWidget {
                     enlargeCenterPage: true,
                     height: 300,
                     autoPlay: true,
-                    reverse: true,
                     enableInfiniteScroll: false,
-                    autoPlayAnimationDuration: const Duration(seconds: 1)),
+                    autoPlayAnimationDuration: const Duration(milliseconds: 500)),
                 items: [
                   carasolItem(),
                   carasolItem(),

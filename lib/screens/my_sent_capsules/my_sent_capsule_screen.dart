@@ -28,22 +28,20 @@ class _MyCapuslesScreenState extends State<MySentCapuslesScreen> {
 
   @override
   Widget build(BuildContext context) {
+ 
     return Scaffold(
       backgroundColor: AppColors.dDeepBackground,
       appBar: AppBar(
         backgroundColor: AppColors.dDeepBackground,
         automaticallyImplyLeading: false,
-        title: Row(
+        title: const  Row(
           children: [
-            const Text(
+            Text(
               "Sent Capsule",
               style: TextStyle(
                   color: AppColors.kWhiteColor, fontWeight: FontWeight.w500),
             ),
-            Image.asset(
-              AppImages.capsules,
-              height: 40,
-            ),
+            
           ],
         ),
         actions: [
@@ -73,21 +71,16 @@ class _MyCapuslesScreenState extends State<MySentCapuslesScreen> {
                           .take(3)
                           .map((CapsuleModel capsule) {
                         return GestureDetector(
-                          onTap: () {
-                            Vx.log(capsule.title);
-                          },
-                          child: GestureDetector(
-                            onTap: () => _navigateToDetailScreen(capsule),
-                            child: carasolItem(
-                                image: (capsule.media[0].thumbnail != null &&
-                                        capsule.media[0].thumbnail!.isNotEmpty)
-                                    ? capsule.media[0].thumbnail!
-                                    : capsule.media[0].url,
-                                title: capsule.title,
-                                cId: capsule.capsuleId,
-                                status: capsule.status,
-                                date: capsule.openingDate),
-                          ),
+                          onTap: () => _navigateToDetailScreen(capsule),
+                          child: carasolItem(
+                              image: (capsule.media[0].thumbnail != null &&
+                                      capsule.media[0].thumbnail!.isNotEmpty)
+                                  ? capsule.media[0].thumbnail!
+                                  : capsule.media[0].url,
+                              title: capsule.title,
+                              cId: capsule.capsuleId,
+                              status: capsule.status,
+                              date: capsule.openingDate),
                         );
                       }).toList(),
                     ),
@@ -200,11 +193,13 @@ class _MyCapuslesScreenState extends State<MySentCapuslesScreen> {
           bottom: 20,
           left: MediaQuery.sizeOf(context).width / 2 - 76,
           child: Text(
-            status.toUpperCase(),
+            status,
             style: TextStyle(
                 color: (status.toUpperCase() == "LOCKED")
-                    ? const Color.fromRGBO(34, 197, 94, 1)
-                    : const Color.fromRGBO(153, 113, 238, 1),
+                    ? AppColors.kErrorSnackBarTextColor
+                    : (status.toUpperCase() == "PENDING")
+                        ? const Color.fromRGBO(153, 113, 238, 1)
+                        : const Color.fromRGBO(34, 197, 94, 1),
                 fontWeight: FontWeight.w800,
                 fontSize: 14),
           ),
@@ -321,8 +316,12 @@ class _MyCapuslesScreenState extends State<MySentCapuslesScreen> {
               const Spacer(),
               Text(
                 status,
-                style: const TextStyle(
-                    color: Color.fromRGBO(34, 197, 94, 1),
+                style: TextStyle(
+                    color: (status.toUpperCase() == "LOCKED")
+                        ? AppColors.kErrorSnackBarTextColor
+                        : (status.toUpperCase() == "PENDING")
+                            ? const Color.fromRGBO(153, 113, 238, 1)
+                            : const Color.fromRGBO(34, 197, 94, 1),
                     fontWeight: FontWeight.w800,
                     fontSize: 14),
               ),
@@ -348,12 +347,10 @@ class _MyCapuslesScreenState extends State<MySentCapuslesScreen> {
     }).toList();
   }
 
-  void _navigateToDetailScreen(CapsuleModel capsule) async{
-
-
-
-     DateTime? date = await _capsuleController.getSentDateByCapsuleId(capsuleId: capsule.capsuleId);
-     if(date == null) return;
+  void _navigateToDetailScreen(CapsuleModel capsule) async {
+    DateTime? date = await _capsuleController.getSentDateByCapsuleId(
+        capsuleId: capsule.capsuleId);
+    if (date == null) return;
 
     Get.to(MySentCapsuleDetails(
       capsule: capsule,

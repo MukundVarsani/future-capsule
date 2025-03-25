@@ -5,6 +5,7 @@ import 'package:future_capsule/core/widgets/app_button.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
 import 'package:future_capsule/data/controllers/auth.controller.dart';
 import 'package:future_capsule/screens/auth/sign_in/login_screen.dart';
+import 'package:future_capsule/screens/auth/widgets.dart';
 import 'package:get/get.dart';
 import 'package:velocity_x/velocity_x.dart';
 
@@ -73,38 +74,11 @@ class _SignUpPageState extends State<SignUpPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  TextFormField(
-                    style: const TextStyle(
-                      color: Color.fromRGBO(53, 153, 219, 1),
-                    ),
+                  AppTextField(
+                    labelText: "Name",
+                    prefixIcon: const Icon(Icons.person),
                     controller: _nameController,
                     keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      labelText: "Name",
-                      labelStyle: const TextStyle(
-                        color: Color.fromRGBO(53, 153, 219, 1),
-                      ),
-                      prefixIconColor: const Color.fromRGBO(53, 153, 219, 1),
-                      prefixIcon: const Icon(Icons.person),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color.fromRGBO(53, 153, 219, 1),
-                        ), // Default border
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color.fromRGBO(53, 153, 219, 1),
-                        ), // Border when not focused
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color.fromRGBO(53, 153, 219, 1),
-                        ), // Border when not focused
-                      ),
-                    ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return "Please enter your Name";
@@ -113,38 +87,11 @@ class _SignUpPageState extends State<SignUpPage> {
                     },
                   ),
                   const SizedBox(height: 20),
-                  TextFormField(
-                    style: const TextStyle(
-                      color: Color.fromRGBO(53, 153, 219, 1),
-                    ),
+                  AppTextField(
+                    prefixIcon: const Icon(Icons.email),
+                    labelText: "Email",
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      labelText: "Email",
-                      labelStyle: const TextStyle(
-                        color: Color.fromRGBO(53, 153, 219, 1),
-                      ),
-                      prefixIconColor: const Color.fromRGBO(53, 153, 219, 1),
-                      prefixIcon: const Icon(Icons.email),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color.fromRGBO(53, 153, 219, 1),
-                        ), // Default border
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color.fromRGBO(53, 153, 219, 1),
-                        ), // Border when not focused
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color.fromRGBO(53, 153, 219, 1),
-                        ), // Border when not focused
-                      ),
-                    ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return "Please enter your email";
@@ -156,47 +103,19 @@ class _SignUpPageState extends State<SignUpPage> {
                     },
                   ),
                   const SizedBox(height: 20),
-                  TextFormField(
+                  AppTextField(
+                    labelText: "Password",
                     controller: _passwordController,
                     obscureText: isVisible,
-                    style: const TextStyle(
-                      color: Color.fromRGBO(53, 153, 219, 1),
-                    ),
-                    decoration: InputDecoration(
-                      labelText: "Password",
-                      labelStyle: const TextStyle(
-                        color: Color.fromRGBO(53, 153, 219, 1),
-                      ),
-                      prefixIcon: const Icon(Icons.lock),
-                      prefixIconColor: const Color.fromRGBO(53, 153, 219, 1),
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            isVisible = !isVisible;
-                          });
-                        },
-                        icon: Icon(!isVisible
-                            ? Icons.visibility
-                            : Icons.visibility_off),
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color.fromRGBO(53, 153, 219, 1),
-                        ), // Default border
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color.fromRGBO(53, 153, 219, 1),
-                        ), // Border when not focused
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color.fromRGBO(53, 153, 219, 1),
-                        ), // Border when not focused
-                      ),
+                    prefixIcon: const Icon(Icons.lock),
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          isVisible = !isVisible;
+                        });
+                      },
+                      icon: Icon(
+                          !isVisible ? Icons.visibility : Icons.visibility_off),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -208,41 +127,15 @@ class _SignUpPageState extends State<SignUpPage> {
                     },
                   ),
                   const SizedBox(height: 20),
-                  TextFormField(
+                  AppTextField(
+                    labelText: "Confirm Password",
                     controller: _confirmPasswordController,
                     obscureText: isVisible,
-                    style: const TextStyle(
-                      color: Color.fromRGBO(53, 153, 219, 1),
-                    ),
-                    decoration: InputDecoration(
-                      labelText: "confirm password",
-                      labelStyle: const TextStyle(
-                        color: Color.fromRGBO(53, 153, 219, 1),
-                      ),
-                      prefixIcon: const Icon(Icons.lock),
-                      prefixIconColor: const Color.fromRGBO(53, 153, 219, 1),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color.fromRGBO(53, 153, 219, 1),
-                        ), // Default border
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color.fromRGBO(53, 153, 219, 1),
-                        ), // Border when not focused
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color.fromRGBO(53, 153, 219, 1),
-                        ), // Border when not focused
-                      ),
-                    ),
+                    prefixIcon: const Icon(Icons.lock),
                     validator: (value) {
-
-                      if (value == null || value != _passwordController.text || value.isEmpty) {
+                      if (value == null ||
+                          value != _passwordController.text ||
+                          value.isEmpty) {
                         return "Password do not match";
                       }
                       return null;

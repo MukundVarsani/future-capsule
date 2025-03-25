@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:future_capsule/screens/auth/sign_up/sign_up_screen.dart';
+import 'package:future_capsule/screens/auth/sign_up/sign_up_page.dart';
+
 import 'package:get/get.dart';
 import 'package:velocity_x/velocity_x.dart';
 
@@ -25,8 +26,9 @@ class FirebaseAuthService {
   Future<void> sendEmailVerification(User user) async {
     try {
       await user.sendEmailVerification();
+
     } catch (e) {
-      Get.to(const SignUpScreen());
+      Get.to(const SignUpPage());
       throw Exception('Unable to send verification email.');
     }
   }

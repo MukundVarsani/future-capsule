@@ -346,7 +346,7 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
                     child: IntrinsicWidth(
                       child: IntrinsicHeight(
                         child: CachedNetworkImage(
-                          cacheKey: widget.capsule.capsuleId,
+                          cacheKey: widget.capsule.media[0].mediaId,
                           fit: BoxFit.fill,
                           imageUrl: (widget.capsule.media[0].thumbnail !=
                                       null &&

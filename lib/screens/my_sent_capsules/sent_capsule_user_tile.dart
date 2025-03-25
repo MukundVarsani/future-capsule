@@ -1,12 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
-import 'package:future_capsule/core/images/images.dart';
 import 'package:future_capsule/data/models/user_modal.dart';
 
 class SentCapsuleUserTile extends StatelessWidget {
-  const SentCapsuleUserTile({super.key, required this.user});
+  const SentCapsuleUserTile(
+      {super.key, required this.user, required this.status});
   final UserModel user;
+  final String status;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -28,8 +29,8 @@ class SentCapsuleUserTile extends StatelessWidget {
             borderRadius: BorderRadius.circular(100),
             child: CachedNetworkImage(
               cacheKey: user.userId,
-              imageUrl:
-              (user.profilePicture != null && user.profilePicture!.isNotEmpty)
+              imageUrl: (user.profilePicture != null &&
+                      user.profilePicture!.isNotEmpty)
                   ? user.profilePicture!
                   : "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
               height: 60,
@@ -48,17 +49,29 @@ class SentCapsuleUserTile extends StatelessWidget {
                 fontWeight: FontWeight.w600),
           ),
           const Spacer(),
-          const Row(
+          Row(
             children: [
-              Icon(
-                Icons.lock,
+               Icon(
+               (status.toUpperCase() == "LOCKED")
+                        ? Icons.lock
+                        : (status.toUpperCase() == "PENDING")
+                            ? Icons.pending
+                            : Icons.lock_open_sharp, 
                 size: 20,
-                color: AppColors.kErrorSnackBarTextColor,
+                color: (status.toUpperCase() == "LOCKED")
+                        ? AppColors.kErrorSnackBarTextColor
+                        : (status.toUpperCase() == "PENDING")
+                            ? const Color.fromRGBO(153, 113, 238, 1)
+                            : const Color.fromRGBO(34, 197, 94, 1),
               ),
               Text(
-                "Locked",
+                status,
                 style: TextStyle(
-                    color: AppColors.kErrorSnackBarTextColor,
+                    color: (status.toUpperCase() == "LOCKED")
+                        ? AppColors.kErrorSnackBarTextColor
+                        : (status.toUpperCase() == "PENDING")
+                            ? const Color.fromRGBO(153, 113, 238, 1)
+                            : const Color.fromRGBO(34, 197, 94, 1),
                     fontSize: 16,
                     fontWeight: FontWeight.w800),
               ),

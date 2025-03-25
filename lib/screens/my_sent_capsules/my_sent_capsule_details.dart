@@ -32,9 +32,6 @@ class _MySentCapsuleDetailsState extends State<MySentCapsuleDetails> {
   static VideoPlayerController? _controller;
   late CapsuleModel userCapsule;
 
-  Timer? _bufferTimer;
-  double _bufferProgress = 0.0;
-
   @override
   void initState() {
     userCapsule = widget.capsule;
@@ -111,15 +108,27 @@ class _MySentCapsuleDetailsState extends State<MySentCapsuleDetails> {
               const SizedBox(height: 6),
               Row(
                 children: [
-                  const Icon(
-                    Icons.lock,
+                  Icon(
+                    (widget.capsule.status.toUpperCase() == "LOCKED")
+                        ? Icons.lock
+                        : (widget.capsule.status.toUpperCase() == "PENDING")
+                            ? Icons.pending
+                            : Icons.lock_open_sharp,
                     size: 24,
-                    color: AppColors.kErrorSnackBarTextColor,
+                    color: (widget.capsule.status.toUpperCase() == "LOCKED")
+                        ? AppColors.kErrorSnackBarTextColor
+                        : (widget.capsule.status.toUpperCase() == "PENDING")
+                            ? const Color.fromRGBO(153, 113, 238, 1)
+                            : const Color.fromRGBO(34, 197, 94, 1),
                   ),
                   Text(
                     widget.capsule.status,
-                    style: const TextStyle(
-                        color: AppColors.kErrorSnackBarTextColor,
+                    style: TextStyle(
+                        color: (widget.capsule.status.toUpperCase() == "LOCKED")
+                            ? AppColors.kErrorSnackBarTextColor
+                            : (widget.capsule.status.toUpperCase() == "PENDING")
+                                ? const Color.fromRGBO(153, 113, 238, 1)
+                                : const Color.fromRGBO(34, 197, 94, 1),
                         fontSize: 18,
                         fontWeight: FontWeight.w800),
                   ),
@@ -142,9 +151,18 @@ class _MySentCapsuleDetailsState extends State<MySentCapsuleDetails> {
                     fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 18),
-              ...widget.recipientsUsers.map((user) => SentCapsuleUserTile(
-                    user: user,
-                  )),
+              ...widget.recipientsUsers.map((user) {
+                String? status = widget.capsule.recipients
+                    .firstWhere(
+                      (element) => element.recipientId == user.userId,
+                    )
+                    .status;
+
+                return SentCapsuleUserTile(
+                  status: status,
+                  user: user,
+                );
+              }),
               const SizedBox(
                 height: 12,
               )
@@ -223,7 +241,7 @@ class _MySentCapsuleDetailsState extends State<MySentCapsuleDetails> {
                     child: IntrinsicWidth(
                       child: IntrinsicHeight(
                         child: CachedNetworkImage(
-                          cacheKey: widget.capsule.capsuleId,
+                          cacheKey: widget.capsule.media[0].mediaId,
                           fit: BoxFit.fill,
                           imageUrl: (widget.capsule.media[0].thumbnail !=
                                       null &&

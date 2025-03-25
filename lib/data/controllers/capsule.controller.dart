@@ -17,7 +17,8 @@ class CapsuleController extends GetxController {
 
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
   final Uuid _uuid = const Uuid();
-  final FirebaseStore cloud_firestore = FirebaseStore();
+
+  final FirebaseStore cloudFirestore = FirebaseStore();
   final UserController _userController = Get.put(UserController());
 
 //*  Capsule variable
@@ -29,6 +30,7 @@ class CapsuleController extends GetxController {
   var isCapsuleLoading = false.obs;
   var isCapsuleDeleting = false.obs;
   var isMyCapsuleSentLoading = false.obs;
+  var isCapsuleUpdating = false.obs;
 
 //^  Capsule Methods
 
@@ -69,6 +71,7 @@ class CapsuleController extends GetxController {
       ],
       openingDate: capsuleData['openingDate'],
       recipients: [],
+  
       privacy: Privacy(
         isTimePrivate: capsuleData['isTimePrivate'],
         isCapsulePrivate: capsuleData['isCapsulePrivate'],
@@ -114,7 +117,7 @@ class CapsuleController extends GetxController {
   }
 
 //* Update My capsule
-  void editCapsule(Map<String, dynamic> updateData) async {
+  Future<void> editCapsule(Map<String, dynamic> updateData) async {
     String? creatorId = _userController.getUser?.uid;
 
     if (creatorId == null) return;
@@ -125,7 +128,7 @@ class CapsuleController extends GetxController {
     try {
       DocumentSnapshot capsuleDoc = await _firebaseFirestore
           .collection("Users_Capsules")
-          .doc(updateData['capsule_Id'])
+          .doc(updateData['capsuleId'])
           .get();
 
       if (!capsuleDoc.exists) {
@@ -143,16 +146,11 @@ class CapsuleController extends GetxController {
             []
       };
 
-//       updateData['media'] = [{
-// "thumbnail" :
-//       }];
-
       await _firebaseFirestore
           .collection("Users_Capsules")
-          .doc(updateData['capsule_Id'])
+          .doc(updateData['capsuleId'])
           .update(updateData);
 
-      // await getUserCapsule();
       Get.back();
       Get.back();
       appBar(text: "Capsule Updated");
@@ -165,21 +163,24 @@ class CapsuleController extends GetxController {
   }
 
 //* Delete MY capsule
-  void deleteCapsule({required String capsuleId,required String mediaId}) async {
+  void deleteCapsule(
+      {required String capsuleId, required String mediaId}) async {
     String? creatorId = _userController.getUser?.uid;
     if (creatorId == null) return;
 
     try {
       isCapsuleDeleting(true);
-  
+
       await Future.wait([
         FirebaseFirestore.instance
             .collection("Users_Capsules")
             .doc(capsuleId)
             .delete(),
-
-        cloud_firestore.deleteFileFromCloud(
-            filePath: "capsule_media", userId: creatorId, isProfile: false,mediaId: mediaId)
+        cloudFirestore.deleteFileFromCloud(
+            filePath: "capsule_media",
+            userId: creatorId,
+            isProfile: false,
+            mediaId: mediaId)
       ]);
 
       Get.back();
@@ -193,6 +194,8 @@ class CapsuleController extends GetxController {
 
 //* Fetch list of Usermodal By IDs
   Future<List<UserModel>> _fetchUsersByIds(List<String?> userIds) async {
+    if (userIds.isEmpty) return [];
+
     try {
       QuerySnapshot userSnap = await _firebaseFirestore
           .collection('Future_Capsule_Users')
@@ -220,6 +223,7 @@ class CapsuleController extends GetxController {
           .snapshots() // Real-time updates
           .listen((capsuleSnap) async {
         isMyCapsuleSentLoading(true);
+
         if (capsuleSnap.docs.isEmpty) {
           mySentCapsules.clear();
           capsuleRecipientsMap.clear();
@@ -231,10 +235,12 @@ class CapsuleController extends GetxController {
 
         for (var doc in capsuleSnap.docs) {
           CapsuleModel capsule = CapsuleModel.fromJson(doc.data());
-
           if (capsule.recipients.isNotEmpty) {
-            List<UserModel> recipients =
-                await _fetchUsersByIds(capsule.recipients);
+            List<String> recipientIds = capsule.recipients
+                    .map((recipient) => recipient.recipientId)
+                    .toList();
+            List<UserModel> recipients = await _fetchUsersByIds(recipientIds);
+            // await _fetchUsersByIds(capsule.recipients);
 
             capsules.add(capsule);
             tempRecipientsMap[capsule.capsuleId] = recipients;
@@ -244,6 +250,7 @@ class CapsuleController extends GetxController {
         mySentCapsules.assignAll(capsules);
         capsuleRecipientsMap.assignAll(tempRecipientsMap);
         isMyCapsuleSentLoading(false);
+
       });
     } catch (e) {
       Vx.log("Error in listenToMySentCapsules: $e");

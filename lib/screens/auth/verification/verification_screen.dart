@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
 import 'package:future_capsule/data/controllers/auth.controller.dart';
-import 'package:future_capsule/screens/auth/sign_in/sign_in_screen.dart';
+import 'package:future_capsule/screens/auth/sign_in/login_screen.dart';
 import 'package:future_capsule/screens/bottom_navigation_bar.dart';
 import 'package:get/get.dart';
 
@@ -84,14 +84,14 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
   void _sendVerificationLink() async {
     try {
-     await _authController.sendEmailVerification();
+      await _authController.sendEmailVerification();
 
       appBar(
         text: "Verification email sent to the registerd email",
       );
     } catch (e) {
       appBar(text: e.toString());
-      Get.to(const SignInScreen());
+      Get.to(const LoginScreen());
     }
   }
 

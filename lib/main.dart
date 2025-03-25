@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:future_capsule/data/controllers/capsule.controller.dart';
 import 'package:future_capsule/data/services/notification_service.dart';
 import 'package:future_capsule/screens/auth/sign_in/login_screen.dart';
-import 'package:future_capsule/screens/auth/sign_in/sign_in_screen.dart';
+
 import 'package:future_capsule/screens/auth/verification/verification_screen.dart';
 import 'package:future_capsule/screens/bottom_navigation_bar.dart';
 import 'package:get/get.dart';

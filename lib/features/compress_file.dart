@@ -17,6 +17,7 @@ class CompressFile {
         quality: VideoQuality.DefaultQuality,
         deleteOrigin: false,
         includeAudio: true,
+
       );
 
       if (compressedVideo == null) throw ("File is empty ");

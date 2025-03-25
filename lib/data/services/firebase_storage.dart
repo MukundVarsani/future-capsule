@@ -2,16 +2,13 @@ import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart';
 import 'package:future_capsule/config/firebase_auth_service.dart';
-import 'package:uuid/uuid.dart';
 import 'package:velocity_x/velocity_x.dart';
 
 class FirebaseStore {
   static final FirebaseStore _instance = FirebaseStore._internal();
   final FirebaseStorage _firebaseStorage = FirebaseStorage.instance;
-  final Uuid uuid = const Uuid();
-
+  
   User? user = FirebaseAuthService.getCurrentUser();
 
   // Private constructor to prevent direct initialization
