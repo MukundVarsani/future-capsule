@@ -37,7 +37,7 @@ class _MyFutureCapsulesState extends State<MyFutureCapsules> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => searchKeyword,
+      onTap: () =>FocusScope.of(context).unfocus(),
       child: Scaffold(
           backgroundColor: AppColors.dDeepBackground,
           appBar: AppBar(
@@ -72,12 +72,12 @@ class _MyFutureCapsulesState extends State<MyFutureCapsules> {
                   cursorColor: AppColors.dActiveColorPrimary,
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.search),
-                    prefixIconColor: AppColors.kWhiteColor,
+                    prefixIconColor: AppColors.kLightGreyColor,
                     hintText: 'Search...',
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: const BorderSide(
-                            color: AppColors.dActiveColorPrimary)),
+                            color: AppColors.kLightGreyColor)),
                     focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: const BorderSide(
@@ -85,7 +85,7 @@ class _MyFutureCapsulesState extends State<MyFutureCapsules> {
                     enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: const BorderSide(
-                            color: AppColors.dActiveColorPrimary)),
+                            color:    AppColors.kLightGreyColor)),
                   ),
                   onChanged: (value) {
                     setState(() {

@@ -18,7 +18,6 @@ class MyCapuslesScreen extends StatefulWidget {
 class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
   final CapsuleController _capsuleController = Get.put(CapsuleController());
 
-  final TextEditingController _searchController = TextEditingController();
 
   final List<CapsuleModel> _userCapsules = [];
   List<CapsuleModel> _filterCapsules = [];

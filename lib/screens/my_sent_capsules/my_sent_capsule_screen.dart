@@ -2,14 +2,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
-import 'package:future_capsule/core/images/images.dart';
 import 'package:future_capsule/core/widgets/shimmer_effect/my_sent_capsule_shimmer.dart';
 import 'package:future_capsule/data/controllers/capsule.controller.dart';
 import 'package:future_capsule/data/models/capsule_modal.dart';
 import 'package:future_capsule/screens/my_sent_capsules/my_sent_capsule_details.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:velocity_x/velocity_x.dart';
 
 class MySentCapuslesScreen extends StatefulWidget {
   const MySentCapuslesScreen({super.key});

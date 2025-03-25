@@ -111,8 +111,6 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
           const SizedBox(height: 10),
           _buildTitleField(userCapsule.title),
           const SizedBox(height: 12),
-          // _buildFilePreview(
-          //     userCapsule.media[0].url, userCapsule.privacy.isCapsulePrivate),
           _buildMediaPreview(),
           const SizedBox(height: 12),
           _buildDescriptionField(userCapsule.description ?? ".."),
@@ -181,105 +179,6 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
           height: 12,
         ),
       ],
-    );
-  }
-
-  Widget _buildFilePreview(String capsuleURL, bool isCapsulePrivate) {
-    if (isVideoFile &&
-        _controller != null &&
-        _controller!.value.isInitialized) {
-      bool isPlaying = _controller!.value.isPlaying;
-      return Stack(
-        alignment: AlignmentDirectional.center,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: AspectRatio(
-              aspectRatio: _controller!.value.aspectRatio * 2,
-              child: VideoPlayer(_controller!),
-            ),
-          ),
-          Center(
-            child: IconButton(
-              onPressed: () {
-                if (_controller == null) return;
-                if (mounted) {
-                  setState(
-                    () {
-                      if (isPlaying) {
-                        _controller!.pause();
-                      } else {
-                        _controller!.play();
-                      }
-                    },
-                  );
-                }
-              },
-              icon: Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                    color: AppColors.kWarmCoralColor06,
-                    borderRadius: BorderRadius.circular(50)),
-                child: Icon(
-                  isPlaying ? Icons.pause : Icons.play_arrow,
-                  size: 40,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
-    if (!isVideoFile) {
-      return Container(
-        constraints: const BoxConstraints(minHeight: 200),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          color: AppColors.dUserTileBackground,
-          boxShadow: const [
-            BoxShadow(
-                color: Color.fromRGBO(0, 255, 255, 0.5), // Glow effect
-                blurRadius: 8,
-                spreadRadius: 1,
-                offset: Offset(1, 2)),
-          ],
-        ),
-        child: Stack(
-          alignment: AlignmentDirectional.center,
-          children: [
-            if (capsuleURL.isNotEmpty)
-              Image.network(
-                capsuleURL,
-                height: 200,
-                filterQuality: FilterQuality.high,
-                fit: BoxFit.fill,
-              ),
-            if (isCapsulePrivate)
-              Container(
-                constraints: const BoxConstraints(minHeight: 200),
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
-                  color: const Color.fromRGBO(26, 189, 156, 0.65),
-                ),
-                child: const Icon(
-                  Icons.lock,
-                  size: 50,
-                  color: Color.fromRGBO(142, 68, 173, 1),
-                ),
-              ),
-          ],
-        ),
-      );
-    }
-    return const Center(
-      child: CircularProgressIndicator.adaptive(
-        valueColor: AlwaysStoppedAnimation<Color>(
-            Colors.grey), // Buffered portion color
-        backgroundColor: AppColors.kWarmCoralColor, // Background color
-      ),
     );
   }
 
