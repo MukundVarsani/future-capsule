@@ -29,7 +29,6 @@ class _MyFutureCapsulesState extends State<MyFutureCapsules> {
   @override
   void initState() {
     super.initState();
-    // Start listening to the stream
     sharedCapsulesStream =
         _recipientController.fetchSharedCapsulesWithUsersOPTStream();
   }
@@ -37,7 +36,7 @@ class _MyFutureCapsulesState extends State<MyFutureCapsules> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () =>FocusScope.of(context).unfocus(),
+      onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
           backgroundColor: AppColors.dDeepBackground,
           appBar: AppBar(
@@ -76,16 +75,16 @@ class _MyFutureCapsulesState extends State<MyFutureCapsules> {
                     hintText: 'Search...',
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
-                        borderSide: const BorderSide(
-                            color: AppColors.kLightGreyColor)),
+                        borderSide:
+                            const BorderSide(color: AppColors.kLightGreyColor)),
                     focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: const BorderSide(
                             color: AppColors.dActiveColorPrimary)),
                     enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
-                        borderSide: const BorderSide(
-                            color:    AppColors.kLightGreyColor)),
+                        borderSide:
+                            const BorderSide(color: AppColors.kLightGreyColor)),
                   ),
                   onChanged: (value) {
                     setState(() {
@@ -152,16 +151,16 @@ class _MyFutureCapsulesState extends State<MyFutureCapsules> {
                           index: index,
                           child: GestureDetector(
                             onTap: () {
-
-                              Get.to(() => MyFutureCapsuleView(
-                                  capsules: capsules,
-                                  user: user,
-                                  date: dateList));
+                              Get.to(
+                                () => MyFutureCapsuleView(
+                                    capsules: capsules,
+                                    user: user,
+                                    date: dateList),
+                              );
                               searchKeyword = "";
                               _searchController.value =
                                   const TextEditingValue(text: "");
                               FocusScope.of(context).unfocus();
-                              setState(() {});
                             },
                             child: MyFutureTile(
                               user: user,

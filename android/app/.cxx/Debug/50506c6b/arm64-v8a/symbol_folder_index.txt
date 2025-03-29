@@ -1,0 +1,1 @@
+D:\Flutter project\future_capsule\build\app\intermediates\cxx\Debug\50506c6b\obj\arm64-v8a

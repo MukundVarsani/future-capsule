@@ -28,7 +28,7 @@ class MyFutureTile extends StatelessWidget {
           color: AppColors.dUserTileBackground,
           borderRadius: BorderRadius.circular(12)),
       child: Row(
-        children: [
+      children: [
           Container(
              margin: const EdgeInsets.only(right:  16),
              decoration: BoxDecoration(

@@ -8,6 +8,7 @@ import 'package:future_capsule/data/models/capsule_modal.dart';
 import 'package:future_capsule/screens/my_sent_capsules/my_sent_capsule_details.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:velocity_x/velocity_x.dart';
 
 class MySentCapuslesScreen extends StatefulWidget {
   const MySentCapuslesScreen({super.key});
@@ -20,13 +21,13 @@ class _MyCapuslesScreenState extends State<MySentCapuslesScreen> {
   final CapsuleController _capsuleController = Get.put(CapsuleController());
   @override
   void initState() {
-    _capsuleController.listenToMySentCapsules(); // Real-time Firestore stream
+    _capsuleController.listenToMySentCapsules();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
- 
+  
     return Scaffold(
       backgroundColor: AppColors.dDeepBackground,
       appBar: AppBar(

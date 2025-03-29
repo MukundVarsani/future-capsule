@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/data/controllers/capsule.controller.dart';
 import 'package:future_capsule/data/services/notification_service.dart';
 import 'package:future_capsule/screens/auth/sign_in/login_screen.dart';
@@ -36,7 +37,12 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
       ),
-
+      darkTheme: ThemeData(
+        scaffoldBackgroundColor: AppColors.dDeepBackground,
+        appBarTheme:
+            const AppBarTheme(backgroundColor: AppColors.dDeepBackground),
+      ),
+      // themeMode: ThemeMode.system,
       home: _getLandingPage(_auth),
     );
   }

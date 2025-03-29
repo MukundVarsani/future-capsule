@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/widgets/shimmer_effect/capsule_storage_shimmer.dart';
@@ -18,10 +19,9 @@ class MyCapuslesScreen extends StatefulWidget {
 class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
   final CapsuleController _capsuleController = Get.put(CapsuleController());
 
-
   final List<CapsuleModel> _userCapsules = [];
   List<CapsuleModel> _filterCapsules = [];
-
+  
   Stream<List<CapsuleModel>> capsuleStream() {
     return _capsuleController.getUserCapsuleStream();
   }
@@ -191,16 +191,17 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const CapsuleStorageShimmer(); // Loading state
             }
-        
+
             if (snapshot.hasError) {
               return Text(
                 "Error: ${snapshot.error}",
                 style: const TextStyle(color: AppColors.kWhiteColor),
               );
             }
-        
+
             var capsules = snapshot.data ?? [];
-        
+    
+
             if (capsules.isEmpty) {
               return const Center(
                   child: Text(
@@ -208,16 +209,15 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
                 style: TextStyle(color: AppColors.kWhiteColor),
               ));
             }
-        
+
             return ListView.builder(
               padding: const EdgeInsets.only(bottom: 80),
               itemCount: capsules.length,
               itemBuilder: (context, index) {
                 CapsuleModel capsule = capsules[index];
-        
+
                 return GestureDetector(
-                    onTap: () =>
-                        _navigateToCapsulePreview(context, capsule),
+                    onTap: () => _navigateToCapsulePreview(context, capsule),
                     child: CapsuleCard(
                       capsule: capsule,
                     ));

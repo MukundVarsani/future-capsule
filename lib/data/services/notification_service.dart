@@ -15,8 +15,8 @@ class NotificationService {
 
   void init() {
     initializeLocalNotifications();
-    setupForegroundNotificationHandler();
     requestPermission();
+    setupForegroundNotificationHandler();
   }
 
   void initializeLocalNotifications() {
@@ -107,10 +107,6 @@ class NotificationService {
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   }
 
-  Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-    Vx.log("Handling a background message");
-  }
-
   void showLocalNotification({
     String? title,
     String? body,
@@ -151,4 +147,8 @@ class NotificationService {
       Vx.log('Error in response $e');
     }
   }
+}
+
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  Vx.log("Handling a background message");
 }

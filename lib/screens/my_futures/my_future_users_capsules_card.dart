@@ -11,11 +11,14 @@ import 'package:velocity_x/velocity_x.dart';
 
 class MyFutureUsersCapsulesCard extends StatefulWidget {
   const MyFutureUsersCapsulesCard(
-      {super.key, required this.capsule, required this.date});
+      {super.key,
+      required this.capsule,
+      required this.date,
+      required this.userId});
 
   final CapsuleModel capsule;
   final String date;
-
+  final String userId;
   @override
   State<MyFutureUsersCapsulesCard> createState() =>
       _MyFutureUsersCapsulesCardState();
@@ -24,6 +27,14 @@ class MyFutureUsersCapsulesCard extends StatefulWidget {
 class _MyFutureUsersCapsulesCardState extends State<MyFutureUsersCapsulesCard> {
   final RecipientController _recipientController =
       Get.put(RecipientController());
+
+  late CapsuleModel capsule;
+
+  @override
+  void initState() {
+    super.initState();
+    capsule = widget.capsule;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +60,7 @@ class _MyFutureUsersCapsulesCardState extends State<MyFutureUsersCapsulesCard> {
             height: 10,
           ),
           Center(
-            child: widget.capsule.status == 'opened'
+            child: (capsule.status == 'opened')
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: CachedNetworkImage(
@@ -63,7 +74,7 @@ class _MyFutureUsersCapsulesCardState extends State<MyFutureUsersCapsulesCard> {
                       fit: BoxFit.contain,
                     ),
                   )
-                : widget.capsule.status == "pending"
+                : (capsule.status == 'pending')
                     ? Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -72,8 +83,7 @@ class _MyFutureUsersCapsulesCardState extends State<MyFutureUsersCapsulesCard> {
                           ),
                           GestureDetector(
                             onTap: () {
-                             
-                              _recipientController.updateCapsuleStatus(capsuleId: widget.capsule.capsuleId);
+                            
                             },
                             child: Container(
                               padding: const EdgeInsets.symmetric(
@@ -83,8 +93,7 @@ class _MyFutureUsersCapsulesCardState extends State<MyFutureUsersCapsulesCard> {
                                   borderRadius: BorderRadius.circular(32),
                                   boxShadow: const [
                                     BoxShadow(
-                                        color: Color.fromRGBO(
-                                            0, 255, 255, 0.5), // Glow effect
+                                        color: Color.fromRGBO(0, 255, 255, 0.5),
                                         blurRadius: 8,
                                         spreadRadius: 1,
                                         offset: Offset(1, 2)),
@@ -118,7 +127,7 @@ class _MyFutureUsersCapsulesCardState extends State<MyFutureUsersCapsulesCard> {
               fontWeight: FontWeight.w400,
               overflow: TextOverflow.ellipsis,
             ),
-            maxLines: 3,
+            maxLines: 1,
           ),
           const SizedBox(
             height: 14,
