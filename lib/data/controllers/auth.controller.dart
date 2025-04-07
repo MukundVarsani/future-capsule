@@ -39,8 +39,11 @@ class AuthController extends GetxController {
       _notificationService.requestPermission();
     } on FirebaseAuthException catch (e) {
       String error = e.code;
+      Vx.log(e);
       if (error == "invalid-credential") {
         throw "Invalid Credintials";
+      } else if (error == "network-request-failed") {
+        throw "Network error";
       } else {
         throw "Internal Server Error";
       }

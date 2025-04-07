@@ -341,15 +341,14 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
             data: ThemeData.light().copyWith(
               primaryColor: Colors.orange, // Change the header color
               buttonTheme:
-                  const ButtonThemeData(textTheme: ButtonTextTheme.primary),
-              dialogBackgroundColor: Colors
-                  .blueGrey[50], // Change the background color of the dialog
+                  const ButtonThemeData(textTheme: ButtonTextTheme.primary), // Change the background color of the dialog
               textTheme: const TextTheme(
                   bodyMedium: TextStyle(color: AppColors.kTealGreenColor)),
               primaryTextTheme: const TextTheme(
                   headlineLarge: TextStyle(color: AppColors.kTealGreenColor)),
               cardColor: AppColors.kTealGreenColor,
-              canvasColor: AppColors.kTealGreenColor,
+              canvasColor: AppColors.kTealGreenColor, dialogTheme: DialogThemeData(backgroundColor: Colors
+                  .blueGrey[50]),
             ),
             child: child!,
           );
@@ -574,7 +573,7 @@ class _CreateCapsuleScreenState extends State<EditCapsuleScreen> {
     }
 
     //* If image_file and user select new image
-    //*
+   
     if (isImageFile && xFile != null) {
       Vx.log("User select Image file");
       return Center(

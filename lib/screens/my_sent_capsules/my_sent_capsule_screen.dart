@@ -8,7 +8,6 @@ import 'package:future_capsule/data/models/capsule_modal.dart';
 import 'package:future_capsule/screens/my_sent_capsules/my_sent_capsule_details.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:velocity_x/velocity_x.dart';
 
 class MySentCapuslesScreen extends StatefulWidget {
   const MySentCapuslesScreen({super.key});
@@ -27,20 +26,18 @@ class _MyCapuslesScreenState extends State<MySentCapuslesScreen> {
 
   @override
   Widget build(BuildContext context) {
-  
     return Scaffold(
       backgroundColor: AppColors.dDeepBackground,
       appBar: AppBar(
         backgroundColor: AppColors.dDeepBackground,
         automaticallyImplyLeading: false,
-        title: const  Row(
+        title: const Row(
           children: [
             Text(
               "Sent Capsule",
               style: TextStyle(
                   color: AppColors.kWhiteColor, fontWeight: FontWeight.w500),
             ),
-            
           ],
         ),
         actions: [
@@ -351,11 +348,14 @@ class _MyCapuslesScreenState extends State<MySentCapuslesScreen> {
         capsuleId: capsule.capsuleId);
     if (date == null) return;
 
-    Get.to(MySentCapsuleDetails(
-      capsule: capsule,
-      shareDate: date,
-      recipientsUsers:
-          _capsuleController.capsuleRecipientsMap[capsule.capsuleId]!,
-    ));
+    Get.to(
+        MySentCapsuleDetails(
+          capsule: capsule,
+          shareDate: date,
+          recipientsUsers:
+              _capsuleController.capsuleRecipientsMap[capsule.capsuleId]!,
+        ), binding: BindingsBuilder(() {
+      Get.put(_capsuleController); // Ensure the same instance is used
+    }));
   }
 }

@@ -4,7 +4,6 @@ plugins {
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id "dev.flutter.flutter-gradle-plugin"
     id 'com.google.gms.google-services' version '4.4.2' apply false
-
 }
 
 android {
@@ -13,6 +12,8 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+
+        coreLibraryDesugaringEnabled true
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
@@ -30,6 +31,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -44,10 +46,12 @@ android {
 
 
 dependencies {
-    implementation platform('com.google.firebase:firebase-bom:33.7.0')
 
-    implementation("com.google.firebase:firebase-storage")
-    implementation("com.google.firebase:firebase-auth")
+        coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
+        implementation platform('com.google.firebase:firebase-bom:33.7.0')
+        implementation("com.google.firebase:firebase-storage")
+        implementation("com.google.firebase:firebase-auth")
+
 }
 
 flutter {

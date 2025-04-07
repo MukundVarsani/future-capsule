@@ -2,14 +2,15 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
+import 'package:future_capsule/data/controllers/user.controller.dart';
 import 'package:future_capsule/data/models/capsule_modal.dart';
 import 'package:future_capsule/data/models/user_modal.dart';
 import 'package:future_capsule/screens/my_futures/future_capsule_detail.dart';
 import 'package:future_capsule/screens/my_futures/my_future_users_capsules_card.dart';
 import 'package:get/get.dart';
+import 'package:velocity_x/velocity_x.dart';
 
-
-class MyFutureCapsuleView extends StatelessWidget {
+class MyFutureCapsuleView extends StatefulWidget {
   const MyFutureCapsuleView(
       {super.key,
       required this.user,
@@ -21,6 +22,30 @@ class MyFutureCapsuleView extends StatelessWidget {
   final List<CapsuleModel> capsules;
 
   final List<String> date;
+
+  @override
+  State<MyFutureCapsuleView> createState() => _MyFutureCapsuleViewState();
+}
+
+class _MyFutureCapsuleViewState extends State<MyFutureCapsuleView> {
+  List<CapsuleModel?> cap = [];
+  late List<String> currentUserStatus;
+  final UserController _userController = Get.put(UserController());
+
+  @override
+  void initState() {
+    cap = widget.capsules;
+
+    currentUserStatus = cap.map((capsule) {
+      final recp = capsule!.recipients.firstWhere(
+        (r) => r.recipientId == _userController.getUser!.uid,
+      );
+      Vx.log(capsule.title);
+      return recp.status;
+    }).toList();
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,13 +75,13 @@ class MyFutureCapsuleView extends StatelessWidget {
                     ),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(100),
-                      child: (user.profilePicture != null &&
-                              user.profilePicture!.isNotEmpty)
+                      child: (widget.user.profilePicture != null &&
+                              widget.user.profilePicture!.isNotEmpty)
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(100),
                               child: CachedNetworkImage(
-                                cacheKey: user.userId,
-                                imageUrl: user.profilePicture!,
+                                cacheKey: widget.user.userId,
+                                imageUrl: widget.user.profilePicture!,
                                 filterQuality: FilterQuality.high,
                                 height: 54,
                                 width: 54,
@@ -88,7 +113,7 @@ class MyFutureCapsuleView extends StatelessWidget {
                       width: 12,
                     ),
                     Text(
-                      user.name,
+                      widget.user.name,
                       style: const TextStyle(
                           fontSize: 20,
                           color: AppColors.kWhiteColor,
@@ -104,26 +129,35 @@ class MyFutureCapsuleView extends StatelessWidget {
               ),
               Expanded(
                 child: ListView.separated(
-                    itemCount: capsules.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 12),
-                    itemBuilder: (context, index) => Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: GestureDetector(
-                            onTap: () {
-                              Get.to(FutureCapsuleDetail(
-                                capsule: capsules[index],
-                                date: date[index],
-                                user: user,
-                              ));
-                            },
-                            child: MyFutureUsersCapsulesCard(
-                              capsule: capsules[index],
-                              date: date[index],
-                              userId: user.userId,
+                  itemCount: cap.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: GestureDetector(
+                        onTap: () async {
+                         await Get.to(
+                            () => FutureCapsuleDetail(
+                              capsule: cap[index]!,
+                              date: widget.date[index],
+                              user: widget.user,
                             ),
-                          ),
-                        )),
+                          );
+                          setState(() {
+                            currentUserStatus[index] = "opened";
+                          });
+                        },
+                        child: MyFutureUsersCapsulesCard(
+                          capsule: cap[index]!,
+                          date: widget.date[index],
+                          userId: widget.user.userId,
+                          userStatus: currentUserStatus[index],
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
               const SizedBox(
                 height: 12,

@@ -51,18 +51,21 @@ class SentCapsuleUserTile extends StatelessWidget {
           const Spacer(),
           Row(
             children: [
-               Icon(
-               (status.toUpperCase() == "LOCKED")
-                        ? Icons.lock
-                        : (status.toUpperCase() == "PENDING")
-                            ? Icons.pending
-                            : Icons.lock_open_sharp, 
+              Icon(
+                (status.toUpperCase() == "LOCKED")
+                    ? Icons.lock
+                    : (status.toUpperCase() == "PENDING")
+                        ? Icons.pending_outlined
+                        : Icons.lock_open_sharp,
                 size: 20,
                 color: (status.toUpperCase() == "LOCKED")
-                        ? AppColors.kErrorSnackBarTextColor
-                        : (status.toUpperCase() == "PENDING")
-                            ? const Color.fromRGBO(153, 113, 238, 1)
-                            : const Color.fromRGBO(34, 197, 94, 1),
+                    ? AppColors.kErrorSnackBarTextColor
+                    : (status.toUpperCase() == "PENDING")
+                        ? const Color.fromRGBO(153, 113, 238, 1)
+                        : const Color.fromRGBO(34, 197, 94, 1),
+              ),
+              const SizedBox(
+                width: 4,
               ),
               Text(
                 status,

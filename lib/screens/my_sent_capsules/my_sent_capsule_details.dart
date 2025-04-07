@@ -156,10 +156,10 @@ class _MySentCapsuleDetailsState extends State<MySentCapsuleDetails> {
                     )
                     .status;
 
-                return SentCapsuleUserTile(
-                  status: status,
-                  user: user,
-                );
+                return  SentCapsuleUserTile(
+                      status: status,
+                      user: user,
+                    );
               }),
               const SizedBox(
                 height: 12,

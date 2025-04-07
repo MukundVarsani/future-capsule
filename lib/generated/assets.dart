@@ -10,9 +10,11 @@ class Assets {
   static const String imagesLightCapsuleLock = 'assets/images/light_capsule_lock.png';
   static const String imagesLightCapsuleUnLock = 'assets/images/light_capsule_un_lock.png';
   static const String imagesLightLockedCapsule = 'assets/images/light_locked_capsule.png';
+  static const String imagesLoginPage = 'assets/images/login_page.png';
   static const String imagesOpenCapsule = 'assets/images/open_capsule.png';
   static const String imagesProfile = 'assets/images/profile.png';
   static const String imagesSandClock = 'assets/images/sand-clock.png';
+  static const String imagesSignUpImage = 'assets/images/sign_up_image.png';
   static const String imagesYas = 'assets/images/yas.jpeg';
   static const String logosCapsuleLogo = 'assets/logos/capsule_logo.png';
   static const String logosCapsuleLogoTransparent = 'assets/logos/capsule_logo_transparent.png';

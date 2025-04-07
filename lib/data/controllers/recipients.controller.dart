@@ -13,12 +13,18 @@ class RecipientController extends GetxController {
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
   final Uuid _uuid = const Uuid();
   final UserController _userController = Get.put(UserController());
-
+  String? currentUserId;
   var availableRecipientIds = <int>[].obs;
   RxList<UserModel> availableRecipients = <UserModel>[].obs;
 
   var isRecipientLoading = false.obs;
   var isCapsuleSending = false.obs;
+
+  @override
+  void onInit() {
+    currentUserId = _userController.getUser?.uid;
+    super.onInit();
+  }
 
   //^ My Future Capsule Variable
   RxList<UserModel> myFutureUserList = <UserModel>[].obs;
@@ -43,7 +49,6 @@ class RecipientController extends GetxController {
 
 //* get all the available recipient user
   void getAvailableRecipients() async {
-    String? currentUserId = _userController.getUser?.uid;
     if (currentUserId == null) return;
 
     isRecipientLoading(true);
@@ -67,8 +72,6 @@ class RecipientController extends GetxController {
 
 //* send capsule to other User
   void sendCapsule({required CapsuleModel capsule}) async {
-    String? currentUserId = _userController.getUser?.uid;
-
     if (currentUserId == null) return;
 
     try {
@@ -82,7 +85,7 @@ class RecipientController extends GetxController {
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
             .collection('SharedCapsules')
             .where('capsuleId', isEqualTo: capsule.capsuleId)
-            .where('senderId', isEqualTo: currentUserId)
+            .where('senderId', isEqualTo: currentUserId!)
             .where('recipientId', isEqualTo: recipientId)
             .get();
 
@@ -101,7 +104,7 @@ class RecipientController extends GetxController {
             SharedCapsule(
               sharedId: sharedId,
               capsuleId: capsule.capsuleId,
-              senderId: currentUserId,
+              senderId: currentUserId!,
               recipientId: recipientId,
               status: capsule.status,
               shareDate: DateTime.now(),
@@ -148,7 +151,6 @@ class RecipientController extends GetxController {
 //* my Future capsules stream
   Stream<Map<String, List<Map<String, dynamic>>>>
       fetchSharedCapsulesWithUsersOPTStream() async* {
-    String? currentUserId = _userController.getUser?.uid;
     if (currentUserId == null) return;
 
     FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -207,14 +209,110 @@ class RecipientController extends GetxController {
 
 //* Update Capsule Status
   void updateCapsuleStatus({required String capsuleId}) async {
+    if (currentUserId == null) return;
     try {
-      await _firebaseFirestore
-          .collection("Users_Capsules")
-          .doc(capsuleId)
-          .update({"status": "opened"});
+      final docRef =
+          _firebaseFirestore.collection("Users_Capsules").doc(capsuleId);
+      final snapshot = await docRef.get();
+
+      if (snapshot.exists) {
+        final data = snapshot.data() as Map<String, dynamic>;
+        final List<dynamic> recipients = data["testRecipients"];
+
+        // Modify status of the matched recipient
+        final updatedRecipients = recipients.map((recipient) {
+          if (recipient["recipientId"] == currentUserId) {
+            return {
+              ...recipient,
+              "status": "opened",
+            };
+          }
+          return recipient;
+        }).toList();
+
+        // Update the whole recipients array
+        await docRef.update({"testRecipients": updatedRecipients});
+      }
       Vx.log("Status updated");
     } catch (e) {
       Vx.log("Error in updateCapsuleStatus : $e");
     }
+  }
+
+  void updateLikes({required String capsuleId}) async {
+    if (currentUserId == null) return;
+    final docRef =
+        _firebaseFirestore.collection("Users_Capsules").doc(capsuleId);
+    try {
+      final snapshot = await docRef.get();
+      if (!snapshot.exists) return;
+
+      final data = snapshot.data();
+      List<Map<String, dynamic>> likes = [];
+
+      if (data?['likes'] != null) {
+        likes = List<Map<String, dynamic>>.from(data!['likes']);
+      }
+
+      final alreadyLiked =
+          likes.any((like) => like['recipientId'] == currentUserId);
+
+      if (alreadyLiked) {
+        likes.removeWhere((like) => like['recipientId'] == currentUserId);
+      } else {
+        likes.add({"recipientId": currentUserId});
+      }
+
+      await docRef.update({"likes": likes});
+    } catch (e) {
+      Vx.log("Error in updateLikes : $e");
+    }
+  }
+
+  Stream<List<UserModel>> getStreamLikes(String capsuleId) {
+    return _firebaseFirestore
+        .collection("Users_Capsules")
+        .doc(capsuleId)
+        .snapshots()
+        .asyncMap((snapshot) async {
+      if (!snapshot.exists) return [];
+
+      final data = snapshot.data();
+      if (data == null || data['likes'] == null) return [];
+
+      final likesList = List<Map<String, dynamic>>.from(data['likes']);
+      final userIds =
+          likesList.map((like) => like['recipientId'] as String).toList();
+
+      // Fetch actual user data
+      return await _fetchUsersByIds(userIds);
+    });
+  }
+
+  //* Fetch list of Usermodal By IDs
+  Future<List<UserModel>> _fetchUsersByIds(List<String?> userIds) async {
+    if (userIds.isEmpty) return [];
+
+    try {
+      QuerySnapshot userSnap = await _firebaseFirestore
+          .collection('Future_Capsule_Users')
+          .where(FieldPath.documentId, whereIn: userIds)
+          .get();
+
+      return userSnap.docs
+          .map((doc) => UserModel.fromJson(doc.data() as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      Vx.log("Error fetching user details: $e");
+      return [];
+    }
+  }
+
+  Stream<CapsuleModel> capsuleStream(String capsuleId) {
+    return FirebaseFirestore.instance
+        .collection('Users_Capsules')
+        .doc(capsuleId)
+        .snapshots()
+        .map((doc) => CapsuleModel.fromJson(doc.data()!));
   }
 }

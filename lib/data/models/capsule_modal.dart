@@ -7,26 +7,27 @@ class CapsuleModel {
   final String? description;
   final List<Media> media;
   final DateTime openingDate;
-   final List<Recipient> recipients; 
+  final List<Recipient> recipients;
   final Privacy privacy;
   final DateTime createdAt;
   final DateTime updatedAt;
   final String status;
-  final int likes;
+  final List<Map<String, dynamic>>? likes;
 
-  CapsuleModel(
-      {required this.capsuleId,
-      required this.creatorId,
-      required this.title,
-      required this.description,
-      required this.media,
-      required this.openingDate,
-       required this.recipients,
-      required this.privacy,
-      required this.createdAt,
-      required this.updatedAt,
-      required this.status,
-      this.likes = 0});
+  CapsuleModel({
+    required this.capsuleId,
+    required this.creatorId,
+    required this.title,
+    required this.description,
+    required this.media,
+    required this.openingDate,
+    required this.recipients,
+    required this.privacy,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.status,
+    this.likes = const [],
+  });
 
   factory CapsuleModel.fromJson(Map<String, dynamic> json) {
     return CapsuleModel(
@@ -37,14 +38,16 @@ class CapsuleModel {
       media:
           (json['media'] as List).map((item) => Media.fromJson(item)).toList(),
       openingDate: DateTime.parse(json['openingDate']),
-      recipients: (json['testRecipients'] as List<dynamic>?) // Nullable conversion
-          ?.map((item) => Recipient.fromJson(item))
-          .toList() ?? [],
+      recipients:
+          (json['testRecipients'] as List<dynamic>?) // Nullable conversion
+                  ?.map((item) => Recipient.fromJson(item))
+                  .toList() ??
+              [],
       privacy: Privacy.fromJson(json['privacy']),
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
       status: json['status'],
-      likes: json['likes'],
+      likes: List<Map<String, dynamic>>.from(json['likes'] ?? []),
     );
   }
 

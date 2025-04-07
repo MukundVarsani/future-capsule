@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/screens/create_capsule/create_capsule_screen.dart';
 import 'package:future_capsule/screens/my_capsules/my_capusles_screen.dart';
-import 'package:future_capsule/screens/my_futures/future_capsule_detail.dart';
 import 'package:future_capsule/screens/my_futures/my_future_capusles.dart';
 import 'package:future_capsule/screens/my_sent_capsules/my_sent_capsule_screen.dart';
 import 'package:future_capsule/screens/profile/profile_screen.dart';

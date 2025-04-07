@@ -205,9 +205,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
             data: ThemeData.light().copyWith(
               primaryColor: Colors.orange, // Change the header color
               buttonTheme:
-                  const ButtonThemeData(textTheme: ButtonTextTheme.primary),
-              dialogBackgroundColor: Colors
-                  .blueGrey[50], // Change the background color of the dialog
+                  const ButtonThemeData(textTheme: ButtonTextTheme.primary), // Change the background color of the dialog
               textTheme: const TextTheme(
                   bodyMedium: TextStyle(color: AppColors.kTealGreenColor)
                   // bodyText2: TextStyle(color: Colors.black), // Change the text color
@@ -217,7 +215,8 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
                   // headline6: TextStyle(color: Colors.black), // Change the header text color
                   ),
               cardColor: AppColors.kTealGreenColor,
-              canvasColor: AppColors.kTealGreenColor,
+              canvasColor: AppColors.kTealGreenColor, dialogTheme: DialogThemeData(backgroundColor: Colors
+                  .blueGrey[50]),
             ),
             child: child!,
           );
