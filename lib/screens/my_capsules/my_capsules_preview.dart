@@ -315,8 +315,7 @@ class _MyCapsulesPreviewState extends State<MyCapsulesPreview> {
           child: TextFormField(
             style: const TextStyle(color: Colors.white), // Text color
             cursorColor: Colors.blueAccent, // Cursor color
-            maxLines: 4,
-            minLines: 3,
+            maxLines: null,
             readOnly: true,
             initialValue: description,
             decoration: const InputDecoration(

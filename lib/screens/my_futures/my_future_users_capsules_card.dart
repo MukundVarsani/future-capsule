@@ -25,7 +25,7 @@ class MyFutureUsersCapsulesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final RecipientController _recipientController =
+    final RecipientController recipientController =
         Get.put(RecipientController());
 
     return Container(
@@ -63,7 +63,7 @@ class MyFutureUsersCapsulesCard extends StatelessWidget {
                           const SizedBox(height: 180),
                           GestureDetector(
                             onTap: () =>
-                                _recipientController.updateCapsuleStatus(
+                                recipientController.updateCapsuleStatus(
                                     capsuleId: capsule.capsuleId),
                             child: Container(
                               padding: const EdgeInsets.symmetric(

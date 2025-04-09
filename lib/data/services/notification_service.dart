@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:future_capsule/data/controllers/user.controller.dart';
+import 'package:future_capsule/data/services/openai.dart';
 import 'package:get/get.dart';
 import 'package:velocity_x/velocity_x.dart';
 import 'package:http/http.dart' as http;
@@ -134,7 +135,7 @@ class NotificationService {
       {required String userId,
       required String userName,
       required String capsuleTitle}) async {
-    var url = Uri.http('192.168.0.128:3001', '/notify-recipients');
+    var url = Uri.http('${Openai.ipAddress}:3001', '/notify-recipients');
 
     try {
       var response = await http.post(url, body: {

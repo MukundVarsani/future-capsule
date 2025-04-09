@@ -14,95 +14,18 @@ class MySentCapsuleShimmer extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CarouselSlider(
-                options: CarouselOptions(
-                    enlargeCenterPage: true,
-                    height: 300,
-                    autoPlay: true,
-                    enableInfiniteScroll: false,
-                    autoPlayAnimationDuration: const Duration(milliseconds: 500)),
-                items: [
-                  carasolItem(),
-                  carasolItem(),
-                  carasolItem(),
-                ]),
             const SizedBox(
-              height: 24,
+              height: 0,
             ),
             capsuleCard(),
             capsuleCard(),
-   
-            SizedBox(
-              height: MediaQuery.sizeOf(context).height * 0.083,
-            )
           ],
         ),
       ),
     );
   }
 
-  Widget carasolItem() {
-    return Stack(
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            color: const Color.fromRGBO(32, 32, 32, 0.6),
-            borderRadius: BorderRadius.circular(18),
-          ),
-        ),
-        Positioned(
-          bottom: 20,
-          right: 12,
-          child: Container(
-            height: 15,
-            width: 50,
-            decoration: BoxDecoration(
-              color: const Color.fromRGBO(32, 32, 32, 0.6),
-              borderRadius: BorderRadius.circular(18),
-            ),
-          ),
-        ),
-        Positioned(
-          left: 12,
-          bottom: 12,
-          child: Container(
-            height: 40,
-            width: 40,
-            decoration: BoxDecoration(
-              color: const Color.fromRGBO(32, 32, 32, 0.6),
-              borderRadius: BorderRadius.circular(180),
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: 60,
-          left: 12,
-          child: Container(
-            height: 18,
-            width: 150,
-            decoration: BoxDecoration(
-              color: const Color.fromRGBO(32, 32, 32, 0.6),
-              borderRadius: BorderRadius.circular(18),
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: 20,
-          right: 100,
-          child: Container(
-            height: 18,
-            width: 90,
-            decoration: BoxDecoration(
-              color: const Color.fromRGBO(32, 32, 32, 0.6),
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-   Widget capsuleCard() {
+  Widget capsuleCard() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       height: 260,
@@ -130,7 +53,6 @@ class MySentCapsuleShimmer extends StatelessWidget {
                   color: const Color.fromRGBO(32, 32, 32, 0.6),
                 ),
               ),
-           
               Positioned(
                 bottom: 12,
                 left: 12,
@@ -145,7 +67,6 @@ class MySentCapsuleShimmer extends StatelessWidget {
               ),
             ],
           ),
-         
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -183,5 +104,4 @@ class MySentCapsuleShimmer extends StatelessWidget {
       ),
     );
   }
-
 }

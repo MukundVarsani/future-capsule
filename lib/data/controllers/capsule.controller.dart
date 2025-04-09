@@ -71,7 +71,6 @@ class CapsuleController extends GetxController {
       ],
       openingDate: capsuleData['openingDate'],
       recipients: [],
-  
       privacy: Privacy(
         isTimePrivate: capsuleData['isTimePrivate'],
         isCapsulePrivate: capsuleData['isCapsulePrivate'],
@@ -237,10 +236,9 @@ class CapsuleController extends GetxController {
           CapsuleModel capsule = CapsuleModel.fromJson(doc.data());
           if (capsule.recipients.isNotEmpty) {
             List<String> recipientIds = capsule.recipients
-                    .map((recipient) => recipient.recipientId)
-                    .toList();
+                .map((recipient) => recipient.recipientId)
+                .toList();
             List<UserModel> recipients = await _fetchUsersByIds(recipientIds);
-            // await _fetchUsersByIds(capsule.recipients);
 
             capsules.add(capsule);
             tempRecipientsMap[capsule.capsuleId] = recipients;
@@ -250,7 +248,6 @@ class CapsuleController extends GetxController {
         mySentCapsules.assignAll(capsules);
         capsuleRecipientsMap.assignAll(tempRecipientsMap);
         isMyCapsuleSentLoading(false);
-
       });
     } catch (e) {
       Vx.log("Error in listenToMySentCapsules: $e");

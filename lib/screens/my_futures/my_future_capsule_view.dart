@@ -40,7 +40,6 @@ class _MyFutureCapsuleViewState extends State<MyFutureCapsuleView> {
       final recp = capsule!.recipients.firstWhere(
         (r) => r.recipientId == _userController.getUser!.uid,
       );
-      Vx.log(capsule.title);
       return recp.status;
     }).toList();
 

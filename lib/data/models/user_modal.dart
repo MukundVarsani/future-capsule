@@ -10,6 +10,7 @@ class UserModel {
   final DateTime createdAt;
   final DateTime updatedAt;
   final SettingsModel settings;
+  final int? hintCount;
 
   UserModel({
     required this.fcmToken,
@@ -21,6 +22,7 @@ class UserModel {
     required this.createdAt,
     required this.updatedAt,
     required this.settings,
+    this.hintCount = 0,
   });
 
   // Factory method to create a UserModel object from JSON
@@ -32,6 +34,7 @@ class UserModel {
       profilePicture: json['profilePicture'] as String?,
       bio: json['bio'] as String?,
       fcmToken: json['fcmToken'] as String?,
+      hintCount: json['hintCount'] as int?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       settings:
@@ -48,6 +51,7 @@ class UserModel {
       'profilePicture': profilePicture,
       'bio': bio,
       'fcmToken': fcmToken,
+      'hintCount': hintCount,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'settings': settings.toJson(),

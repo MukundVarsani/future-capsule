@@ -1,8 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
+import 'package:future_capsule/data/services/openai.dart';
 import 'package:future_capsule/features/compress_file.dart';
 import 'package:future_capsule/features/select_files.dart';
 import 'package:future_capsule/screens/create_capsule/custom_picker.dart';
@@ -45,6 +47,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
 
   bool isTitleFocused = false;
   bool isDesFocused = false;
+  bool isContentGenerating = false;
 
   Future<void> _selectVideo(BuildContext context) async {
     xFile = await _files.selectVideo();
@@ -128,6 +131,21 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
     super.dispose();
   }
 
+  void generateAIContent() async {
+    if (_file == null) return;
+    setState(() {
+      isContentGenerating = true;
+    });
+    Map<String, dynamic>? res =
+        await Openai().generateCapsuleContent(image: _file!);
+    if (res == null) return;
+
+    titleController.value = TextEditingValue(text: res['title']);
+    descriptionController.value = TextEditingValue(text: res['description']);
+    isContentGenerating = false;
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,56 +153,75 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.dDeepBackground,
         title: const Text(
-          "Craft a Future Capsule",
+          "Craft a Future",
           style: TextStyle(
               color: AppColors.dNeonCyan, fontWeight: FontWeight.w600),
         ),
-      ),
-      body: ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-        shrinkWrap: true,
-        children: [
-          const SizedBox(height: 10),
-          _buildTextField(),
-          const SizedBox(height: 10),
-          GestureDetector(
-            onTap: _showSelectFileDialodBox,
-            child: Container(
-              constraints: const BoxConstraints(minHeight: 200),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-                color: AppColors.dUserTileBackground,
-                boxShadow: const [
-                  BoxShadow(
-                      color: Color.fromRGBO(0, 255, 255, 0.5), // Glow effect
-                      blurRadius: 8,
-                      spreadRadius: 1,
-                      offset: Offset(1, 2)),
-                ],
-              ),
-              child: Stack(alignment: AlignmentDirectional.center, children: [
-                _buildMediaPreview(),
-                if (isMediaLoading)
-                  const Center(
-                      child: CircularProgressIndicator.adaptive(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                        AppColors.kWarmCoralColor),
-                  )),
-              ]),
-            ),
-          ),
-          const SizedBox(height: 10),
-          _buildDescriptionField(),
-          const SizedBox(height: 20),
-          _dateAndTimeBuilder(),
-          const SizedBox(height: 20),
-          _privacyBuilder(),
-          const SizedBox(height: 20),
-          _previewButton(),
-          const SizedBox(height: 20),
-          SizedBox(height: MediaQuery.sizeOf(context).height * 0.08,)
+        actions: [
+          Tooltip(
+            message: "Generate with Capsule Intellegence",
+            child: IconButton(
+                onPressed: generateAIContent,
+                icon: Icon(
+                  Icons.search,
+                  color: AppColors.kWhiteColor,
+                )),
+          )
         ],
       ),
+      body: Stack(children: [
+        ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          shrinkWrap: true,
+          children: [
+            const SizedBox(height: 10),
+            _buildTextField(),
+            const SizedBox(height: 10),
+            GestureDetector(
+              onTap: _showSelectFileDialodBox,
+              child: Container(
+                constraints: const BoxConstraints(minHeight: 200),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  color: AppColors.dUserTileBackground,
+                  boxShadow: const [
+                    BoxShadow(
+                        color: Color.fromRGBO(0, 255, 255, 0.5), // Glow effect
+                        blurRadius: 8,
+                        spreadRadius: 1,
+                        offset: Offset(1, 2)),
+                  ],
+                ),
+                child: Stack(alignment: AlignmentDirectional.center, children: [
+                  _buildMediaPreview(),
+                  if (isMediaLoading)
+                    const Center(
+                        child: CircularProgressIndicator.adaptive(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.kWarmCoralColor),
+                    )),
+                ]),
+              ),
+            ),
+            const SizedBox(height: 10),
+            _buildDescriptionField(),
+            const SizedBox(height: 20),
+            _dateAndTimeBuilder(),
+            const SizedBox(height: 20),
+            _privacyBuilder(),
+            const SizedBox(height: 20),
+            _previewButton(),
+            const SizedBox(height: 20),
+            SizedBox(
+              height: MediaQuery.sizeOf(context).height * 0.08,
+            )
+          ],
+        ),
+          if(isContentGenerating)
+           Container(
+            decoration: BoxDecoration(color: const Color.fromRGBO(18, 18, 18, 0.8)),
+            child: SpinKitSpinningLines(color: AppColors.dNeonCyan))
+      ]),
     );
   }
 
@@ -204,8 +241,9 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
             // Apply custom theme to the date picker
             data: ThemeData.light().copyWith(
               primaryColor: Colors.orange, // Change the header color
-              buttonTheme:
-                  const ButtonThemeData(textTheme: ButtonTextTheme.primary), // Change the background color of the dialog
+              buttonTheme: const ButtonThemeData(
+                  textTheme: ButtonTextTheme
+                      .primary), // Change the background color of the dialog
               textTheme: const TextTheme(
                   bodyMedium: TextStyle(color: AppColors.kTealGreenColor)
                   // bodyText2: TextStyle(color: Colors.black), // Change the text color
@@ -215,8 +253,9 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
                   // headline6: TextStyle(color: Colors.black), // Change the header text color
                   ),
               cardColor: AppColors.kTealGreenColor,
-              canvasColor: AppColors.kTealGreenColor, dialogTheme: DialogThemeData(backgroundColor: Colors
-                  .blueGrey[50]),
+              canvasColor: AppColors.kTealGreenColor,
+              dialogTheme:
+                  DialogThemeData(backgroundColor: Colors.blueGrey[50]),
             ),
             child: child!,
           );
@@ -262,15 +301,13 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
-          
           child: Container(
             height: 180,
             padding:
                 const EdgeInsets.symmetric(horizontal: 20).copyWith(top: 20),
-                decoration: BoxDecoration(
-                  color: AppColors.dUserTileBackground,
-                  borderRadius: BorderRadius.circular(12)
-                ),
+            decoration: BoxDecoration(
+                color: AppColors.dUserTileBackground,
+                borderRadius: BorderRadius.circular(12)),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -282,7 +319,6 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-   
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -301,7 +337,6 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
                     CustomPicker(
                       icon: Icons.file_present,
                       label: "File",
-
                       onTap: () {},
                     ),
                   ],
@@ -420,7 +455,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
                 cursorColor: Colors.blueAccent, // Cursor color
                 controller: descriptionController,
                 keyboardType: TextInputType.multiline,
-                maxLines: 2,
+                maxLines: null,
                 decoration: const InputDecoration(
                   hintText: "Decribe capsule",
                   hintStyle: TextStyle(color: Colors.grey),
@@ -668,7 +703,8 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
             DateTime oneHourLater = now.add(const Duration(hours: 1));
 
             if (_selectedDate.isBefore(oneHourLater)) {
-              appSnackBar(context: context, text: "Time must be greater than 1 Hour");
+              appSnackBar(
+                  context: context, text: "Time must be greater than 1 Hour");
               return;
             }
 

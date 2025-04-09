@@ -8,6 +8,7 @@ import 'package:future_capsule/data/models/capsule_modal.dart';
 import 'package:future_capsule/screens/my_sent_capsules/my_sent_capsule_details.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:velocity_x/velocity_x.dart';
 
 class MySentCapuslesScreen extends StatefulWidget {
   const MySentCapuslesScreen({super.key});
@@ -18,10 +19,56 @@ class MySentCapuslesScreen extends StatefulWidget {
 
 class _MyCapuslesScreenState extends State<MySentCapuslesScreen> {
   final CapsuleController _capsuleController = Get.put(CapsuleController());
+
+  List<CapsuleModel> filterdCapsule = [];
+
   @override
   void initState() {
     _capsuleController.listenToMySentCapsules();
+    filterdCapsule = _capsuleController.mySentCapsules;
     super.initState();
+  }
+
+  sortCapsulesByOpenDate() {
+    DateTime now = DateTime.now();
+    filterdCapsule.sort((a, b) {
+      DateTime dateA = a.openingDate;
+      DateTime dateB = b.openingDate;
+
+      bool isAFuture = dateA.isAfter(now);
+      bool isBFuture = dateB.isAfter(now);
+
+      if (isAFuture && !isBFuture) return -1;
+      if (!isAFuture && isBFuture) return 1;
+
+      return dateA.compareTo(dateB); // both future or both past
+    });
+    setState(() {});
+    Get.back();
+  }
+
+  sortCapsulesByLockedStatus() {
+    filterdCapsule = _capsuleController.mySentCapsules.value
+        .where((capsule) => capsule.status.toLowerCase() == 'locked')
+        .toList();
+
+    Vx.log(filterdCapsule);
+    setState(() {});
+    Get.back();
+  }
+
+  sortCapsulesByOpenedStatus() {
+    filterdCapsule = _capsuleController.mySentCapsules
+        .where((capsule) => capsule.status.toLowerCase() == 'opened')
+        .toList();
+    setState(() {});
+    Get.back();
+  }
+
+  sortCapsulesByAll() {
+    filterdCapsule = _capsuleController.mySentCapsules;
+    setState(() {});
+    Get.back();
   }
 
   @override
@@ -42,7 +89,98 @@ class _MyCapuslesScreenState extends State<MySentCapuslesScreen> {
         ),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              showDialog(
+                context: context,
+                barrierDismissible: true,
+                useSafeArea: true,
+                barrierColor: Colors.transparent,
+                builder: (_) {
+                  return Stack(
+                    children: [
+                      Positioned(
+                          right: 5,
+                          top: 55,
+                          child: Container(
+                            width: 200,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: AppColors.dUserTileBackground,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "Sort by : ",
+                                  style: TextStyle(
+                                      color: AppColors.kLightGreyColor,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800),
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+
+                                GestureDetector(
+                                  onTap: sortCapsulesByOpenDate,
+                                  child: Text(
+                                    "Open date",
+                                    style: TextStyle(
+                                        color: AppColors.kWhiteColor,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 8,
+                                ),
+                                GestureDetector(
+                                  onTap: sortCapsulesByOpenedStatus,
+                                  child: Text(
+                                    "Opened",
+                                    style: TextStyle(
+                                        color: AppColors.kWhiteColor,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 8,
+                                ),
+                                GestureDetector(
+                                  onTap: sortCapsulesByLockedStatus,
+                                  child: Text(
+                                    "Locked",
+                                    style: TextStyle(
+                                        color: AppColors.kWhiteColor,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 8,
+                                ),
+                                GestureDetector(
+                                  onTap: sortCapsulesByAll,
+                                  child: Text(
+                                    "Get all",
+                                    style: TextStyle(
+                                        color: AppColors.kWhiteColor,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                                //
+                              ],
+                            ),
+                          ))
+                    ],
+                  );
+                },
+              );
+            },
             icon: const Icon(
               Icons.filter_alt_rounded,
               color: AppColors.kWhiteColor,
@@ -63,9 +201,7 @@ class _MyCapuslesScreenState extends State<MySentCapuslesScreen> {
                         height: 300,
                         enableInfiniteScroll: false,
                       ),
-                      items: _capsuleController.mySentCapsules
-                          .take(3)
-                          .map((CapsuleModel capsule) {
+                      items: filterdCapsule.take(3).map((CapsuleModel capsule) {
                         return GestureDetector(
                           onTap: () => _navigateToDetailScreen(capsule),
                           child: carasolItem(
@@ -83,9 +219,7 @@ class _MyCapuslesScreenState extends State<MySentCapuslesScreen> {
                     const SizedBox(
                       height: 24,
                     ),
-                    ..._capsuleController.mySentCapsules
-                        .skip(3)
-                        .map((CapsuleModel capsule) {
+                    ...filterdCapsule.skip(3).map((CapsuleModel capsule) {
                       return GestureDetector(
                         onTap: () => _navigateToDetailScreen(capsule),
                         child: capsuleCard(

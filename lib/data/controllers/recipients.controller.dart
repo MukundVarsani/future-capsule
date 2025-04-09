@@ -269,45 +269,27 @@ class RecipientController extends GetxController {
     }
   }
 
-  Stream<List<UserModel>> getStreamLikes(String capsuleId) {
-    return _firebaseFirestore
-        .collection("Users_Capsules")
-        .doc(capsuleId)
-        .snapshots()
-        .asyncMap((snapshot) async {
-      if (!snapshot.exists) return [];
-
-      final data = snapshot.data();
-      if (data == null || data['likes'] == null) return [];
-
-      final likesList = List<Map<String, dynamic>>.from(data['likes']);
-      final userIds =
-          likesList.map((like) => like['recipientId'] as String).toList();
-
-      // Fetch actual user data
-      return await _fetchUsersByIds(userIds);
-    });
-  }
-
   //* Fetch list of Usermodal By IDs
-  Future<List<UserModel>> _fetchUsersByIds(List<String?> userIds) async {
-    if (userIds.isEmpty) return [];
+  // Future<List<UserModel>> _fetchUsersByIds(List<String?> userIds) async {
+  //   if (userIds.isEmpty) return [];
 
-    try {
-      QuerySnapshot userSnap = await _firebaseFirestore
-          .collection('Future_Capsule_Users')
-          .where(FieldPath.documentId, whereIn: userIds)
-          .get();
+  //   try {
+  //     QuerySnapshot userSnap = await _firebaseFirestore
+  //         .collection('Future_Capsule_Users')
+  //         .where(FieldPath.documentId, whereIn: userIds)
+  //         .get();
 
-      return userSnap.docs
-          .map((doc) => UserModel.fromJson(doc.data() as Map<String, dynamic>))
-          .toList();
-    } catch (e) {
-      Vx.log("Error fetching user details: $e");
-      return [];
-    }
-  }
+  //     return userSnap.docs
+  //         .map((doc) => UserModel.fromJson(doc.data() as Map<String, dynamic>))
+  //         .toList();
+  //   } catch (e) {
+  //     Vx.log("Error fetching user details: $e");
+  //     return [];
+  //   }
+  // }
 
+  
+  //* Get capsule Stream for realtime like reflects
   Stream<CapsuleModel> capsuleStream(String capsuleId) {
     return FirebaseFirestore.instance
         .collection('Users_Capsules')

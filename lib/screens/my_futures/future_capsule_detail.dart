@@ -1,11 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
+import 'package:future_capsule/core/widgets/snack_bar.dart';
 import 'package:future_capsule/data/controllers/recipients.controller.dart';
 import 'package:future_capsule/data/controllers/user.controller.dart';
 import 'package:future_capsule/data/models/capsule_modal.dart';
 import 'package:future_capsule/data/models/user_modal.dart';
+import 'package:future_capsule/data/services/openai.dart';
 import 'package:future_capsule/screens/my_futures/animation.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -40,7 +43,10 @@ class _FutureCapsuleDetailState extends State<FutureCapsuleDetail> {
       Get.put(RecipientController());
   final UserController _userController = Get.put(UserController());
   String? currentUser;
-
+  int? hintCount;
+  bool showHint = false;
+  bool isGettinghint = false;
+  String? hintText;
   @override
   void initState() {
     capsule = widget.capsule;
@@ -77,6 +83,47 @@ class _FutureCapsuleDetailState extends State<FutureCapsuleDetail> {
     _recipientController.updateLikes(capsuleId: capsuleId);
   }
 
+  void _handleHintCountButton(String userId, count) async {
+    if (capsule.status.toLowerCase() == "opened") {
+      appSnackBar(
+          context: context,
+          text: "Capsule is Opened",
+          color: AppColors.kTealGreenColor);
+    } else {
+      if (count < 1) {
+        appSnackBar(
+            context: context,
+            text: "You are out of Hint limit",
+            color: AppColors.kTealGreenColor);
+        return;
+      }
+
+      String? url =
+          isVideoFile ? capsule.media[0].thumbnail : capsule.media[0].url;
+
+      if (url == null) return;
+      setState(() {
+        isGettinghint = true;
+      });
+      _userController.updateUserHintCount(userId);
+      Map<String, dynamic>? res =
+          await Openai().getHintFromAI(imgURL: capsule.media[0].url);
+      if (res != null) {
+        hintText = res['hint'];
+      }
+      setState(() {
+        isGettinghint = false;
+        showHint = true;
+        hintText = null;
+      });
+      Future.delayed(Duration(seconds: 10), () {
+        setState(() {
+          showHint = false;
+        });
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,11 +134,62 @@ class _FutureCapsuleDetailState extends State<FutureCapsuleDetail> {
               color: AppColors.dNeonCyan, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
-        actions: const [
-          Icon(
-            Icons.more_vert,
-            color: AppColors.kWhiteColor,
-          )
+        actions: [
+          isGettinghint
+              ? Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: SpinKitWave(
+                    color: AppColors.dNeonCyan,
+                    type: SpinKitWaveType.center,
+                    size: 20,
+                  ),
+                )
+              : StreamBuilder<UserModel?>(
+                  stream: _userController.getUserStream(currentUser!),
+                  builder: (context, snapshot) {
+                    final hintCount = snapshot.data?.hintCount ?? 0;
+
+                    return Stack(
+                      alignment: Alignment.topRight,
+                      children: [
+                        Tooltip(
+                          message: "Get hint by Capsule Intelligence",
+                          child: IconButton(
+                            onPressed: () =>
+                                _handleHintCountButton(currentUser!, hintCount),
+                            icon: Icon(
+                              Icons.lightbulb,
+                              size: 28,
+                              color: Color(0xFF00F5D4),
+                            ),
+                          ),
+                        ),
+                        if (hintCount >= 0)
+                          Positioned(
+                            right: 4,
+                            top: 4,
+                            child: Container(
+                              height: 20,
+                              width: 20,
+                              decoration: BoxDecoration(
+                                color: Color(0xFF3A3A3C),
+                                shape: BoxShape.circle,
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                "$hintCount",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                ),
         ],
         leading: IconButton(
           onPressed: () {
@@ -106,10 +204,6 @@ class _FutureCapsuleDetailState extends State<FutureCapsuleDetail> {
       body: StreamBuilder<CapsuleModel>(
           stream: _recipientController.capsuleStream(capsule.capsuleId),
           builder: (context, snapshot) {
-            // if (snapshot.connectionState == ConnectionState.waiting) {
-            //   return const Center(child: CircularProgressIndicator());
-            // }
-
             if (!snapshot.hasData) {
               return const Center(
                   child: Text(
@@ -172,10 +266,43 @@ class _FutureCapsuleDetailState extends State<FutureCapsuleDetail> {
                     )
                   ],
                 ),
-                const SizedBox(height: 18),
-                if (capsule.status.toLowerCase() == "locked")
+                if (capsule.status.toLowerCase() == "locked" &&
+                    !capsule.privacy.isTimePrivate)
+                  const SizedBox(height: 10),
+                if (capsule.status.toLowerCase() == "locked" &&
+                    !capsule.privacy.isTimePrivate)
                   _buildDateTimePreview(),
-                const SizedBox(height: 18),
+                if (hintText != null && hintText!.isNotEmpty)
+                  AnimatedOpacity(
+                    duration: Duration(milliseconds: 1000),
+                    opacity: showHint ? 1.0 : 0.0,
+                    child: showHint
+                        ? AnimatedContainer(
+                            duration: Duration(milliseconds: 500),
+                            padding: EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Color(0xFF262626), // Hint box background
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                  color: Color(0xFF00F5D4), width: 1.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color:
+                                      Color(0x3300F5D4), // 20% opacity of cyan
+                                  blurRadius: 12,
+                                  offset: Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              hintText ?? "",
+                              style: TextStyle(
+                                  fontSize: 16, color: AppColors.kWhiteColor),
+                            ),
+                          )
+                        : SizedBox.shrink(),
+                  ),
+                const SizedBox(height: 10),
                 UserTile(
                   user: widget.user,
                   date: widget.date,

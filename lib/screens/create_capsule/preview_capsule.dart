@@ -166,7 +166,7 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
         ),
       ),
       body: ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         children: [
           const SizedBox(height: 20),
           _buildTitleField(widget.capsuleName),
@@ -246,24 +246,25 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
               offset: Offset(1, 2)),
         ],
       ),
-      child: Stack(
-        alignment: AlignmentDirectional.center,
-        children: [
-          if (widget.media != null)
-            Image.network(
-              widget.media!,
-              height: 200,
-              filterQuality: FilterQuality.high,
-              fit: BoxFit.fill,
-            ),
-          if (fileBytes != null)
-            Image.file(
-              fileBytes,
-              height: 200,
-              filterQuality: FilterQuality.high,
-              fit: BoxFit.fill,
-            ),
-
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: Stack(
+          alignment: AlignmentDirectional.center,
+          children: [
+            if (widget.media != null)
+              Image.network(
+                widget.media!,
+                height: 200,
+                filterQuality: FilterQuality.high,
+                fit: BoxFit.fill,
+              ),
+            if (fileBytes != null)
+              Image.file(
+                fileBytes,
+                height: 200,
+                filterQuality: FilterQuality.high,
+                fit: BoxFit.fill,
+              ),
             Container(
               constraints: const BoxConstraints(minHeight: 200),
               width: double.infinity,
@@ -277,7 +278,8 @@ class _PreviewCapsuleState extends State<PreviewCapsule> {
                 color: Color.fromRGBO(142, 68, 173, 1),
               ),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }

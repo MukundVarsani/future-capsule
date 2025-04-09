@@ -122,4 +122,29 @@ class UserController extends GetxController {
       return null;
     }
   }
+
+
+Future<void> updateUserHintCount(String userId) async {
+  final userRef = FirebaseFirestore.instance.collection("Future_Capsule_Users").doc(userId);
+
+  try {
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+      final snapshot = await transaction.get(userRef);
+
+      if (!snapshot.exists) {
+        throw Exception("User document does not exist.");
+      }
+
+      final currentHintCount = snapshot.data()?['hintCount'] ?? 0;
+      final updatedHintCount = currentHintCount - 1;
+
+      transaction.update(userRef, {'hintCount': updatedHintCount});
+    });
+
+   
+  } catch (e) {
+   Vx.log("Error in updateUserHintCount $e");
+  }
+}
+
 }

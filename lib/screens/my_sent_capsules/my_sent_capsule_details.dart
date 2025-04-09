@@ -156,10 +156,10 @@ class _MySentCapsuleDetailsState extends State<MySentCapsuleDetails> {
                     )
                     .status;
 
-                return  SentCapsuleUserTile(
-                      status: status,
-                      user: user,
-                    );
+                return SentCapsuleUserTile(
+                  status: status,
+                  user: user,
+                );
               }),
               const SizedBox(
                 height: 12,
@@ -239,7 +239,7 @@ class _MySentCapsuleDetailsState extends State<MySentCapsuleDetails> {
                     child: IntrinsicWidth(
                       child: IntrinsicHeight(
                         child: CachedNetworkImage(
-                          cacheKey: widget.capsule.media[0].mediaId,
+                          cacheKey: widget.capsule.capsuleId,
                           fit: BoxFit.fill,
                           imageUrl: (widget.capsule.media[0].thumbnail !=
                                       null &&
