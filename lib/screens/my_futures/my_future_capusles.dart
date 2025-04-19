@@ -33,6 +33,7 @@ class _MyFutureCapsulesState extends State<MyFutureCapsules> {
         _recipientController.fetchSharedCapsulesWithUsersOPTStream();
   }
 
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(

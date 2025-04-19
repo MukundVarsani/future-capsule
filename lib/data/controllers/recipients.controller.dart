@@ -19,10 +19,12 @@ class RecipientController extends GetxController {
 
   var isRecipientLoading = false.obs;
   var isCapsuleSending = false.obs;
+  var isCapsuleDeleting = false.obs;
 
   @override
   void onInit() {
     currentUserId = _userController.getUser?.uid;
+
     super.onInit();
   }
 
@@ -288,7 +290,36 @@ class RecipientController extends GetxController {
   //   }
   // }
 
-  
+  Future<void> deleteSentCapsule(
+      {required String capsuleId,
+      required String senderId,
+      required String recipientId}) async {
+    try {
+      isCapsuleDeleting(true);
+      await _firebaseFirestore
+          .collection('Users_Capsules')
+          .doc(capsuleId)
+          .delete();
+
+      final querySnapshot = await _firebaseFirestore
+          .collection('SharedCapsules')
+          .where('capsuleId', isEqualTo: capsuleId)
+          .where('senderId', isEqualTo: senderId)
+          .where('recipientId', isEqualTo: recipientId)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        for (var doc in querySnapshot.docs) {
+          await doc.reference.delete();
+        }
+      }
+    } catch (e) {
+      Vx.log("Error in deleteSentCapsule: $e");
+    } finally {
+      isCapsuleDeleting(false);
+    }
+  }
+
   //* Get capsule Stream for realtime like reflects
   Stream<CapsuleModel> capsuleStream(String capsuleId) {
     return FirebaseFirestore.instance

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:future_capsule/core/constants/colors.dart';
+import 'package:future_capsule/core/images/images.dart';
 import 'package:future_capsule/core/widgets/app_button.dart';
 import 'package:future_capsule/core/widgets/snack_bar.dart';
 import 'package:future_capsule/data/services/openai.dart';
@@ -102,6 +103,11 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
     FocusManager.instance.primaryFocus?.unfocus();
   }
 
+  void _seletOtherMedia() async {
+    XFile? xFile = await _files.selectOtherMedia();
+    Vx.log(xFile);
+  }
+
   void _resetData() {
     titleController.clear();
     descriptionController.clear();
@@ -159,14 +165,10 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
         ),
         actions: [
           Tooltip(
-            message: "Generate with Capsule Intellegence",
-            child: IconButton(
-                onPressed: generateAIContent,
-                icon: Icon(
-                  Icons.search,
-                  color: AppColors.kWhiteColor,
-                )),
-          )
+              message: "Generate with Capsule Intellegence",
+              child: GestureDetector(
+                  onTap: generateAIContent,
+                  child: Image.asset(AppImages.aiGenerateImage)))
         ],
       ),
       body: Stack(children: [
@@ -217,10 +219,11 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
             )
           ],
         ),
-          if(isContentGenerating)
-           Container(
-            decoration: BoxDecoration(color: const Color.fromRGBO(18, 18, 18, 0.8)),
-            child: SpinKitSpinningLines(color: AppColors.dNeonCyan))
+        if (isContentGenerating)
+          Container(
+              decoration:
+                  BoxDecoration(color: const Color.fromRGBO(18, 18, 18, 0.8)),
+              child: SpinKitSpinningLines(color: AppColors.dNeonCyan))
       ]),
     );
   }
@@ -245,13 +248,9 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
                   textTheme: ButtonTextTheme
                       .primary), // Change the background color of the dialog
               textTheme: const TextTheme(
-                  bodyMedium: TextStyle(color: AppColors.kTealGreenColor)
-                  // bodyText2: TextStyle(color: Colors.black), // Change the text color
-                  ),
+                  bodyMedium: TextStyle(color: AppColors.kTealGreenColor)),
               primaryTextTheme: const TextTheme(
-                  headlineLarge: TextStyle(color: AppColors.kTealGreenColor)
-                  // headline6: TextStyle(color: Colors.black), // Change the header text color
-                  ),
+                  headlineLarge: TextStyle(color: AppColors.kTealGreenColor)),
               cardColor: AppColors.kTealGreenColor,
               canvasColor: AppColors.kTealGreenColor,
               dialogTheme:
@@ -337,7 +336,7 @@ class _CreateCapsuleScreenState extends State<CreateCapsuleScreen> {
                     CustomPicker(
                       icon: Icons.file_present,
                       label: "File",
-                      onTap: () {},
+                      onTap: () => _seletOtherMedia(),
                     ),
                   ],
                 ),

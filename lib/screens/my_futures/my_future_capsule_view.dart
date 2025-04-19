@@ -8,7 +8,7 @@ import 'package:future_capsule/data/models/user_modal.dart';
 import 'package:future_capsule/screens/my_futures/future_capsule_detail.dart';
 import 'package:future_capsule/screens/my_futures/my_future_users_capsules_card.dart';
 import 'package:get/get.dart';
-import 'package:velocity_x/velocity_x.dart';
+
 
 class MyFutureCapsuleView extends StatefulWidget {
   const MyFutureCapsuleView(

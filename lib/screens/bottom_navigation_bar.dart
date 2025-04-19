@@ -53,9 +53,8 @@ class _BottomBarState extends State<BottomBar> {
 
   List<Widget> _buildScreens() {
     return const [
-
-      MySentCapuslesScreen(),
       MyFutureCapsules(),
+      MySentCapuslesScreen(),
       CreateCapsuleScreen(),
       MyCapuslesScreen(),
       ProfileScreen(),

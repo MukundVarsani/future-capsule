@@ -6,7 +6,7 @@ import 'package:get/get.dart';
  appSnackBar({
   required BuildContext context,
   required String text,
-  Duration duration = const Duration(seconds: 2),
+  Duration duration = const Duration(seconds: 3),
   Color color = const  Color.fromRGBO(32, 201, 151,1),
   Color textColor = const  Color.fromRGBO(255, 255, 255,1)
 }) {
@@ -16,7 +16,7 @@ import 'package:get/get.dart';
       showCloseIcon: true,
       closeIconColor: AppColors.kWhiteColor,
       duration:  duration,
-      margin: EdgeInsets.only(bottom: MediaQuery.sizeOf(context).height * 0.05),
+      margin: EdgeInsets.only(bottom: MediaQuery.sizeOf(context).height * 0.08),
       content: Text(
         text,
 

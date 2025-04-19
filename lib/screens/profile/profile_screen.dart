@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/images/images.dart';
@@ -21,7 +22,8 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends State<ProfileScreen>
+    with AutomaticKeepAliveClientMixin {
   File? _selectedFile;
   late final String? _currentUserId;
   late final SelectFiles _selectFiles;
@@ -83,11 +85,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     _selectFiles = SelectFiles();
     _currentUserId = _userController.getUser?.uid;
+    _userController.getUserTotalLikes();
     super.initState();
   }
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
+
+    _userController.getUserTotalLikes();
     return Scaffold(
         backgroundColor: AppColors.dDeepBackground,
         body: (_currentUserId != null)
@@ -116,10 +125,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 bottomRight: Radius.circular(36),
                               ),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
-                                Column(
+                                const Column(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
                                     Text(
@@ -136,7 +145,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             color: Colors.white)),
                                   ],
                                 ),
-                                Column(
+                                const Column(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
                                     Text(
@@ -156,12 +165,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 Column(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
-                                    Text(
-                                      "476",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 22,
-                                          color: Colors.white),
+                                    Obx(
+                                      () => Text(
+                                        _userController.userLike.value
+                                            .toString(),
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 22,
+                                            color: Colors.white),
+                                      ),
                                     ),
                                     Text("LIKES",
                                         style: TextStyle(
@@ -190,7 +202,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 const SizedBox(
                                   height: 60,
                                 ),
-                                _buildProfileImage(userData?.profilePicture),
+                                _buildProfileImage(
+                                    userData?.profilePicture, userData?.userId),
                                 InfoField(
                                   fieldName: "Name",
                                   iconColor:
@@ -450,7 +463,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         });
   }
 
-  Widget _buildProfileImage(String? userProfile) {
+  Widget _buildProfileImage(String? userProfile, String? id) {
     return Stack(
       children: [
         Container(
@@ -467,36 +480,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   : []),
           height: 130,
           width: 130,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(100),
-            child: userProfile?.isNotEmpty == true
-                ? Image.network(
-                    userProfile!,
-                    height: 130,
-                    width: 130,
-                    fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Container(
-                        color: AppColors.dDeepBackground,
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            valueColor: const AlwaysStoppedAnimation<Color>(
-                                Color.fromRGBO(153, 113, 238, 1)),
-                            value: loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded /
-                                    (loadingProgress.expectedTotalBytes ?? 1)
-                                : null,
-                          ),
-                        ),
-                      );
-                    },
-                    errorBuilder: (_, __, ___) => Image.asset(AppImages.profile,
-                        height: 130, width: 130, fit: BoxFit.cover),
-                  )
-                : Image.asset(AppImages.profile,
-                    height: 130, width: 130, fit: BoxFit.cover),
-          ),
+          child: userProfile?.isNotEmpty == true
+              ? CachedNetworkImage(
+                  cacheKey: id,
+                  imageUrl: userProfile!,
+                  height: 130,
+                  width: 130,
+                  fit: BoxFit.cover,
+                  imageBuilder: (context, imageProvider) => Container(
+                    // width: 80.0,
+                    // height: 80.0,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: DecorationImage(
+                          image: imageProvider, fit: BoxFit.cover),
+                    ),
+                  ),
+          
+                  // Builder: (context, child, loadingProgress) {
+                  //   if (loadingProgress == null) return child;
+                  //   return Container(
+                  //     color: AppColors.dDeepBackground,
+                  //     child: Center(
+                  //       child: CircularProgressIndicator(
+                  //         valueColor: const AlwaysStoppedAnimation<Color>(
+                  //             Color.fromRGBO(153, 113, 238, 1)),
+                  //         value: loadingProgress.expectedTotalBytes != null
+                  //             ? loadingProgress.cumulativeBytesLoaded /
+                  //                 (loadingProgress.expectedTotalBytes ?? 1)
+                  //             : null,
+                  //       ),
+                  //     ),
+                  //   );
+                  // },
+                  errorWidget: (_, __, ___) => Image.asset(AppImages.profile,
+                      height: 130, width: 130, fit: BoxFit.cover),
+                )
+              : Image.asset(AppImages.profile,
+                  height: 130, width: 130, fit: BoxFit.cover),
         ),
         Positioned(
           bottom: 4,

@@ -34,6 +34,12 @@ class CapsuleController extends GetxController {
 
 //^  Capsule Methods
 
+  @override
+  void onInit() {
+    listenToMySentCapsules();
+    super.onInit();
+  }
+
 //* Extract Media ID from Medial URL
   String _extractMediaIdFromUrl(String url) {
     // Define a regular expression to extract the value

@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/data/controllers/capsule.controller.dart';
+import 'package:future_capsule/data/controllers/recipients.controller.dart';
 import 'package:future_capsule/data/services/notification_service.dart';
 import 'package:future_capsule/screens/auth/sign_in/login_screen.dart';
 
@@ -24,6 +25,8 @@ void main() async {
     ),
   );
   Get.put(CapsuleController());
+  Get.put(RecipientController());
+  
   final NotificationService notificationService = NotificationService();
   notificationService.init();
   runApp(MyApp());
@@ -45,7 +48,7 @@ class MyApp extends StatelessWidget {
         appBarTheme:
             const AppBarTheme(backgroundColor: AppColors.dDeepBackground),
       ),
-      // themeMode: ThemeMode.system,
+     
       home: _getLandingPage(_auth),
     );
   }

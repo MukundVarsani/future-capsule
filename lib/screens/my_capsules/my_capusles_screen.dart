@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
 import 'package:future_capsule/core/widgets/shimmer_effect/capsule_storage_shimmer.dart';
@@ -16,12 +15,13 @@ class MyCapuslesScreen extends StatefulWidget {
   State<MyCapuslesScreen> createState() => _MyCapuslesScreenState();
 }
 
-class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
+class _MyCapuslesScreenState extends State<MyCapuslesScreen>
+    with AutomaticKeepAliveClientMixin {
   final CapsuleController _capsuleController = Get.put(CapsuleController());
 
   final List<CapsuleModel> _userCapsules = [];
   List<CapsuleModel> _filterCapsules = [];
-  
+
   Stream<List<CapsuleModel>> capsuleStream() {
     return _capsuleController.getUserCapsuleStream();
   }
@@ -160,7 +160,10 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
   }
 
   @override
+  bool get wantKeepAlive => true;
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
         backgroundColor: AppColors.dDeepBackground,
         appBar: AppBar(
@@ -200,7 +203,6 @@ class _MyCapuslesScreenState extends State<MyCapuslesScreen> {
             }
 
             var capsules = snapshot.data ?? [];
-    
 
             if (capsules.isEmpty) {
               return const Center(

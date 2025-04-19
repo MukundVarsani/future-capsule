@@ -108,17 +108,19 @@ class _FutureCapsuleDetailState extends State<FutureCapsuleDetail> {
       _userController.updateUserHintCount(userId);
       Map<String, dynamic>? res =
           await Openai().getHintFromAI(imgURL: capsule.media[0].url);
+
       if (res != null) {
         hintText = res['hint'];
       }
       setState(() {
         isGettinghint = false;
         showHint = true;
-        hintText = null;
+       
       });
       Future.delayed(Duration(seconds: 10), () {
         setState(() {
           showHint = false;
+           hintText = null;
         });
       });
     }
@@ -272,6 +274,7 @@ class _FutureCapsuleDetailState extends State<FutureCapsuleDetail> {
                 if (capsule.status.toLowerCase() == "locked" &&
                     !capsule.privacy.isTimePrivate)
                   _buildDateTimePreview(),
+                  const SizedBox(height: 10),
                 if (hintText != null && hintText!.isNotEmpty)
                   AnimatedOpacity(
                     duration: Duration(milliseconds: 1000),

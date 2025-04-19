@@ -1,6 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:future_capsule/core/constants/colors.dart';
+import 'package:future_capsule/core/constants/methods.dart';
+import 'package:future_capsule/core/widgets/app_button.dart';
+import 'package:future_capsule/core/widgets/snack_bar.dart';
+import 'package:future_capsule/data/controllers/recipients.controller.dart';
 import 'package:future_capsule/data/models/capsule_modal.dart';
 import 'package:future_capsule/data/models/user_modal.dart';
 import 'package:future_capsule/screens/my_sent_capsules/sent_capsule_user_tile.dart';
@@ -29,6 +33,8 @@ class _MySentCapsuleDetailsState extends State<MySentCapsuleDetails> {
   bool isVideoFile = false;
   static VideoPlayerController? _controller;
   late CapsuleModel userCapsule;
+  final RecipientController _recipientController =
+      Get.put(RecipientController());
 
   @override
   void initState() {
@@ -57,6 +63,18 @@ class _MySentCapsuleDetailsState extends State<MySentCapsuleDetails> {
     }
   }
 
+  void handledeleteCapsule(
+      String capsuleId, String senderId, List<UserModel> users) async {
+    for (UserModel user in users) {
+      await _recipientController.deleteSentCapsule(
+          capsuleId: capsuleId, senderId: senderId, recipientId: user.userId);
+    }
+    appSnackBar(text: "Capsule delete successfully", context: context);
+    
+
+    Get.back();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,6 +101,27 @@ class _MySentCapsuleDetailsState extends State<MySentCapsuleDetails> {
             children: [
               _buildMediaPreview(),
               const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Tooltip(
+                      textStyle: TextStyle(
+                          color: AppColors.kLightGreyColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800),
+                      message: dateFormat(userCapsule.openingDate),
+                      child: Text(
+                        timeAgo(widget.shareDate),
+                        style: TextStyle(
+                            color: AppColors.dDateAndTimeColor,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800),
+                      )),
+                  const SizedBox(
+                    width: 8,
+                  ),
+                ],
+              ),
               Text(
                 widget.capsule.title,
                 style: const TextStyle(
@@ -133,20 +172,29 @@ class _MySentCapsuleDetailsState extends State<MySentCapsuleDetails> {
                 ],
               ),
               const SizedBox(height: 10),
-              Text(
-                "Open date : ${dateFormat(widget.capsule.openingDate)}",
-                style: const TextStyle(
-                    color: AppColors.kWhiteColor,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                "Shared on : ${dateFormat(widget.shareDate)}",
-                style: const TextStyle(
-                    color: AppColors.kLightGreyColor,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500),
+              Row(
+                children: [
+                  Icon(Icons.calendar_today,
+                      color: Colors.tealAccent, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Open Date',
+                    style: TextStyle(
+                      color: Colors.tealAccent,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '19/03/25 12:00 AM',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 18),
               ...widget.recipientsUsers.map((user) {
@@ -163,7 +211,25 @@ class _MySentCapsuleDetailsState extends State<MySentCapsuleDetails> {
               }),
               const SizedBox(
                 height: 12,
-              )
+              ),
+              SizedBox(
+                  width: double.maxFinite,
+                  height: 50,
+                  child: AppButton(
+                    onPressed: () => handledeleteCapsule(userCapsule.capsuleId,
+                        userCapsule.creatorId, widget.recipientsUsers),
+                    backgroundColor: AppColors.kErrorSnackBarTextColor,
+                    child: Obx(() => _recipientController
+                            .isCapsuleDeleting.value
+                        ? Center(child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(AppColors.kWhiteColor) ,))
+                        : Text(
+                            "Delete",
+                            style: TextStyle(
+                                color: AppColors.kWhiteColor,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16),
+                          )),
+                  ))
             ],
           ),
         ),

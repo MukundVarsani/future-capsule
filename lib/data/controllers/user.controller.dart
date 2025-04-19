@@ -17,6 +17,7 @@ class UserController extends GetxController {
   //Observable Current User
 
   final _currentUser = Rxn<User>();
+  RxInt userLike = 0.obs;
 
   set setUser(User? user) {
     _currentUser.value = user;
@@ -70,6 +71,7 @@ class UserController extends GetxController {
         .map((snapshot) {
       if (snapshot.exists) {
         if (snapshot.data() != null) {
+          getUserTotalLikes();
           return UserModel.fromJson(
               snapshot.data()!); // Return the user data as a map
         }
@@ -123,28 +125,45 @@ class UserController extends GetxController {
     }
   }
 
+  Future<void> updateUserHintCount(String userId) async {
+    final userRef = FirebaseFirestore.instance
+        .collection("Future_Capsule_Users")
+        .doc(userId);
 
-Future<void> updateUserHintCount(String userId) async {
-  final userRef = FirebaseFirestore.instance.collection("Future_Capsule_Users").doc(userId);
+    try {
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        final snapshot = await transaction.get(userRef);
 
-  try {
-    await FirebaseFirestore.instance.runTransaction((transaction) async {
-      final snapshot = await transaction.get(userRef);
+        if (!snapshot.exists) {
+          throw Exception("User document does not exist.");
+        }
 
-      if (!snapshot.exists) {
-        throw Exception("User document does not exist.");
-      }
+        final currentHintCount = snapshot.data()?['hintCount'] ?? 0;
+        final updatedHintCount = currentHintCount - 1;
 
-      final currentHintCount = snapshot.data()?['hintCount'] ?? 0;
-      final updatedHintCount = currentHintCount - 1;
-
-      transaction.update(userRef, {'hintCount': updatedHintCount});
-    });
-
-   
-  } catch (e) {
-   Vx.log("Error in updateUserHintCount $e");
+        transaction.update(userRef, {'hintCount': updatedHintCount});
+      });
+    } catch (e) {
+      Vx.log("Error in updateUserHintCount $e");
+    }
   }
-}
 
+  void getUserTotalLikes() async {
+    if (_currentUser.value == null) return;
+
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('Users_Capsules')
+          .where('creatorId', isEqualTo: _currentUser.value?.uid)
+          .get();
+      userLike(0);
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        final likes = List<Map<String, dynamic>>.from(data['likes'] ?? []);
+        userLike.value += likes.length;
+      }
+    } catch (e) {
+      Vx.log("Error in getUserTotalLikes $e");
+    }
+  }
 }

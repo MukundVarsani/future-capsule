@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:velocity_x/velocity_x.dart';
 
 class Openai {
-  static String ipAddress = "192.168.0.112";
+  static String ipAddress = "192.168.137.1";
   Future<Map<String, dynamic>?> generateCapsuleContent(
       {required File image, String? userPrompt}) async {
     final bytes = image.readAsBytesSync();
